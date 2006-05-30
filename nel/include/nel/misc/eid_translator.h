@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.20.6.2 2006/05/11 13:43:27 boucher Exp $
+ * $Id: eid_translator.h,v 1.20.6.3 2006/05/30 12:10:42 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -80,6 +80,8 @@ public:
 	bool				entityNameExists(const ucstring &entityName);
 	// register an entity in this manager
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
+	// register or update an entity in this manager
+	void				updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
 	// unregister an entity from this manager
 	void				unregisterEntity (const CEntityId &eid);
 	// Check if an entity is registered

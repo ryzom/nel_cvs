@@ -1,7 +1,7 @@
 /** \file u_skeleton.cpp
  * TODO: File description
  *
- * $Id: u_skeleton.cpp,v 1.9.4.1 2006/05/30 11:02:10 legallo Exp $
+ * $Id: u_skeleton.cpp,v 1.9 2005/08/23 17:37:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -248,16 +248,6 @@ sint		USkeleton::getLodCharacterShape() const
 	NL3D_HAUTO_UI_SKELETON;
 	CSkeletonModel	*object = getObjectPtr();
 	return object->getLodCharacterShape();
-}
-
-// ***************************************************************************
-
-void		USkeleton::enableLOD(bool isEnable)
-{
-	NL3D_MEM_SKELETON
-	NL3D_HAUTO_UI_SKELETON;
-	CSkeletonModel	*object = getObjectPtr();
-	object->enableLOD(isEnable);
 }
 
 // ***************************************************************************

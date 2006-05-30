@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * TODO: File description
  *
- * $Id: u_skeleton.h,v 1.25.4.1 2006/05/30 11:02:19 legallo Exp $
+ * $Id: u_skeleton.h,v 1.25 2005/08/23 17:36:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,9 +152,6 @@ public:
 	void		setLodCharacterShape(sint shapeId);
 	/// see setLodCharacterShape
 	sint		getLodCharacterShape() const;
-
-	/// enable/disable LOD
-	void		enableLOD(bool isEnable);
 
 	/// Change/get the Character Lod anim setup.
 	void		setLodCharacterAnimId(uint animId);

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.20.4.2 2006/03/15 14:21:28 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.20.4.3 2006/05/31 14:05:20 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -359,6 +359,11 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 		width = texture->getWidth();
 		height = texture->getHeight();
 		levels = texture->getMipMapCount();
+		if (levels == 1 && !srcFormatCompressed) 
+		{
+			// if not built-in mipmap levels, compute how many of them are needed
+			levels = texture->computeNeededMipMapCount();
+		}
 		if (cube && !_CubbedMipMapSupported)
 		{
 			levels = 1;
@@ -496,8 +501,9 @@ inline void CDriverD3D::setupTextureWrapMode(ITexture& tex)
 	d3dtext->MipFilter = RemapMipTextureFilterTypeNeL2D3D[tex.getMinFilter()];	
 }
 
+
 bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture)
-{
+{	
 	H_AUTO_D3D(CDriverD3D_setupTextureEx )
 	bAllUploaded = false;
 		

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * TODO: File description
  *
- * $Id: vertex_buffer.h,v 1.19.32.1 2006/03/06 18:15:29 lancon Exp $
+ * $Id: vertex_buffer.h,v 1.19.32.2 2006/05/31 09:45:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,9 +311,19 @@ public:
 	  * Do not copy DrvInfos, copy all infos and set IDRV_VF_TOUCHED_ALL.
 	  * All the destination vertex buffer is invalidated. Data are lost.
 	  * The source and destination vertex buffers must be unlocked.
+	  * Vertices datas are not copied
 	  */
 	CVertexBuffer			&operator=(const CVertexBuffer &vb);
 
+	/** Copy a vertex buffer, including vertices data. Destination vb is not resident.
+	  * May be slow if there's agp / vram readback.
+	  * Initial content of the destination vertex buffer is lost.
+	  * Use this to retrieve content of a write-only buffer.
+	  * Using lock with CVertexBufferRead won't work (used as a foolkeeper to prevent 
+	  * reading of a resident buffer that is not in ram)
+	  * NB : will assert when used with volatile vb
+	  */
+	void		copyVertices(CVertexBuffer &dest) const;
 	/**
 	  * Set the buffer preferred memory. Default preferred memory is RAM.
 	  *

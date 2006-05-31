@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.48 2005/02/22 10:19:13 besson Exp $
+ * $Id: vertex_buffer.cpp,v 1.48.16.1 2006/05/31 09:45:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,6 +219,21 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 	_ResidentSize = 0;
 
 	return *this;
+}
+
+// --------------------------------------------------
+void CVertexBuffer::copyVertices(CVertexBuffer &dest) const
+{
+	nlassert(_PreferredMemory != RAMVolatile);
+	nlassert(_PreferredMemory != AGPVolatile);
+	// copy setup
+	dest = *this;
+	CVertexBufferReadWrite srcDatas;
+	const_cast<CVertexBuffer *>(this)->lock(srcDatas);
+	nlassert(dest.getLocation() == NotResident);
+	CVertexBufferReadWrite destDatas;
+	dest.lock(destDatas); // will be in vram
+	NLMISC::CFastMem::memcpy (destDatas.getVertexCoordPointer(), srcDatas.getVertexCoordPointer(), getVertexSize() * getNumVertices());	
 }
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.2 2006/01/10 17:38:48 boucher Exp $
+ * $Id: welcome_service.h,v 1.3 2006/05/31 12:17:14 boucher Exp $
  *
  */
 
@@ -25,6 +25,7 @@
  */
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/singleton.h"
 
 #include "nel/net/module_manager.h"
 #include "nel/net/module_builder_parts.h"
@@ -39,41 +40,22 @@ std::string lsChooseShard (const std::string &userName,
 							uint32 instanceId,
 							uint32 charSlot);
 
+
+bool disconnectClient(uint32 userId);
+
+
 namespace WS
 {
 	// welcome service module
 	class CWelcomeServiceMod : 
-	public NLNET::CEmptyModuleCommBehav<NLNET::CEmptyModuleServiceBehav<NLNET::CEmptySocketBehav<NLNET::CModuleBase> > >,
-		public WS::CWelcomeServiceSkel
+		public NLNET::CEmptyModuleCommBehav<NLNET::CEmptyModuleServiceBehav<NLNET::CEmptySocketBehav<NLNET::CModuleBase> > >,
+		public WS::CWelcomeServiceSkel,
+		public NLMISC::CManualSingleton<CWelcomeServiceMod>
 	{
-
-		// Shortcut to the module instance
-		static CWelcomeServiceMod	*_Instance;
-
-		NLNET::TModuleProxyPtr	_RingSessionManager;
-
-		// Init module and ensure it's a pseudo singleton
-		virtual void initModule(const NLNET::TParsedCommandLine &initInfo)
-		{
-			CModuleBase::initModule(initInfo);
-			nlassert(_Instance == NULL);
-			_Instance = this;
-		}
-
-		virtual ~CWelcomeServiceMod()
-		{
-			_Instance = NULL;
-		}
-
-		void onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
-		{
-			if (CWelcomeServiceSkel::onDispatchMessage(sender, message))
-				return;
-
-			nlwarning("Unknown message '%s' received by '%s'", 
-				message.getName().c_str(),
-				getModuleName().c_str());
-		}
+		/// the ring session manager module (if any)
+		NLNET::TModuleProxyPtr		_RingSessionManager;
+		/// the login service module (if any)
+		NLNET::TModuleProxyPtr		_LoginService;
 
 		void onModuleUp(NLNET::IModuleProxy *proxy);
 		void onModuleDown(NLNET::IModuleProxy *proxy);
@@ -87,15 +69,13 @@ namespace WS
 		// ask the welcome service to disconnect a user
 		virtual void disconnectUser(NLNET::IModuleProxy *sender, uint32 userId)
 		{
-			nlstop;
+			disconnectClient(userId);
 		}
 
 	public:
-		// public API
-		static CWelcomeServiceMod *getInstance()
+		CWelcomeServiceMod()
 		{
-			nlassert( _Instance );
-			return _Instance;
+			CWelcomeServiceSkel::init(this);
 		}
 
 		// forward response from the front end for a player slot to play in
@@ -116,7 +96,8 @@ namespace WS
 			wscp.updateConnectedPlayerCount(this, nbOnlinePlayers, nbPendingPlayers);
 		}
 
-
+		// inform the LS that a pending client is lost
+		void pendingUserLost(uint32 userId);
 	};
 
 	struct TPendingFEResponseInfo
@@ -130,4 +111,3 @@ namespace WS
 	TPendingFeReponses	PendingFeResponse;
 
 } // namespace WS
-

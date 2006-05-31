@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.49 2006/01/16 10:24:17 distrib Exp $
+ * $Id: welcome_service.cpp,v 1.50 2006/05/31 12:19:03 boucher Exp $
  *
  */
 
@@ -127,7 +127,7 @@ CVariable<bool>		UsePatchMode("ws", "UsePatchMode", "Use Frontends as Patch serv
 
 
 // Shortcut to the module instance
-CWelcomeServiceMod	*CWelcomeServiceMod::_Instance = NULL;
+//CWelcomeServiceMod	*CWelcomeServiceMod::_Instance = NULL;
 
 
 /**
@@ -148,7 +148,7 @@ public:
 			(*ici).second.Expected = 0;
 		}
 		// Rebuild "expected" counters
-		for ( sint i=0; i!=var.size(); ++i )
+		for ( uint i=0; i!=var.size(); ++i )
 		{
 			++_Instances[var.asString(i)].Expected;
 		}
@@ -521,6 +521,9 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 // This function is called when a FES rejected a client' cookie
 void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	CLoginCookie	cookie;
+	msgin.serial(cookie);
+
 	// client' cookie rejected, no longer pending
 	uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
@@ -534,6 +537,7 @@ void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, 
 		totalNbPendingUsers += (*it).NbPendingUsers;
 	}
 
+	CWelcomeServiceMod::getInstance()->pendingUserLost(cookie.getUserId());
 	CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
 }
 
@@ -578,6 +582,13 @@ void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 s
 // This function is called by FES to setup the right number of players (if FES was already present before WS launching)
 void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	// *********** WARNING *******************
+	// This version of the callback is deprecated, the system
+	// now use cbFESNbPlayers2 that report the pending user count
+	// as well as the number of connected players.
+	// It is kept for backward compatibility only.
+	// ***************************************
+
 	uint32	nbPlayers;
 	msgin.serial(nbPlayers);
 
@@ -599,7 +610,37 @@ void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
 	}
 
 	CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
+}
 
+
+// This function is called by FES to setup the right number of players (if FES was already present before WS launching)
+void	cbFESNbPlayers2(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32	nbPlayers;
+	uint32	nbPendingPlayers;
+	msgin.serial(nbPlayers);
+	msgin.serial(nbPendingPlayers);
+
+	uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;
+	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
+	{
+		CFES &fes = *it;
+		if (fes.SId == sid)
+		{
+			nldebug("Frontend '%d' reported %d online users", sid, nbPlayers);
+			fes.NbUser = nbPlayers;
+			fes.NbPendingUsers = nbPendingPlayers;
+			if (nbPlayers != 0 && fes.State == PatchOnly)
+			{
+				nlwarning("Frontend %d is in state PatchOnly, yet reports to have online %d players, state AcceptClientOnly is forced (FS_ACCEPT message sent)");
+				(*it).setToAcceptClients();
+			}
+		}
+		totalNbOnlineUsers += fes.NbUser;
+		totalNbPendingUsers += fes.NbPendingUsers;
+	}
+
+	CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
 }
 
 /*
@@ -779,6 +820,7 @@ TUnifiedCallbackItem FESCallbackArray[] =
 	{ "RPC",				cbFESRemovedPendingCookie },
 	{ "FEPA",				cbFESPatchAddress },
 	{ "NBPLAYERS",			cbFESNbPlayers },
+	{ "NBPLAYERS2",			cbFESNbPlayers2 },
 
 	{ "SET_SHARD_OPEN",		cbSetShardOpen },
 	{ "RESTORE_SHARD_OPEN",	cbRestoreShardOpen },
@@ -949,6 +991,25 @@ void cbFailed (CMessage &msgin, const std::string &serviceName, uint16 sid)
 	nlerror (reason.c_str());
 }
 
+
+bool disconnectClient(uint32 userId)
+{
+	map<uint32, TServiceId>::iterator it = UserIdSockAssociations.find (userId);
+	if (it == UserIdSockAssociations.end ())
+	{
+		nlwarning ("Can't disconnect the user %d, he is not found", userId);
+		return false;
+	}
+	else
+	{
+		CMessage msgout ("DC");
+		msgout.serial (userId);
+		CUnifiedNetwork::getInstance()->send (it->second, msgout);
+
+		return true;
+	}
+}
+
 void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the LS tells me that i have to disconnect a client
@@ -956,17 +1017,8 @@ void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 	uint32 userid;
 	msgin.serial (userid);
 
-	map<uint32, TServiceId>::iterator it = UserIdSockAssociations.find (userid);
-	if (it == UserIdSockAssociations.end ())
-	{
-		nlwarning ("Can't disconnect the user %d, he is not found", userid);
-	}
-	else
-	{
-		CMessage msgout ("DC");
-		msgout.serial (userid);
-		CUnifiedNetwork::getInstance()->send ((*it).second, msgout);
-	}
+	disconnectClient(userid);
+
 }
 
 // connection to the LS, send the identification message
@@ -1161,7 +1213,7 @@ public:
 			// use the command line param if set
 			uint shardId = atoi(IService::getInstance()->getArg('S').c_str());
 
-			nlwarning("Using shard id %u from command line '%s'", shardId, IService::getInstance()->getArg('S').c_str());
+			nlinfo("Using shard id %u from command line '%s'", shardId, IService::getInstance()->getArg('S').c_str());
 			anticipateShardId(shardId);
 		}
 		else if (ConfigFile.exists ("ShardId"))
@@ -1169,7 +1221,7 @@ public:
 			// use the config file param if set
 			uint shardId = IService::getInstance()->ConfigFile.getVar ("ShardId").asInt();
 
-			nlwarning("Using shard id %u from config file '%s'", shardId, IService::getInstance()->ConfigFile.getVar ("ShardId").asString().c_str());
+			nlinfo("Using shard id %u from config file '%s'", shardId, IService::getInstance()->ConfigFile.getVar ("ShardId").asString().c_str());
 			anticipateShardId(shardId);
 		}
 
@@ -1311,16 +1363,21 @@ namespace WS
 			}
 			CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
 		}
+		else if (proxy->getModuleClassName() == "LoginService")
+		{
+			_LoginService = proxy;
+		}
 	}
 
 	void CWelcomeServiceMod::onModuleDown(IModuleProxy *proxy)
 	{
-		if (proxy->getModuleClassName() == "RingSessionManager"
-			&& _RingSessionManager == proxy)
+		if (_RingSessionManager == proxy)
 		{
 			// remove this module as the ring session manager
 			_RingSessionManager = NULL;
 		}
+		else if (_LoginService == proxy)
+			_LoginService = NULL;
 	}
 	
 
@@ -1351,6 +1408,17 @@ namespace WS
 			PendingFeResponse.insert(make_pair(cookie, pfri));
 		}
 	}
+
+	void CWelcomeServiceMod::pendingUserLost(uint32 userId)
+	{
+		if (!_LoginService)
+			return;
+
+		CLoginServiceProxy ls(_LoginService);
+
+		ls.pendingUserLost(this, userId);
+	}
+
 
 	// register the module
 	NLNET_REGISTER_MODULE_FACTORY(CWelcomeServiceMod, "WelcomeService");

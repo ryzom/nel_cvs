@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.32 2005/08/29 16:23:39 boucher Exp $
+ * $Id: naming_service.cpp,v 1.33 2006/05/31 12:15:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -991,7 +991,7 @@ public:
 		try
 		{
 			CConfigFile::CVar& uniqueServices = ConfigFile.getVar("UniqueOnShardServices");
-			for ( sint i=0; i!=uniqueServices.size(); ++i )
+			for ( uint i=0; i!=uniqueServices.size(); ++i )
 			{
 				_ServiceInstances.addUniqueService( uniqueServices.asString(i), true );
 			}
@@ -1001,7 +1001,7 @@ public:
 		try
 		{
 			CConfigFile::CVar& uniqueServicesM = ConfigFile.getVar("UniqueByMachineServices");
-			for ( sint i=0; i!=uniqueServicesM.size(); ++i )
+			for ( uint i=0; i!=uniqueServicesM.size(); ++i )
 			{
 				_ServiceInstances.addUniqueService( uniqueServicesM.asString(i), false );
 			}

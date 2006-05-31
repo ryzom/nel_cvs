@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * TODO: File description
  *
- * $Id: particle_system_manager.h,v 1.10 2005/02/22 10:19:10 besson Exp $
+ * $Id: particle_system_manager.h,v 1.11 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -60,12 +60,15 @@ class CParticleSystemManager
 {
 public:
 	enum { NumProcessToRefresh  = 3 }; // the number of systems that are refreshed at each call
-
+	
 	/// default ctor
 	CParticleSystemManager();
 
 	// dtor
 	~CParticleSystemManager();
+
+	// release memory
+	static void release();
 
 	/// call this to refresh systems. (check those whose data should be released)
 	void	refreshModels(const std::vector<NLMISC::CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
@@ -111,7 +114,8 @@ private:
 	typedef std::list<CAlwaysAnimatedPS>		TAlwaysAnimatedModelList;
 	typedef std::list<CParticleSystemManager *> TManagerList;
 
-
+	static TManagerList *ManagerList;
+	
 	struct TModelHandle
 	{
 		TModelList::iterator Iter;

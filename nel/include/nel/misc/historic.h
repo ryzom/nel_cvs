@@ -1,6 +1,6 @@
 /** \file historic.h
  *
- * $Id: historic.h,v 1.1 2004/12/06 17:09:01 vizerie Exp $
+ * $Id: historic.h,v 1.2 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -45,6 +45,10 @@ public:
 	CHistoric(uint maxSize = 0) : _MaxSize(maxSize) {}
 	// Add a value at end of historic. If historic is full then the oldest entry is removed
 	inline void		push(const T &value);
+	// Pop the value at the end of jistoric
+	inline void		pop();
+	// Return true is there are no values in the historics.
+	bool			empty() const { return _Historic.empty(); }
 	// Get max number of entries in the historic.
 	uint			getMaxSize() const { return _MaxSize; }
 	// Set number of entries in the historic. Oldest entries are removed
@@ -54,7 +58,7 @@ public:
 	// Access to an element in history, 0 being the oldest, size - 1 being the lastest added element
 	const T		   &operator[](uint index) const { return _Historic[index]; /* let STL do out of range check */ }
 	// Clear historic
-	void			clear() { _Historic.slear(); }	
+	void			clear() { _Historic.clear(); }	
 private:
 	std::deque<T> _Historic;
 	uint		  _MaxSize;
@@ -76,6 +80,14 @@ inline void	CHistoric<T>::push(const T &value)
 		_Historic.pop_front();	
 	}
 	_Historic.push_back(value);
+}
+
+//****************************************************************************************************
+template <class T>
+inline void	CHistoric<T>::pop()
+{
+	nlassert(!_Historic.empty());	
+	_Historic.pop_back();
 }
 
 //****************************************************************************************************

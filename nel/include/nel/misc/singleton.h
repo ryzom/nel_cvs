@@ -1,7 +1,7 @@
 /** \file singleton.h
  * This class is used to create singleton class following the singleton design pattern
  *
- * $Id: singleton.h,v 1.4 2006/01/10 17:38:46 boucher Exp $
+ * $Id: singleton.h,v 1.5 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_SINGLETON_H
 
 #include "nel/misc/common.h"
+#include "nel/misc/debug.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/app_context.h"
 
@@ -54,6 +55,7 @@ namespace NLMISC
 	class CSingleton
 	{
 	public:
+		virtual ~CSingleton() {}
 
 		/// returns a reference and not a pointer to be sure that the user
 		/// doesn't have to test the return value and can directly access the class
@@ -67,8 +69,16 @@ namespace NLMISC
 			return *Instance;
 		}
 
-	protected:
+		static void releaseInstance()
+		{
+			if(Instance)
+			{
+				delete Instance;
+				Instance = NULL;
+			}
+		}
 
+	protected:
 		/// no public ctor to be sure that the user can't create an instance
 		CSingleton()
 		{

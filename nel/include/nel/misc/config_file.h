@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.46 2006/01/10 17:38:46 boucher Exp $
+ * $Id: config_file.h,v 1.47 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,7 +188,7 @@ public:
 		void		add (const CVar &var);
 
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
-		int			size () const;
+		uint		size () const;
 
 		/// \name Internal use
 		//@{
@@ -238,7 +238,7 @@ public:
 	bool exists (const std::string &varName);
 
 	/// load and parse the file
-	void load (const std::string &fileName);
+	void load (const std::string &fileName, bool lookupPaths = false);
 
 	/// save the config file
 	void save () const;
@@ -253,7 +253,7 @@ public:
 	bool loaded();
 
 	/// reload and reparse the file
-	void reparse (/*const char *filename = NULL, bool callingCallback = true*/);
+	void reparse (bool lookupPaths = false);
 
 	/// display all variables with nlinfo (debug use)
 	void display () const;

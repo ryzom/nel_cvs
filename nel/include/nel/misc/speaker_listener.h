@@ -1,7 +1,7 @@
 /** \file speaker_listener.h
  * 
  *
- * $Id: speaker_listener.h,v 1.2 2006/01/10 17:38:46 boucher Exp $
+ * $Id: speaker_listener.h,v 1.3 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,7 @@ namespace NLMISC
 			{
 				IListener *listener = *_Listeners.begin();
 				listener->speakerIsDead(this);
+				_Listeners.erase(_Listeners.begin());
 			}
 		}
 
@@ -129,7 +130,7 @@ namespace NLMISC
 		void unregisterListener(ISpeaker *speaker)
 		{
 			nlassert(_Speaker != NULL);
-			_Speaker->registerListener(this);
+			_Speaker->unregisterListener(this);
 			_Speaker = NULL;
 		}
 

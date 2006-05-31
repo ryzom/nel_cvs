@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.20 2006/01/10 17:38:46 boucher Exp $
+ * $Id: login_server.h,v 1.21 2006/05/31 12:03:14 boucher Exp $
  * 
  */
 
@@ -92,6 +92,12 @@ public:
 
 	/// Return true if we are in 'dev' mode
 	static bool acceptsInvalidCookie();
+
+	/// Set the actual listen address
+	static void setListenAddress(const std::string &la);
+
+	/// Return the number of pending client connection.
+	static uint32 getNbPendingUsers();
 
 private:
 

@@ -56,6 +56,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug/misc"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "LIBXML_STATIC" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Yu"stdmisc.h" /FD /GZ /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -487,6 +488,10 @@ SOURCE=..\include\nel\misc\mouse_smoother.h
 # Begin Group "Memory"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\misc\array_2d.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\misc\block_memory.cpp
@@ -938,6 +943,14 @@ SOURCE=..\include\nel\misc\geom_ext.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\grid_traversal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\grid_traversal.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\line.cpp
 # End Source File
 # Begin Source File
@@ -1175,6 +1188,10 @@ SOURCE=..\include\nel\misc\enum_bitset.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\historic.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\mutable_container.h
 # End Source File
 # Begin Source File
 

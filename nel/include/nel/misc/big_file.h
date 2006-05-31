@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.8 2005/06/23 16:27:15 boucher Exp $
+ * $Id: big_file.h,v 1.9 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -48,6 +48,10 @@ class CBigFile
 	NLMISC_SAFE_SINGLETON_DECL(CBigFile);
 
 	CBigFile() {}
+	~CBigFile() {};
+
+	// release memory
+	static void releaseInstance();
 public:
 
 	// Retrieve the global instance

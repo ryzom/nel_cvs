@@ -1,7 +1,7 @@
 /** \file camera.h
  * TODO: File description
  *
- * $Id: camera.h,v 1.8 2005/02/22 10:19:09 besson Exp $
+ * $Id: camera.h,v 1.9 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,6 +220,9 @@ public:
 
 	/// Build the camera Pyramid from current worldMatrix, and frustum
 	void			buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix);
+
+	/// Compute corners of the camera Pyramid from current worldMatrix, and frustum
+	void			buildCameraPyramidCorners(std::vector<NLMISC::CVector>	&pyramidCorners, bool useWorldMatrix);
 
 protected:
 	/// Constructor

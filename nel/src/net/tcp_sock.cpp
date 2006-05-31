@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.8 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: tcp_sock.cpp,v 1.9 2006/05/31 12:03:18 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,9 @@ void CTcpSock::connect( const CInetAddress& addr )
 	}	
 	createSocket( SOCK_STREAM, IPPROTO_TCP );
 
+	// activate keep alive
+	setKeepAlive(true);
+
 	// Connection
 	CSock::connect( addr );
 }
@@ -139,6 +142,17 @@ void CTcpSock::shutdownSending()
 #endif
 }
 
+
+
+void CTcpSock::setKeepAlive( bool keepAlive)
+{
+	nlassert(_Sock != INVALID_SOCKET)
+	int b = keepAlive?1:0;
+	if ( setsockopt( _Sock, SOL_SOCKET, SO_KEEPALIVE, (char*)&b, sizeof(b) ) != 0 )
+	{
+		throw ESocket( "setKeepAlive failed" );
+	}
+}
 
 /*
  * Sets/unsets TCP_NODELAY

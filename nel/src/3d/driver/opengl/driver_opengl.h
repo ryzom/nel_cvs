@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.188 2005/07/22 12:31:52 legallo Exp $
+ * $Id: driver_opengl.h,v 1.189 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1267,6 +1267,17 @@ public:
 
 	// tmp for debug
 	void checkTextureOn() const;
+private:
+	/** Bind a texture at stage 0 for the good texture mode(2d or cube)
+	  * Parameters / part of the texture are ready to be changed in the gl after that	  
+	  * _CurrentTexture & _CurrentTextureInfoGL are not modified !
+	  */
+	inline void bindTextureWithMode(ITexture &tex);
+	/** Force to set clamp & wrap mode for the given texture
+	  * Setup is done for texture currently bind to the gl, so calling bindTextureWithMode is necessary
+	  */
+	inline void setupTextureBasicParameters(ITexture &tex);
+
 };
 
 

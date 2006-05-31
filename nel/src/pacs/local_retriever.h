@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.31 2005/02/22 10:19:20 besson Exp $
+ * $Id: local_retriever.h,v 1.32 2006/05/31 12:03:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -582,15 +582,21 @@ protected:
 	/// Snaps on the ground
 	void								snapToInteriorGround(ULocalPosition &position, bool &snapped) const;
 
-	///
+	/// Get the height of surface that matches the best this position
 	float								getHeight(const ULocalPosition &position) const;
 
 	/// Finds a path in a given surface, from the point A to the point B.
 	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const;
 
-
 	///
 	void								unify();
+
+	/** Get the height of interior surface that matches the best this position. Allows the position to be a bit outside the triangles.
+	 *	return 0 if not loaded or not an interior surface. 
+	 *	\param outsideTolerance how much are we allowed to look outside the triangles
+	 */
+	float								getInteriorHeightAround(const ULocalPosition &position, float outsideTolerance) const;
+
 
 public:
 

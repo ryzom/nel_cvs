@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * TODO: File description
  *
- * $Id: driver_user.cpp,v 1.56 2006/01/10 17:38:47 boucher Exp $
+ * $Id: driver_user.cpp,v 1.57 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,7 @@ UDriver::UDriver()
 UDriver::~UDriver()
 {
 	NL3D_MEM_DRIVER
+	purgeMemory();
 }
 
 
@@ -1910,6 +1911,14 @@ void CDriverUser::stencilMask(uint mask)
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER
 	_Driver->stencilMask(mask);
+}
+
+// ***************************************************************************
+uint64 CDriverUser::getSwapBufferCounter()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	return _Driver->getSwapBufferCounter();
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.97 2005/02/22 10:19:20 besson Exp $
+ * $Id: global_retriever.cpp,v 1.98 2006/05/31 12:03:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1511,15 +1511,23 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 					// if flag as an interior/landscape interface and leave interior surf, retrieve correct surface
 					if (colChain.ExteriorEdge && currentSurface == colChain.LeftSurface)
 					{
+						// p= position until the bounding object collide the exterior edge
 						CVector2f		p = startCol + deltaCol*tMin;
+						// get the interior origin
 						CVector			ori = getInstance(startSurface.RetrieverInstanceId).getOrigin();
 						ori.z = 0.0f;
+
+						// Estimate current Z
 						UGlobalPosition	rp;
 						rp.InstanceId = currentSurface.RetrieverInstanceId;
 						rp.LocalPosition.Surface = currentSurface.SurfaceId;
 						rp.LocalPosition.Estimation = p;
-						rp.LocalPosition.Estimation.z = getMeanHeight(rp);
-						CVectorD		zp = CVectorD(p.x, p.y, rp.LocalPosition.Estimation.z) + CVectorD(ori);
+						// NB: getMeanHeight() should work here since we are still deep in the interior surface (edge collided with bounding volume)
+						float	estimatedZ= getMeanHeight(rp);
+
+						// retrieve the position, with the estimated Z
+						CVectorD		zp = CVectorD(p.x, p.y, estimatedZ) + CVectorD(ori);
+						// Do not allow the current interior instance
 						_ForbiddenInstances.clear();
 						_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
 						UGlobalPosition	gp = retrievePosition(zp);
@@ -1818,20 +1826,37 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 				// if leave interior, retrieve good position
 				if (!enterInterior)
 				{
+					// p= position until the object center point collide the exterior edge
 					float			ctime = (float)((double)(msd.ContactTime.Numerator)/(double)(msd.ContactTime.Denominator));
 					CVector2f		p = startCol*(1.0f-ctime) + endCol*ctime;
+					// get the interior origin
 					CVector			ori = getInstance(startSurface.RetrieverInstanceId).getOrigin();
 					ori.z = 0.0f;
+
+					// Estimate current Z
 					UGlobalPosition	rp;
 					rp.InstanceId = currentSurface.RetrieverInstanceId;
 					rp.LocalPosition.Surface = currentSurface.SurfaceId;
 					rp.LocalPosition.Estimation = p;
-					rp.LocalPosition.Estimation.z = getMeanHeight(rp);
-					CVectorD		zp = CVectorD(p.x, p.y, rp.LocalPosition.Estimation.z) + CVectorD(ori);
-					//CVectorD		zp = CVectorD(p.x, p.y, getMeanHeight()) + CVectorD(ori);
+					/* WE HAVE A PRECISION PROBLEM HERE (yoyo 12/04/2006)
+						Since the point p has moved close to the exterior edge, because of precision, it may be actually
+						OUT the interior surface!!
+						thus getMeanHeight() will return 0!!
+						Then the chosen landscape position can be completly false. eg:
+							actual InteriorHeight: -84
+							new possibles landscape surfaces heights: -84 and -16
+							if we estimate by error InteriorHeight= 0, then we will 
+								have Best Landscape Surface == the one which has height=-16 !
+
+						Hence we use a specific method that look a bit outisde the triangles
+					*/
+					float estimatedZ = getInteriorHeightAround(rp, 0.1f);
+
+					// retrieve the position, with the estimated Z
+					CVectorD		zp = CVectorD(p.x, p.y, estimatedZ) + CVectorD(ori);
+					// Do not allow the current interior instance
 					_ForbiddenInstances.clear();
 					_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
-
 					restart = retrievePosition(zp);
 
 					return CSurfaceIdent(-3, -3);
@@ -2452,6 +2477,24 @@ float			NLPACS::CGlobalRetriever::getMeanHeight(const UGlobalPosition &pos) cons
 
 	// return height from local retriever
 	return retriever.getHeight(pos.LocalPosition);
+}
+
+// ***************************************************************************
+float			NLPACS::CGlobalRetriever::getInteriorHeightAround(const UGlobalPosition &pos, float outsideTolerance) const
+{
+	// for wrong positions, leave it unchanged
+	if ((pos.InstanceId==-1)||(pos.LocalPosition.Surface==-1))
+		return pos.LocalPosition.Estimation.z;
+	
+	// get instance/localretriever.
+	const CRetrieverInstance	&instance = getInstance(pos.InstanceId);
+	const CLocalRetriever		&retriever= _RetrieverBank->getRetriever(instance.getRetrieverId());
+	
+	if (!retriever.isLoaded())
+		return pos.LocalPosition.Estimation.z;
+	
+	// return height from local retriever
+	return retriever.getInteriorHeightAround(pos.LocalPosition, outsideTolerance);
 }
 
 // ***************************************************************************

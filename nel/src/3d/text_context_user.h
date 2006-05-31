@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * TODO: File description
  *
- * $Id: text_context_user.h,v 1.20 2005/02/22 10:19:12 besson Exp $
+ * $Id: text_context_user.h,v 1.21 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,6 +131,16 @@ public:
 	virtual void					flushRenderBufferUnProjected(URenderStringBuffer *buffer, bool zwrite);
 
 	CTextContext	&getTextContext() {return _TextContext;}
+
+	/// \letters colors in single line mode.
+	/** In single line mode you can assign several color to letters
+	 *
+	 */
+	// @{
+	virtual void setLetterColors(ULetterColors * letterColors, uint index);
+	virtual bool isSameLetterColors(ULetterColors * letterColors, uint index);
+	virtual ULetterColors * createLetterColors();
+	// @}
 };
 
 

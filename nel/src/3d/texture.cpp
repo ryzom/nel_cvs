@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.25 2005/02/22 10:19:12 besson Exp $
+ * $Id: texture.cpp,v 1.26 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NL3D
 ITexture::ITexture()
 {
 	_Touched= false;
+	_FilterOrWrapModeTouched = false;
 	_GoodGenerate= false;
 	_Releasable= true;
 	_RenderTarget= false;
@@ -101,10 +102,18 @@ void		ITexture::setUploadFormat(TUploadFormat pf)
 // ***************************************************************************
 void		ITexture::setFilterMode(TMagFilter magf, TMinFilter minf)
 {
-	_MagFilter= magf;
+	if (_MagFilter != magf)
+	{
+		_MagFilter= magf;
+		_FilterOrWrapModeTouched = true;
+	}
 	// If the MipMap mode has siwtched Off/On, then must recompute...
 	bool	precOff= mipMapOff();
-	_MinFilter= minf;
+	if (_MinFilter != minf)
+	{
+		_MinFilter= minf;
+		_FilterOrWrapModeTouched = true;
+	}
 	bool	nowOff= mipMapOff();
 
 	if(precOff!=nowOff)

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * TODO: File description
  *
- * $Id: vertex_buffer.h,v 1.19 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vertex_buffer.h,v 1.20 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1088,7 +1088,7 @@ inline void CVertexBufferReadWrite::setValueFloat3Ex (CVertexBuffer::TValue valu
 
 // --------------------------------------------------
 
-inline void CVertexBufferReadWrite::setValueFloat3Ex (CVertexBuffer::TValue valueId, uint idx, const NLMISC::CVector& vector)
+inline void CVertexBufferReadWrite::setValueFloat3Ex (CVertexBuffer::TValue valueId, uint idx, const NLMISC::CVector& theVector)
 {
 	uint8*	ptr;
 	float*	ptrf;
@@ -1101,7 +1101,7 @@ inline void CVertexBufferReadWrite::setValueFloat3Ex (CVertexBuffer::TValue valu
 	ptr=(uint8*)(&_Parent->_LockedBuffer[idx*_Parent->_VertexSize]);
 	ptr+=_Parent->_Offset[valueId];
 	ptrf=(float*)ptr;
-	memcpy (ptrf, &vector, sizeof(float)*3);
+	memcpy (ptrf, &theVector, sizeof(float)*3);
 }
 
 // --------------------------------------------------

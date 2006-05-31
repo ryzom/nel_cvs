@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * TODO: File description
  *
- * $Id: task_manager.cpp,v 1.13 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: task_manager.cpp,v 1.14 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,7 @@ void CTaskManager::run(void)
 			runnableTask->run();
 			{
 				CSynchronized<string>::CAccessor currentTask(&_RunningTask);
-				CSynchronized<list<string> >::CAccessor doneTask(&_DoneTaskQueue);
+				CSynchronized<deque<string> >::CAccessor doneTask(&_DoneTaskQueue);
 				doneTask.value().push_front (currentTask.value ());
 				currentTask.value () = "";
 				if (doneTask.value().size () > NLMISC_DONE_TASK_SIZE)
@@ -168,18 +168,18 @@ void CTaskManager::dump (std::vector<std::string> &result)
 {
 	CSynchronized<string>::CAccessor accesCurrent(&_RunningTask);
 	CSynchronized<list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
-	CSynchronized<list<string> >::CAccessor accesDone(&_DoneTaskQueue);
+	CSynchronized<deque<string> >::CAccessor accesDone(&_DoneTaskQueue);
 
 	const list<CWaitingTask> &taskList = acces.value();
-	const list<string> &taskDone = accesDone.value();
+	const deque<string> &taskDone = accesDone.value();
 	const string &taskCurrent = accesCurrent.value();
 	
 	// Resize the destination array
 	result.clear ();
 	result.reserve (taskList.size () + taskDone.size () + 1);
 
-	// Add the waiting strings
-	list<string>::const_reverse_iterator iteDone = taskDone.rbegin ();
+	// Add the done strings
+	deque<string>::const_reverse_iterator iteDone = taskDone.rbegin ();
 	while (iteDone != taskDone.rend ())
 	{
 		result.push_back ("Done : " + *iteDone);
@@ -205,6 +205,13 @@ void CTaskManager::dump (std::vector<std::string> &result)
 		// Next task
 		ite++;
 	}
+}
+
+// ***************************************************************************
+void CTaskManager::clearDump()
+{
+	CSynchronized<deque<string> >::CAccessor accesDone(&_DoneTaskQueue);
+	accesDone.value().clear();
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.19 2006/01/10 17:38:46 boucher Exp $
+ * $Id: polygon.h,v 1.20 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,9 +63,9 @@ public:
 
 	sint			getNumVertices() const {return Vertices.size();}
 
-	// build a triangle fan from this polygon, appending relting tris to 'dest'
-	void		toTriFan(std::vector<NLMISC::CTriangle> &dest) const;
-
+	// build a triangle fan from this polygon, appending resulting tris to 'dest'
+	void		toTriFan(std::vector<NLMISC::CTriangle> &dest) const;	
+	
 	/// Clip a polygon with a set of planes. Cohen-sutherland... clipPolygonBack() is used on planes.
 	void			clip(const CPlane *planes, uint nPlanes);
 	/// Clip a polygon with a set of planes. Cohen-sutherland clipping... clipPolygonBack() is used on planes.
@@ -74,7 +74,7 @@ public:
 	float			computeArea() const;
 
 	/// Serial this polygon
-	void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 
 	/**
 	  * Convert a concave polygon into a list of convex polygons using a 2d projection.
@@ -89,7 +89,7 @@ public:
 	  * \return true if the polygon has been subdivided. false if the polygon overlap itself in the XY plane of the basis
 	  * or if the polygon is not direct (clock wise).
 	  */
-	bool			toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const;
+	bool			toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const;	
 
 	/**
 	  * Chain the arg polygons with this polygon testing 2d intersections.
@@ -131,7 +131,7 @@ public:
 	TVec2fVect Vertices;
 public:
 	/// default ctor
-	CPolygon2D() {}
+	CPolygon2D() {}	
 
 	// swap this poly content with another poly content
 	void swap(CPolygon2D &other) { Vertices.swap(other.Vertices); }	
@@ -140,6 +140,11 @@ public:
 	  * The x and y components of projected vertices are used to create the 2D polygon
 	  */
 	CPolygon2D(const CPolygon &src, const CMatrix &projMat = CMatrix::Identity);
+
+	/** Reinit a 2D polygon from this 3D polygon, by using the given projection matrix
+	  * The x and y components of projected vertices are used to create the 2D polygon
+	  */
+	void fromPolygon(const CPolygon &src, const CMatrix &projMat = CMatrix::Identity);	
 
 	/** Build a 2D polygon from the given triangle, by using the given projection matrix
 	  * The x and y components of projected vertices are used to create the 2D polygon
@@ -170,16 +175,19 @@ public:
 	  * The output is in a vector of sint pairs. minimumY is filled with the minimum y value of the poly.
 	  * Each pairs gives [xmin, xmax] for the current segment. if xmin > xmax, then no point is valid for this segment.
 	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valid.
+	  * IMPORTANT: coordinates must be in the -32000, 32000 range. This is checked in debug
 	  */
-	void		computeBorders(TRasterVect &borders, sint &minimumY);
+	void		computeBorders(TRasterVect &borders, sint &minimumY) const;
 	/** The same as compute borders, but pixel are seen as surfaces and not as points.
 	   * Any pixel that is touched by the poly will be selected
+	   * IMPORTANT: coordinates must be in the -32000, 32000 range. This is checked in debug	   
 	   */
-	void		computeOuterBorders(TRasterVect &borders, sint &minimumY);
+	void		computeOuterBorders(TRasterVect &borders, sint &minimumY) const;
 	/** The same as compute borders, but pixel are seen as surfaces and not as points
 	  * In this version, only pixels that are entirely INSIDE the poly are kept
+	  * IMPORTANT: coordinates must be in the -32000, 32000 range. This is checked in debug	   
 	  */
-	void		computeInnerBorders(TRasterVect &borders, sint &minimumY);
+	void		computeInnerBorders(TRasterVect &borders, sint &minimumY) const;
 	/// Test wether this polygon intersect another convex polygon. Currently not optimized.
 	bool        intersect(const CPolygon2D &other) const;
 
@@ -197,6 +205,9 @@ public:
 	// Test if current poly is CCW oriented (in a right handed coord. system)
 	bool  isCCWOriented() const;
 
+	// get bounding rect (poly must not be empty)
+	void getBoundingRect(CVector2f &minCorner, CVector2f &maxCorner) const;
+
 private:
 	/// Sum the dot product of this poly vertices against a line equation a*x + b*y + c
 	float sumDPAgainstLine(float a, float b, float c) const;
@@ -213,6 +224,7 @@ private:
 			   Vertices[0]                 :
 		       Vertices[index + 1];
 	}	
+	void checkValidBorders() const;
 };
 
 // comparison of 2D polygon 

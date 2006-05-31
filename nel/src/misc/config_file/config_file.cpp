@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.67 2005/10/26 17:24:26 boucher Exp $
+ * $Id: config_file.cpp,v 1.68 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -289,7 +289,7 @@ void CConfigFile::CVar::add (const CVar &var)
 	}
 }
 
-int CConfigFile::CVar::size () const
+uint CConfigFile::CVar::size () const
 {
 	switch (Type)
 	{
@@ -317,7 +317,7 @@ CConfigFile::~CConfigFile ()
 	}
 }
 
-void CConfigFile::load (const string &fileName)
+void CConfigFile::load (const string &fileName, bool lookupPaths )
 {
 	if(fileName.empty())
 	{
@@ -333,7 +333,7 @@ void CConfigFile::load (const string &fileName)
 		_ConfigFiles = new std::vector<CConfigFile *>;
 	}
 	(*CConfigFile::_ConfigFiles).push_back (this);
-	reparse ();
+	reparse (lookupPaths);
 
 /* 	_FileName.clear ();
 	_FileName.push_back (fileName);
@@ -370,7 +370,7 @@ bool CConfigFile::loaded()
 	return !CConfigFile::FileNames.empty();
 }
 
-void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
+void CConfigFile::reparse (bool lookupPaths)
 {
 	if (FileNames.empty())
 	{
@@ -387,7 +387,14 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 
 	while (!fn.empty())
 	{
-		fn = NLMISC::CPath::getFullPath(fn, false);
+		if (lookupPaths)
+		{
+			fn = CPath::lookup(fn, true);
+		}
+		else
+		{
+			fn = NLMISC::CPath::getFullPath(fn, false);
+		}
 		nldebug ("CF: Adding config file '%s' in the config file", fn.c_str());
 		FileNames.push_back (fn);
 		LastModified.push_back (CFile::getFileModificationDate(fn));
@@ -415,7 +422,13 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 //			cf_ifile.close();
 			if (!parsingOK)
 			{
-				nlwarning ("CF: Parsing error in file %s line %d", fn.c_str(), cf_CurrentLine);
+				// write the result of preprocessing in a temp file
+				string debugFileName;
+				debugFileName += "debug_";
+				debugFileName += CFile::getFilename(fn);
+
+				CI18N::writeTextFile(debugFileName, content, true);
+				nlwarning ("CF: Parsing error in file %s line %d, look in '%s' for a preprocessed version of the config file", fn.c_str(), cf_CurrentLine, debugFileName.c_str());
 				throw EParseError (fn, cf_CurrentLine);
 			}
 
@@ -751,7 +764,8 @@ void CConfigFile::display (CLog *log) const
 void CConfigFile::setCallback (void (*cb)())
 {
 	_Callback = cb;
-	nlinfo ("CF: Setting callback when the file '%s' is modified externaly", FileNames.empty()?"":getFilename().c_str());
+	if( !FileNames.empty() )
+		nlinfo ("CF: Setting callback to reload the file '%s' when modified externally", getFilename().c_str());
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
@@ -761,7 +775,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 		if (VarName == (*it).Name)
 		{
 			(*it).Callback = cb;
-			nlinfo ("CF: Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), getFilename().c_str());
+			nlinfo ("CF: Setting callback to reload the variable '%s' in the file '%s' when modified externally", VarName.c_str(), getFilename().c_str());
 			return;
 		}
 	}
@@ -772,7 +786,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	Var.Type = CVar::T_UNKNOWN;
 	Var.Comp = false;
 	_Vars.push_back (Var);
-	nlinfo ("CF: Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), getFilename().c_str());
+	nlinfo ("CF: Setting callback to reload the variable '%s' in the file '%s' when modified externally (currently unknown)", VarName.c_str(), getFilename().c_str());
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.18 2005/02/22 10:14:13 besson Exp $
+ * $Id: callback_server.h,v 1.19 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,12 @@ public:
 	/// Force to send all data pending in the send queue. See comment in CCallbackNetBase.
 	bool	flush (TSockId destid, uint *nbBytesRemaining=NULL) { checkThreadId (); nlassert( destid != InvalidSockId ); return CBufServer::flush(destid, nbBytesRemaining); }
 
-	/// Updates the network (call this method evenly)
+	/** Updates the network (call this method evenly).
+	 * More info about timeout and mintime in the code of CCallbackNetBase::baseUpdate().
+	 */
+	void	update2 (sint32 timeout=-1, sint32 mintime=0);
+
+	/// Updates the network (call this method evenly) (legacy)
 	void	update (sint32 timeout=0);
 
 	/// Sets callback for incoming connections (or NULL to disable callback)
@@ -93,6 +98,8 @@ private:
 	void			send (const NLMISC::CMemStream &buffer, TSockId hostid) { nlstop; }
 
 	bool			dataAvailable ();
+	virtual bool	getDataAvailableFlagV() const { return dataAvailableFlag(); }
+
 	void			receive (CMessage &buffer, TSockId *hostid);
 
 	void			sendAllMyAssociations (TSockId to);

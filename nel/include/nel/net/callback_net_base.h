@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.28 2005/02/22 10:14:13 besson Exp $
+ * $Id: callback_net_base.h,v 1.29 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,13 +129,17 @@ public:
 	bool	isAServer () const { checkThreadId (); return _IsAServer; }
 
 	/// This function is implemented in the client and server class
-	virtual bool	dataAvailable () { nlstop; return false; }
+	virtual bool	dataAvailable () = 0;
 	/// This function is implemented in the client and server class
-	virtual void	update ( sint32 timeout=0 ) { nlstop; }
+	virtual bool	getDataAvailableFlagV() const = 0;
 	/// This function is implemented in the client and server class
-	virtual bool	connected () const { nlstop; return false; }
+	virtual void	update2 ( sint32 timeout=0, sint32 mintime=0 ) = 0;
+	/// This function is implemented in the client and server class (legacy)
+	virtual void	update ( sint32 timeout=0 ) = 0;
 	/// This function is implemented in the client and server class
-	virtual void	disconnect (TSockId hostid = InvalidSockId) { nlstop; }
+	virtual bool	connected () const = 0;
+	/// This function is implemented in the client and server class
+	virtual void	disconnect (TSockId hostid = InvalidSockId) = 0;
 
 	/// Returns the address of the specified host
 	virtual const	CInetAddress& hostAddress (TSockId hostid);
@@ -153,7 +157,12 @@ protected:
 	/// Constructor.
 	CCallbackNetBase( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true );
 
-	/// Used by client and server class
+	/** Used by client and server class
+	 * More info about timeout and mintime in the code.
+	 */
+	void baseUpdate2 ( sint32 timeout=-1, sint32 mintime=0 );
+
+	/// Used by client and server class (legacy)
 	void baseUpdate ( sint32 timeout=0 );
 
 	/// Read a message from the network and process it

@@ -1,7 +1,7 @@
 /** \file u_transform.cpp
  * Interface for transform objects.
  *
- * $Id: u_transform.cpp,v 1.5 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: u_transform.cpp,v 1.6 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -340,7 +340,15 @@ void UTransform::setOpacity(bool v)
 {
 	NL3D_MEM_TRANSFORM
 	CTransform	*object = getObjectPtr();
-	object->setOpacity(true);
+	object->setOpacity(v);
+}
+
+// ***************************************************************************
+void UTransform::setBypassLODOpacityFlag(bool bypass)
+{
+	NL3D_MEM_TRANSFORM
+	CTransform	*object = getObjectPtr();
+	object->setBypassLODOpacityFlag(bypass);
 }
 
 // ***************************************************************************

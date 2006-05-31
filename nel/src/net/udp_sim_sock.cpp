@@ -2,7 +2,7 @@
  * This class provides the same function as CUdpSock but can simulate
  * lag and other parameter like packet lost.
  *
- * $Id: udp_sim_sock.cpp,v 1.4 2005/08/29 16:17:38 boucher Exp $
+ * $Id: udp_sim_sock.cpp,v 1.5 2006/05/31 12:03:18 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -208,19 +208,25 @@ void				CUdpSimSock::setSimValues (NLMISC::CConfigFile &cf)
 	cf.setCallback ("SimOutPacketDuplication", cbSimVar);
 	cf.setCallback ("SimOutPacketDisordering", cbSimVar);
 	
-	try
-	{
-		cbSimVar (cf.getVar("SimInLag"));
-		cbSimVar (cf.getVar("SimInPacketLost"));
-		cbSimVar (cf.getVar("SimOutLag"));
-		cbSimVar (cf.getVar("SimOutPacketLost"));
-		cbSimVar (cf.getVar("SimOutPacketDuplication"));
-		cbSimVar (cf.getVar("SimOutPacketDisordering"));
-	}
-	catch (Exception &e)
-	{
-		nlwarning ("LNETL0: Problem during getting Sim values from config file: %s", e.what());
-	}
+	CConfigFile::CVar *pv;
+	pv = cf.getVarPtr("SimInLag");
+	if( pv )
+		cbSimVar( *pv );
+	pv = cf.getVarPtr("SimInPacketLost");
+	if( pv )
+		cbSimVar( *pv );
+	pv = cf.getVarPtr("SimOutLag");
+	if( pv )
+		cbSimVar( *pv );
+	pv = cf.getVarPtr("SimOutPacketLost");
+	if( pv )
+		cbSimVar( *pv );
+	pv = cf.getVarPtr("SimOutPacketDuplication");
+	if( pv )
+		cbSimVar( *pv );
+	pv = cf.getVarPtr("SimOutPacketDisordering");
+	if( pv )
+		cbSimVar( *pv );
 }
 
 void				CUdpSimSock::connect( const CInetAddress& addr )

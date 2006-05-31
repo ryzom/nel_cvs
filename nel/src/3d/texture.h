@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.20 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: texture.h,v 1.21 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,8 +218,8 @@ public:
 			- MinFilter may duplicate the texture in video memory in the same way, wether the texture has mipmap or not.
 	 */
 	// @{
-	void			setWrapS(TWrapMode mode) {_WrapS= mode;}
-	void			setWrapT(TWrapMode mode) {_WrapT= mode;}
+	void			setWrapS(TWrapMode mode);
+	void			setWrapT(TWrapMode mode);
 	TWrapMode		getWrapS() const {return _WrapS;}
 	TWrapMode		getWrapT() const {return _WrapT;}
 	/** Replace the uploaded format of the texture.
@@ -421,7 +421,8 @@ public:
 // Private part.
 protected:
 	// Derived texture should set it to true when they are updated.
-	bool		_Touched;
+	bool		_Touched : 1;
+	bool		_FilterOrWrapModeTouched : 1;
 
 
 	/** 
@@ -479,6 +480,12 @@ public:
 		return _Touched;
 	}
 
+	/** See if filter mode or wrap mode have been touched.
+	  * If this is the case, the driver should resetup them for that texture (If driver stores filter & wrap mode
+	  * per texture (OpenGL) rather than globally (D3D))
+	  */
+	bool filterOrWrapModeTouched() const { return _FilterOrWrapModeTouched; }
+
 	/*
 	 * Clear the touched flag and the invalid rectangle list
 	 *
@@ -490,11 +497,27 @@ public:
 		_ListInvalidRect.clear();
 	}
 
-
+	void clearFilterOrWrapModeTouched()
+	{
+		_FilterOrWrapModeTouched = false;
+	}
 
 };
 
+// inlines
+inline void	ITexture::setWrapS(TWrapMode mode)
+{
+	if (_WrapS == mode) return;
+	_WrapS = mode;
+	_FilterOrWrapModeTouched = true;
+}
 
+inline void	ITexture::setWrapT(TWrapMode mode)
+{
+	if (_WrapT == mode) return;
+	_WrapT = mode;
+	_FilterOrWrapModeTouched = true;	
+}
 
 } // NL3D
 

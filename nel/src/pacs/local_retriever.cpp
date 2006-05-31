@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.73 2005/02/22 10:19:20 besson Exp $
+ * $Id: local_retriever.cpp,v 1.74 2006/05/31 12:03:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1477,6 +1477,7 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 	}
 }
 
+// ***************************************************************************
 float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position) const
 {
 	if (!_Loaded)
@@ -1573,7 +1574,80 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 }
 
 
+// ***************************************************************************
+float	NLPACS::CLocalRetriever::getInteriorHeightAround(const ULocalPosition &position, float outsideTolerance) const
+{
+	if (!_Loaded)
+		return 0.0f;
+	
+	if (_Type == Interior)
+	{
+		// first preselect faces around the (x, y) position (CQuadGrid ?)
+		vector<uint32>	selection;
+		_FaceGrid.select(position.Estimation, selection);
+		
+		// from the preselect faces, look for the only face that belongs to the surface
+		// and that contains the position
+		CVector	pos = position.Estimation;
+		CVector	posh = pos+CVector(0.0f, 0.0f, 1.0f);
+		float	bestDist = 1.0e10f;
+		CVector	best;
+		vector<uint32>::iterator	it;
+		for (it=selection.begin(); it!=selection.end(); ++it)
+		{
+			const CInteriorFace	&f = _InteriorFaces[*it];
+			if (f.Surface == (uint32)position.Surface)
+			{
+				CVector	v[3];
+				v[0] = _InteriorVertices[f.Verts[0]];
+				v[1] = _InteriorVertices[f.Verts[1]];
+				v[2] = _InteriorVertices[f.Verts[2]];
+				
+				// Test if out of this triangle (+ tolerance)
+				float		a,b;		// 2D cartesian coefficients of line in plane X/Y.
+				float		len;
+				// Line p0-p1.
+				a = -(v[1].y-v[0].y);
+				b =  (v[1].x-v[0].x);
+				len= sqrtf(a*a+b*b);		// norm of the normal vector
+				if (a*(pos.x-v[0].x) + b*(pos.y-v[0].y) < -len*outsideTolerance)	continue;
+				// Line p1-p2.
+				a = -(v[2].y-v[1].y);
+				b =  (v[2].x-v[1].x);
+				len= sqrtf(a*a+b*b);		// norm of the normal vector
+				if (a*(pos.x-v[1].x) + b*(pos.y-v[1].y) < -len*outsideTolerance)	continue;
+				//  Line p2-p0.
+				a = -(v[0].y-v[2].y);
+				b =  (v[0].x-v[2].x);
+				len= sqrtf(a*a+b*b);		// norm of the normal vector
+				if (a*(pos.x-v[2].x) + b*(pos.y-v[2].y) < -len*outsideTolerance)	continue;
+				
 
+				// Ok IN => compute z and keep nearest to wanted one
+				CPlane	p;
+				p.make(v[0], v[1], v[2]);
+				
+				CVector i = p.intersect(pos, posh);
+				
+				float	d = (float)fabs(pos.z-i.z);
+				
+				if (d < bestDist)
+				{
+					bestDist = d;
+					best = i;
+				}
+			}
+		}
+		
+		// and computes the real position on this face
+		return (bestDist < 200.0f) ? best.z : position.Estimation.z;
+	}
+
+	return 0.f;
+}
+
+
+// ***************************************************************************
 #ifdef NL_OS_WINDOWS
 #pragma optimize( "", off )
 #endif // NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.19 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.20 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #endif
 
 #include "nel/misc/time_nl.h"
+#include "nel/misc/sstring.h"
 
 namespace NLMISC
 {
@@ -231,6 +232,82 @@ double CTime::ticksToSecond (TTicks ticks)
 
 		return (double)(sint64)ticks/(double)freq;
 	}
+}
+
+
+std::string	CTime::getHumanRelativeTime(sint32 nbSeconds)
+{
+	sint32 delta = nbSeconds;
+	if (delta < 0)
+		delta = -delta;
+
+	// some constants of time duration in seconds
+	const uint32 oneMinute = 60;
+	const uint32 oneHour = oneMinute * 60;
+	const uint32 oneDay = oneHour * 24;
+	const uint32 oneWeek = oneDay * 7;
+	const uint32 oneMonth = oneDay * 30; // aprox, a more precise value is 30.416666... but no matter
+	const uint32 oneYear = oneDay * 365;
+
+	uint32 year, month, week, day, hour, minute;
+	year = month = week = day = hour = minute = 0;
+
+	/// compute the different parts
+	while (delta > oneYear)
+	{
+		++year;
+		delta -= oneYear;
+	}
+
+	while (delta > oneMonth)
+	{
+		++month;
+		delta -= oneMonth;
+	}
+
+	while (delta > oneWeek)
+	{
+		++week;
+		delta -= oneWeek;
+	}
+
+	while (delta > oneDay)
+	{
+		++day;
+		delta -= oneDay;
+	}
+
+	while (delta > oneHour)
+	{
+		++hour;
+		delta -= oneHour;
+	}
+
+	while (delta > oneMinute)
+	{
+		++minute;
+		delta -= oneMinute;
+	}
+
+	// compute the string
+	CSString ret;
+
+	if (year)
+		ret << year << " years ";
+	if (month)
+		ret << month << " months ";
+	if (week)
+		ret << week << " weeks ";
+	if (day)
+		ret << day << " days ";
+	if (hour)
+		ret << hour << " hours ";
+	if (minute)
+		ret << minute << " minutes ";
+	if (delta || ret.empty())
+		ret << delta << " seconds ";
+
+	return ret;
 }
 
 

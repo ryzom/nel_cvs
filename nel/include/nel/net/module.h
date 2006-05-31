@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.12 2006/01/18 12:57:18 cado Exp $
+ * $Id: module.h,v 1.13 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,14 +37,74 @@
 
 namespace NLNET
 {
-
 	class CGatewayRoute;
+	class IModuleInterceptable;
+
+	class IInterceptorRegistrar
+	{
+	public:
+		virtual void registerInterceptor(IModuleInterceptable *interceptor) =0;
+		virtual void unregisterInterceptor(IModuleInterceptable *interceptor) =0;
+	};
+
+	/** This interface contains some module methods that can be intercepted.
+	 *	This is used to build responsibility chain for message processing
+	 *	or to intercept module up/down to automatically track a list of
+	 *	interesting module proxy.
+	 */
+	class IModuleInterceptable
+	{
+	public:
+		IModuleInterceptable();
+		virtual ~IModuleInterceptable();
+
+		void registerInterceptor(IInterceptorRegistrar *registrar);
+
+		void interceptorUnregistered(IInterceptorRegistrar *registrar);
+
+		IInterceptorRegistrar *getRegistrar();
+
+		/** Building of the manifest string can involve interceptors.
+		 *	The system will call this function on each interceptor
+		 *	and concatenate the returned strings to build the manifest string.
+		 *	A default implementation is given that return an emty string.
+		 */
+		virtual std::string			buildModuleManifest() const { return std::string(); }
+
+		//@name Callback from module sockets
+		//@{
+		/** Called by a socket to inform this module that another
+		 *	module has been created OR has been made accessible (due to
+		 *	a gateway connection).
+		 */
+		virtual void				onModuleUp(IModuleProxy *moduleProxy) = 0;
+		/** Called by a socket to inform this module that another
+		 *	module has been deleted OR has been no more accessible (due to
+		 *	some gateway disconnection).
+		 */
+		virtual void				onModuleDown(IModuleProxy *moduleProxy) =0;
+		/** Called internally by basic module imp to process the message by
+		 *	application code.
+		 *	The system will call each interceptor until one return true.
+		 */
+		virtual bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) =0;
+		/** Called by a socket to inform this module that the security
+		 *	data attached to a proxy have changed.
+		 */
+		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy) =0;
+
+	private:
+		IInterceptorRegistrar		*_Registrar;
+	};
 
 	/** This is the interface for the a module.
 	 *	It describe interaction with the module itself,
 	 *	with the module manager, and the module socket.
 	 */
-	class IModule : public NLMISC::CRefCount
+	class IModule : 
+		public NLMISC::CRefCount,
+		public IInterceptorRegistrar,
+		public IModuleInterceptable
 	{
 		friend class IModuleFactory;
 
@@ -71,8 +131,10 @@ namespace NLNET
 		virtual ~IModule() {}
 
 		/** Module initialization.
+		 *	If the initialization return false, then the module manager deleted 
+		 *	the module immediately.
 		 */
-		virtual void				initModule(const TParsedCommandLine &initInfo) =0;
+		virtual bool			initModule(const TParsedCommandLine &initInfo) =0;
 
 		//@name Basic module information
 		//@{
@@ -105,16 +167,16 @@ namespace NLNET
 		/** Return the manifest of the module.
 		 *	The manifest is a simple string of undefined format.
 		 *	The manifest is used by a module to expose some intention
-		 *	or affinity (or whaterver else yuou could imagine) of the
+		 *	or affinity (or whatever else you could imagine) of the
 		 *	module.
-		 *	The manifest if transmited along with the module proxy, allowing
+		 *	The manifest if transmit along with the module proxy, allowing
 		 *	any module seeing the proxy to read the manifest.
 		 *	You should not use manifest to put big string because it is
-		 *	transmited with proxy information.
+		 *	transmit with proxy information.
 		 *	Likewise, you should never use manifest to transmit critical data
 		 *	(such as password) because any module can read it.
 		 */
-		virtual const std::string	&getModuleManifest() const =0;
+		virtual std::string	getModuleManifest() const =0;
 
 		/** Tell if the module implementation support immediate dispatching.
 		 *	Immediate dispatching is when a message is send between 
@@ -184,12 +246,12 @@ namespace NLNET
 		 *	module has been created OR has been made accessible (due to
 		 *	a gateway connection).
 		 */
-		virtual void				onModuleUp(IModuleProxy *moduleProxy) = 0;
+//		virtual void				onModuleUp(IModuleProxy *moduleProxy) = 0;
 		/** Called by a socket to inform this module that another
 		 *	module has been deleted OR has been no more accessible (due to
 		 *	some gateway disconnection).
 		 */
-		virtual void				onModuleDown(IModuleProxy *moduleProxy) =0;
+//		virtual void				onModuleDown(IModuleProxy *moduleProxy) =0;
 		/** Called by a socket to receive a message in the module context.
 		 *	Basic implementation either forward directly to onProcessModuleMessage
 		 *	or queue the message in the coroutine message queue (when a synchronous
@@ -199,16 +261,16 @@ namespace NLNET
 		/** Called internally by basic module imp to process the message by
 		 *	application code.
 		 */
-		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) =0;
+//		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) =0;
 		/** Called by a socket to inform this module that the security
 		 *	data attached to a proxy have changed.
 		 */
-		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy) =0;
+//		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy) =0;
 
 		/** Do a module operation invocation.
 		 *	Caller MUST be in a module task to call this method.
 		 *	The call is blocking until receptions of the operation
-		 *	result message (or a module down)
+		 *	result message (or detection of the dest module module is down)
 		 */
 		virtual void		invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) 
 			throw (EInvokeFailed)
@@ -226,24 +288,19 @@ namespace NLNET
 		};
 		virtual void	onModuleSocketEvent(IModuleSocket *moduleSocket, TModuleSocketEvent eventType) =0;
 		/// Called just after a module as been effectively plugged into a socket
-//		virtual void				onModulePlugged(IModuleSocket *moduleSocket) =0;
-//		/** Called just before the module is unplug from a socket.
-//		 *	The module can still send module message, but the unpluging
-//		 *	will be done just after.
-//		 */
-//		virtual void				onBeforeModuleUnplugged(IModuleSocket *moduleSocket) =0;
-//		/// Called just after a module as been effectively unplugged from a socket
-//		virtual void				onModuleUnpluged() =0;
 		//@}
 
 		//@{
 		//@name internal method, should not be used by client code
-
+		virtual void _onModuleUp(IModuleProxy *removedProxy) =0;
 		virtual void _onModuleDown(IModuleProxy *removedProxy) =0;
+
+		//@}
 
 	};
 
 	const TModulePtr		NullModule;
+
 
 
 	/** Base class for module identification data
@@ -424,10 +481,7 @@ namespace NLNET
 		bool	_FailInvoke;
 	protected:
 		///only derived class can use it
-		CModuleTask ()
-			: _FailInvoke(false)
-		{
-		}
+		CModuleTask (class CModuleBase *module);
 
 		void initMessageQueue(class CModuleBase *module);
 
@@ -460,6 +514,7 @@ namespace NLNET
 	class TModuleTask : public CModuleTask
 	{
 	public:
+
 		typedef void (T::*TMethodPtr)();
 
 	private:
@@ -471,8 +526,19 @@ namespace NLNET
 		{
 			initMessageQueue(_Module);
 
-			// run the module task command control to module task method
-			(_Module->*_TaskMethod)();
+			try
+			{
+				// run the module task command control to module task method
+				(_Module->*_TaskMethod)();
+			}
+			catch (NLMISC::Exception e)
+			{
+				nlwarning("In module task '%s', exception '%e' thrown", typeid(this).name(), e.what());
+			}
+			catch (...)
+			{
+				nlwarning("In module task '%s', unknown exception thrown", typeid(this).name());
+			}
 
 			// finish the dispatch
 			flushMessageQueue(_Module);
@@ -480,8 +546,9 @@ namespace NLNET
 	public:
 
 		TModuleTask(T *module,  void (T::*taskMethod)())
-			: _Module(module),
-			_TaskMethod(taskMethod)
+			:	CModuleTask(module),
+				_Module(module),
+				_TaskMethod(taskMethod)
 		{
 		}
 	};
@@ -601,6 +668,10 @@ namespace NLNET
 		/// This is the sockets where the module is plugged in
 		TModuleSockets			_ModuleSockets;
 
+		typedef std::list<IModuleInterceptable*>	TInterceptors;
+		/// This is the linked list of interceptor
+		TInterceptors			_ModuleInterceptors;
+
 		//@{
 		//@name Synchronous messaging
 		typedef std::list<std::pair<IModuleProxy *, CMessage> >	TMessageList;
@@ -641,6 +712,9 @@ namespace NLNET
 		CModuleBase();
 		~CModuleBase();
 
+		virtual void registerInterceptor(IModuleInterceptable *interceptor);
+		virtual void unregisterInterceptor(IModuleInterceptable *interceptor);
+
 		const std::string	&getCommandHandlerName() const;
 		TModuleId			getModuleId() const;
 		const std::string	&getModuleName() const;
@@ -649,7 +723,7 @@ namespace NLNET
 
 		const std::string	&getModuleFullyQualifiedName() const;
 
-		const std::string	&getModuleManifest() const;
+		std::string			getModuleManifest() const;
 
 		/** Called by a socket to receive a message in the module context.
 		 *	Basic implementation either forward directly to onProcessModuleMessage
@@ -666,17 +740,61 @@ namespace NLNET
 		CModuleTask *getActiveModuleTask();
 
 	public:
-		// return the default init string (empty)
+		/// return the default init string (empty)
 		static const std::string &CModuleBase::getInitStringHelp();
+
+		/** Search an interceptor in the interceptor list.
+		 *	By default, the method begin to search at the first interceptor.
+		 *	If 'previous' is set to a valid interceptor, then the search
+		 *	continue after it.
+		 *	the search is done by attempting a dynamic cast for
+		 *	each interceptor.
+		 *	If no interceptor match the required class, then NULL is
+		 *	returned.
+		 */
+		template <class T>
+		T *getInterceptor(T *dummy, IModuleInterceptable *previous = NULL)
+		{
+			TInterceptors::iterator it(_ModuleInterceptors.begin());
+			if (previous != NULL)
+			{
+				// advance up to next the previous
+				while (it != _ModuleInterceptors.end() && *it != previous)
+					++it;
+				if (it != _ModuleInterceptors.end())
+					++it;
+			}
+			
+			while (it != _ModuleInterceptors.end())
+			{
+				IModuleInterceptable *mi = *it;
+				T *inter = dynamic_cast<T*>(mi);
+
+				if (inter != NULL)
+				{
+					dummy = inter;
+					return inter;
+				}
+
+				++it;
+			}
+			
+			dummy = NULL;
+			return NULL;
+		}
 	protected:
 		// Init base module, init module name
-		void				initModule(const TParsedCommandLine &initInfo);
+		bool				initModule(const TParsedCommandLine &initInfo);
 		
 		void				plugModule(IModuleSocket *moduleSocket) throw (EModuleAlreadyPluggedHere);
 		void				unplugModule(IModuleSocket *moduleSocket)  throw (EModuleNotPluggedHere);
 		void				getPluggedSocketList(std::vector<IModuleSocket*> &resultList);
 		void				invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed);
+		void				_onModuleUp(IModuleProxy *removedProxy);
 		void				_onModuleDown(IModuleProxy *removedProxy);
+
+		bool				_onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message);
+
 
 
 

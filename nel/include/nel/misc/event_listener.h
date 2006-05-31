@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.13 2005/02/22 10:14:12 besson Exp $
+ * $Id: event_listener.h,v 1.14 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,8 @@ public:
 
 	/// Constructor
 	IEventListener();
-
+	/// Destructor
+	virtual ~IEventListener() {}
 
 	/** Called by CServer::pumpEvent(). The default calls the () operator, unless a hook has been set.
 	  * In this case processEvent is called on the hook instead (the hook can forward the call to that listener afterwards).

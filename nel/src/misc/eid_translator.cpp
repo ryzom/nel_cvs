@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.33 2005/06/23 16:35:39 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.34 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -97,9 +97,10 @@ void CEntityIdTranslator::getByUser (uint32 uid, vector<CEntityId> &res)
 	H_AUTO(EIdTrans_getByUser);
 	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
-		if ((*it).second.UId == uid)
+		CEntity &entity = it->second;
+		if (entity.UId == uid)
 		{
-			res.push_back((*it).first);
+			res.push_back(it->first);
 		}
 	}
 }
@@ -113,22 +114,24 @@ void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &
 	{
 		if (exact)
 		{
-			if (toLower((*it).second.UserName) == lowerName)
+			CEntity &entity = it->second;
+			if (toLower(entity.UserName) == lowerName)
 			{
-				res.push_back((*it).first);
+				res.push_back(it->first);
 			}
 		}
 		else
 		{
-			if (toLower((*it).second.UserName).find(lowerName) != string::npos)
+			CEntity &entity = it->second;
+			if (toLower(entity.UserName).find(lowerName) != string::npos)
 			{
-				res.push_back((*it).first);
+				res.push_back(it->first);
 			}
 		}
 	}
 }
 
-ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
+const ucstring &CEntityIdTranslator::getByEntity (const CEntityId &eid)
 {
 	H_AUTO(EIdTrans_getByEntity);
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
@@ -139,11 +142,13 @@ ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 	TEntityCont::iterator it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		return ucstring("");
+		static ucstring emptyString;
+		return emptyString;
 	}
 	else
 	{
-		return (*it).second.EntityName;
+		CEntity &entity = it->second;
+		return entity.EntityName;
 	}
 }
 
@@ -167,16 +172,18 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 	{
 		if (exact)
 		{
-			if (toLower((*it).second.EntityName.toString()) == lowerName)
+			CEntity &entity = it->second;
+			if (toLower(entity.EntityName.toString()) == lowerName)
 			{
-				res.push_back((*it).first);
+				res.push_back(it->first);
 			}
 		}
 		else
 		{
-			if (toLower((*it).second.EntityName.toString()).find(lowerName) != string::npos)
+			CEntity &entity = it->second;
+			if (toLower(entity.EntityName.toString()).find(lowerName) != string::npos)
 			{
-				res.push_back((*it).first);
+				res.push_back(it->first);
 			}
 		}
 	}
@@ -194,14 +201,18 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 
 	if (entityName.size() > 15)
 	{
-		log->displayNL("Bad entity name '%s' (more than 15 char)", entityName.toString().c_str());
-		return false;
+		// if a parenthesis is found before 15 chars, the name is valid
+		if (entityName.find(ucstring("(")) > 15 || entityName[entityName.size()-1] != ucchar(')'))
+		{
+			log->displayNL("EIT: Bad entity name '%s' (more than 15 char)", entityName.toString().c_str());
+			return false;
+		}
 	}
 
 	for (uint i = 0; i < entityName.size(); i++)
 	{
-		// only accept name with alphabetic and numeric value [a-zA-Z]
-		if (!isalpha (entityName[i]))
+		// only accept name with alphabetic and numeric value [a-zA-Z] and parenthesis 
+		if (!isalpha (entityName[i]) && entityName[i] != '(' && entityName[i] != ')')
 		{
 			log->displayNL("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
 			return false;
@@ -273,6 +284,48 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	NameIndex.insert(make_pair(entityName, reid));
 }
 
+void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName)
+{
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
+
+	if (it == RegisteredEntities.end())
+	{
+		// just register
+		registerEntity(eid, entityName, entitySlot, uid, userName);
+	}
+	else
+	{
+		// update entity entry and name index
+		CEntity &entity = it->second;
+		if (entity.EntityName != entityName)
+		{
+			if (!checkEntityName(entityName))
+			{
+				nlwarning ("EIT: Can't update EId %s EntityName '%s' UId %d UserName '%s' with new name '%s' because EntityName is already in the map", 
+					reid.toString().c_str(), 
+					entity.EntityName.toString().c_str(), 
+					uid, 
+					userName.c_str(),
+					entityName.toString().c_str());
+				return;
+			}
+			// update the name and name index
+			NameIndex.erase(entity.EntityName);
+			NameIndex.insert(make_pair(entityName, reid));
+			entity.EntityName = entityName;
+			entity.EntityNameStringId = 0;
+		}
+		entity.EntitySlot = entitySlot;
+		entity.UId = uid;
+		entity.UserName = userName;
+	}
+}
+
+
 void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 {
 	H_AUTO(EIdTrans_unregisterEntity);
@@ -288,9 +341,11 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 		nlwarning ("EIT: Can't unregister EId %s because EId is not in the map", reid.toString().c_str());
 		return;
 	}
-	
-	nlinfo ("EIT: Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
-	NameIndex.erase(it->second.EntityName);
+
+	CEntity &entity = it->second;
+
+	nldebug ("EIT: Unregister EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entity.EntityName.toString().c_str(), entity.UId, entity.UserName.c_str());
+	NameIndex.erase(entity.EntityName);
 	RegisteredEntities.erase (reid);
 }
 
@@ -331,28 +386,29 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 	}
 	else
 	{
-		if ((*it).second.EntityName != entityName)
+		CEntity &entity = it->second;
+		if (entity.EntityName != entityName)
 		{
-			nlwarning ("EIT: Check failed because entity name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.EntityName.toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("EIT: Check failed because entity name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", entity.EntityName.toString().c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if(!entityName.empty())
 			{
-				(*it).second.EntityName = entityName;
+				entity.EntityName = entityName;
 			}
 		}
-		if ((*it).second.UId != uid)
+		if (entity.UId != uid)
 		{
-			nlwarning ("EIT: Check failed because uid not identical (%d) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UId, reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("EIT: Check failed because uid not identical (%d) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", entity.UId, reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if (uid != 0)
 			{
-				(*it).second.UId = uid;
+				entity.UId = uid;
 			}
 		}
-		if ((*it).second.UserName != userName)
+		if (entity.UserName != userName)
 		{
-			nlwarning ("EIT: Check failed because user name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", (*it).second.UserName.c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+			nlwarning ("EIT: Check failed because user name not identical (%s) in the CEntityIdTranslator map for EId %s EntityName '%s' UId %d UserName '%s'", entity.UserName.c_str(), reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 			if(!userName.empty())
 			{
-				(*it).second.UserName = userName;
+				entity.UserName = userName;
 			}
 		}
 	}
@@ -475,9 +531,10 @@ uint32 CEntityIdTranslator::getUId (const string &userName)
 	const TEntityCont::iterator itEnd = RegisteredEntities.end();
 	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
-		if ((*it).second.UserName == userName)
+		CEntity &entity = it->second;
+		if (entity.UserName == userName)
 		{
-			return (*it).second.UId;
+			return entity.UId;
 		}
 	}
 	return 0;
@@ -488,9 +545,10 @@ string CEntityIdTranslator::getUserName (uint32 uid)
 	const TEntityCont::iterator itEnd = RegisteredEntities.end();
 	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
-		if ((*it).second.UId == uid)
+		CEntity &entity = it->second;
+		if (entity.UId == uid)
 		{
-			return (*it).second.UserName;
+			return entity.UserName;
 		}
 	}
 	return 0;
@@ -518,11 +576,12 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 	}
 	else
 	{
-		entityName = (*it).second.EntityName;
-		entitySlot = (*it).second.EntitySlot;
-		uid = (*it).second.UId;
-		userName = (*it).second.UserName;
-		online = (*it).second.Online;
+		CEntity &entity = it->second;
+		entityName = entity.EntityName;
+		entitySlot = entity.EntitySlot;
+		uid = entity.UId;
+		userName = entity.UserName;
+		online = entity.Online;
 
 		if (EntityInfoCallback != NULL && additional != NULL)
 			*additional = EntityInfoCallback(eid);
@@ -534,14 +593,30 @@ bool CEntityIdTranslator::setEntityNameStringId(const ucstring &entityName, uint
 	const TEntityCont::iterator itEnd = RegisteredEntities.end();
 	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
-		if ((*it).second.EntityName == entityName)
+		CEntity &entity = it->second;
+		if (entity.EntityName == entityName)
 		{
-			(*it).second.EntityNameStringId = stringId;
+			entity.EntityNameStringId = stringId;
 			return true;
 		}
 	}
 
 	return false;
+}
+
+bool CEntityIdTranslator::setEntityNameStringId(const CEntityId &eid, uint32 stringId)
+{
+	TEntityCont::iterator it (RegisteredEntities.find(eid));
+	if (it == RegisteredEntities.end())
+	{
+		// there is nothing we can do !
+		return false;
+	}
+
+	CEntity &entity = it->second;
+	entity.EntityNameStringId = stringId;
+
+	return true;
 }
 
 uint32 CEntityIdTranslator::getEntityNameStringId(const CEntityId &eid)
@@ -558,7 +633,8 @@ uint32 CEntityIdTranslator::getEntityNameStringId(const CEntityId &eid)
 	}
 	else
 	{
-		return (*it).second.EntityNameStringId;
+		CEntity &entity = it->second;
+		return entity.EntityNameStringId;
 	}
 }
 
@@ -576,7 +652,8 @@ void CEntityIdTranslator::setEntityOnline (const CEntityId &eid, bool online)
 	}
 	else
 	{
-		(*it).second.Online = online;
+		CEntity &entity = it->second;
+		entity.Online = online;
 	}
 }
 
@@ -595,7 +672,8 @@ bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
 	}
 	else
 	{
-		return (*it).second.Online;
+		CEntity &entity = it->second;
+		return entity.Online;
 	}
 }
 
@@ -705,7 +783,8 @@ NLMISC_CATEGORISED_COMMAND(nel,playerInfo,"Get informations about a player or al
 		log.displayNL("%d result(s) for 'all players informations'", res.size());
 		for (map<CEntityId, CEntityIdTranslator::CEntity>::const_iterator it = res.begin(); it != res.end(); it++)
 		{
-			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", (*it).second.UId, (*it).second.UserName.c_str(), (*it).first.toString().c_str(), (*it).second.EntityName.toString().c_str(), (sint16)((*it).second.EntitySlot), ((*it).second.Online?"Online":"Offline"));
+			const CEntityIdTranslator::CEntity &entity = it->second;
+			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", entity.UId, entity.UserName.c_str(), it->first.toString().c_str(), entity.EntityName.toString().c_str(), (sint16)(entity.EntitySlot), (entity.Online?"Online":"Offline"));
 		}
 
 		return true;

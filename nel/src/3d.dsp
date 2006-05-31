@@ -789,6 +789,25 @@ SOURCE=.\3d\ptr_set.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\quad_grid.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\quad_grid.h
 # End Source File
 # Begin Source File
@@ -2303,6 +2322,79 @@ SOURCE=.\3d\quad_effect.h
 # Begin Group "Collisions"
 
 # PROP Default_Filter ""
+# Begin Group "packed col"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\packed_world.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# ADD CPP /MDd
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\packed_world.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\packed_zone.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# ADD CPP /MDd
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\packed_zone.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shape_info.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# ADD CPP /MDd
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shape_info.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\camera_col.cpp

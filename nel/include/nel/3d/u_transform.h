@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * Interface for transform objects.
  *
- * $Id: u_transform.h,v 1.25 2005/03/10 17:26:47 berenguier Exp $
+ * $Id: u_transform.h,v 1.26 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,10 +223,17 @@ public:
 	/// name Accessors for opacity/transparency
 	// @{	
 	void			setTransparency(bool v);
-	void			setOpacity(bool v);
+	void			setOpacity(bool v);	
 	// return a non-zero value if true
 	uint32			isOpaque();
 	uint32			isTransparent();
+	/** If the object is a multi-lod, preserve the last opacity / transparency set by the user.
+      * False is the default, and causes the current LOD transparency / opacity to overwrite
+	  * the corresponding flags for this transform (thus, setTransparency / setOpacity have no effect on multi-lod)
+	  * unless this is set)
+	  */
+	void			setBypassLODOpacityFlag(bool bypass);
+
 	/** Set priority for transparency ordering
 	  * Transparent objects are sorted by priority, and then by distances
 	  * The priority is clamped by the priority range of the scene. By default this range is [0, 0] so there's no priority sorting

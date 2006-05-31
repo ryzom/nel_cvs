@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.21 2005/09/08 11:47:17 lancon Exp $
+ * $Id: ligo_config.cpp,v 1.22 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -270,7 +270,7 @@ bool CLigoConfig::reloadIndexFile(const std::string &indexFileName)
 	CConfigFile::CVar *files = cf.getVarPtr("Files");
 	if (files != NULL)
 	{
-		for (int i=0; i<files->size()/2; ++i)
+		for (uint i=0; i<files->size()/2; ++i)
 		{
 			string fileName;
 			uint32 index;

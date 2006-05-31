@@ -1,7 +1,7 @@
 /** \file variable.cpp
  * TODO: File description
  *
- * $Id: variable.cpp,v 1.5 2005/06/23 16:37:49 boucher Exp $
+ * $Id: variable.cpp,v 1.6 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLMISC {
 void cbVarChanged (CConfigFile::CVar &cvar)
 {
 	CCommandRegistry &cr = CCommandRegistry::getInstance();
-	for (CCommandRegistry::TCommand::iterator comm = cr.Commands.begin(); comm != cr.Commands.end(); comm++)
+	for (CCommandRegistry::TCommand::iterator comm = cr._Commands.begin(); comm != cr._Commands.end(); comm++)
 	{
 		if (comm->second->Type == ICommand::Variable && comm->second->getName() == cvar.Name)
 		{
@@ -56,7 +56,7 @@ void IVariable::init (NLMISC::CConfigFile &configFile)
 
 void CCommandRegistry::initVariables(NLMISC::CConfigFile &configFile)
 {
-	for (TCommand::iterator comm = Commands.begin(); comm != Commands.end(); comm++)
+	for (TCommand::iterator comm = _Commands.begin(); comm != _Commands.end(); comm++)
 	{
 		if (comm->second->Type == ICommand::Variable)
 		{
@@ -73,7 +73,7 @@ void CCommandRegistry::initVariables(NLMISC::CConfigFile &configFile)
 				}
 				else
 				{
-					nlwarning ("VAR: No variable '%s' in config file '%s'", var->_CommandName.c_str(), configFile.getFilename().c_str());
+					nldebug ("VAR: No variable '%s' in config file '%s'", var->_CommandName.c_str(), configFile.getFilename().c_str());
 				}
 			}
 		}

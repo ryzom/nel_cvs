@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * TODO: File description
  *
- * $Id: landscape.cpp,v 1.157 2006/01/09 10:56:28 berenguier Exp $
+ * $Id: landscape.cpp,v 1.158 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -535,7 +535,7 @@ void			CLandscape::buildZoneName(sint zoneId, std::string &zoneName)
 }
 // ***************************************************************************
 void			CLandscape::clear()
-{
+{	
 	// Build the list of zoneId.
 	vector<uint16>	zoneIds;
 	getZoneList(zoneIds);
@@ -550,7 +550,8 @@ void			CLandscape::clear()
 	// ensure the quadgrid is empty.
 	_PatchQuadGrid.clear();
 
-
+	releaseAllTiles();
+	
 	// If not done, delete all VBhards allocated.
 	_Far0VB.clear();
 	_Far1VB.clear();
@@ -964,6 +965,7 @@ void	drawPassTriArray(CMaterial &mat)
 	CLandscapeGlobals::PassTriArrayIBA.unlock();
 	if(NL3D_LandscapeGlobals_PassNTri>0)
 	{
+		//mat.setZFunc(CMaterial::ZFunc::greaterequal);
 		CLandscapeGlobals::PatchCurrentDriver->setupMaterial(mat);
 		CLandscapeGlobals::PatchCurrentDriver->activeIndexBuffer(CLandscapeGlobals::PassTriArray);
 		CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(0, NL3D_LandscapeGlobals_PassNTri);
@@ -3869,6 +3871,13 @@ void			CLandscape::receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const C
 	sm.setZBias(-0.02f);
 	_ShadowPolyReceiver.render(drv, sm, shadowMap, casterPos, -pzb);
 	sm.setZBias(oldZBias);
+}
+
+// ***************************************************************************
+void			CLandscape::setZFunc(CMaterial::ZFunc val)
+{
+	TileMaterial.setZFunc(val);
+	FarMaterial.setZFunc(val);
 }
 
 // ***************************************************************************

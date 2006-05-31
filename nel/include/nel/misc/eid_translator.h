@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.20 2005/06/23 16:27:15 boucher Exp $
+ * $Id: eid_translator.h,v 1.21 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -43,7 +43,36 @@ class CEntityIdTranslator
 	NLMISC_SAFE_SINGLETON_DECL_PTR(CEntityIdTranslator);
 public:
 
-//	static CEntityIdTranslator *getInstance ();
+	/** Descritor for an entity in the translator */
+	struct CEntity
+	{
+		CEntity () :
+		EntityNameStringId(0), EntitySlot(-1), UId(~0), Online(false)
+		{ }
+		
+		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName, sint8 entitySlot) :
+		EntityName(entityName), EntityNameStringId(0), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false)
+		{ }
+		
+		/// The display name of the entity
+		ucstring	EntityName;
+		/// The mapped name of the entity (used to store IOS generated string id)
+		uint32		EntityNameStringId;
+		/// the character slot
+		sint8		EntitySlot;
+		
+		/// User id the character owner (aka account id)
+		uint32		UId;
+		/// User name of the character owner (aka account name)
+		std::string UserName;
+
+		/// A flag stating if the character is online
+		bool		Online;
+
+		void serial (NLMISC::IStream &s);
+	};
+
+	typedef std::map<NLMISC::CEntityId, CEntity>	TEntityCont;
 
 	// performs all check on a name ( name validity + uniqueness )
 	bool				checkEntityName (const ucstring &entityName);
@@ -51,12 +80,16 @@ public:
 	bool				entityNameExists(const ucstring &entityName);
 	// register an entity in this manager
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
+	// register or update an entity in this manager
+	void				updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
 	// unregister an entity from this manager
 	void				unregisterEntity (const CEntityId &eid);
 	// Check if an entity is registered
 	bool				isEntityRegistered(const CEntityId &eid);
 	// set an association entityName / entityStringId, return true if association has been set
 	bool				setEntityNameStringId(const ucstring &entityName, uint32 stringId);
+	// set an association entityId / entityStringId, return true if association has been set
+	bool				setEntityNameStringId(const CEntityId &eid, uint32 stringId);
 	// get string id for entityId
 	uint32				getEntityNameStringId(const CEntityId &eid);
 	
@@ -79,39 +112,18 @@ public:
 	CEntityId			getByEntity (const ucstring &entityName);
 
 	// get entity name using the eid
-	ucstring			getByEntity (const NLMISC::CEntityId &eid);
+	const ucstring		&getByEntity (const NLMISC::CEntityId &eid);
 
 	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, std::string &userName, bool &online, std::string* additional = NULL);
 
 	// transform a username ucstring into a string that can be compared with registered string
-	std::string getRegisterableString( const ucstring & entityName);
+	std::string			getRegisterableString( const ucstring & entityName);
 
 	/// return a vector of invalid names
 	const std::vector<std::string> & getInvalidNames(){ return InvalidEntityNames; }
 	
-	struct CEntity
-	{
-		CEntity () :
-		EntityNameStringId(0), EntitySlot(-1), UId(~0), Online(false)
-		{ }
-		
-		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName, sint8 entitySlot) :
-		EntityName(entityName), EntityNameStringId(0), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false)
-		{ }
-		
-		ucstring	EntityName;
-		uint32		EntityNameStringId;
-		sint8		EntitySlot;
-		
-		uint32		UId;
-		std::string UserName;
 
-		bool		Online;
-
-		void serial (NLMISC::IStream &s);
-	};
-
-	const std::map<NLMISC::CEntityId, CEntity>	&getRegisteredEntities () { return RegisteredEntities; }
+	const TEntityCont	&getRegisteredEntities () { return RegisteredEntities; }
 	
 	static const uint Version;
 
@@ -141,17 +153,16 @@ private:
 	// It means that there only alphabetic and numerical character and the name is at least 3 characters long.
 	bool isValidEntityName (const ucstring &entityName, NLMISC::CLog *log = NLMISC::InfoLog );
 
-	typedef std::map<NLMISC::CEntityId, CEntity>	TEntityCont;
-	typedef std::map<ucstring, NLMISC::CEntityId>	TNameIndexCont;
 
+	/// The container for all entity in the translator
 	TEntityCont		RegisteredEntities;
+
+	typedef std::map<ucstring, NLMISC::CEntityId>	TNameIndexCont;
+	/// the reverse index to retreive entity by name
 	TNameIndexCont	NameIndex;
 
 	// Singleton, no ctor access
 	CEntityIdTranslator() { EntityInfoCallback = NULL; }
-
-	// Singleton instance
-//	static CEntityIdTranslator *Instance;
 
 	std::string FileName;
 
@@ -170,3 +181,4 @@ private:
 #endif // NL_EID_TRANSLATOR_H
 
 /* End of eid_translator.h */
+

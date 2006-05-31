@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.5 2006/01/10 17:38:47 boucher Exp $
+ * $Id: module_manager.h,v 1.6 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ namespace NLNET
 		virtual void applicationExit() =0;
 
 		/// Release the singleton instance
-		virtual void releaseInstance() =0;
+		static void releaseInstance();
 
 		virtual ~IModuleManager() {}
 
@@ -111,6 +111,9 @@ namespace NLNET
 		 *	name MUST be unique OR empty.
 		 *	If the name is empty, the method generate a name using
 		 *	the module class and a number.
+		 *  If the module class could not be found, NULL is returned.
+		 *	If the module fail to initialize properly, then it
+		 *	deleted and NULL is returned.
 		 */
 		virtual IModule *createModule(const std::string &className, const std::string &localName, const std::string &paramString) =0;
 
@@ -180,6 +183,9 @@ namespace NLNET
 													TModuleId foreignModuleId) =0;
 
 		virtual void releaseModuleProxy(TModuleId moduleProxyId) =0;
+
+		virtual uint32 getNbModule() =0;
+		virtual uint32 getNbModuleProxy() =0;
 
 	};
 

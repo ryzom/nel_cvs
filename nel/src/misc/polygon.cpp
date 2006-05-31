@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.33 2006/01/10 17:38:47 boucher Exp $
+ * $Id: polygon.cpp,v 1.34 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,8 +195,8 @@ public:
 };
 typedef std::map<float, CConcavePolygonsVertexDesc> TCConcavePolygonsVertexMap;
 
-// ***************************************************************************
 
+// ***************************************************************************
 bool CPolygon::toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector2f& a1, const CVector2f& b0, const CVector2f& b1)
 {
 	// both vertical?
@@ -490,8 +490,8 @@ void CPolygon::toConvexPolygonsLocalAndBSP (std::vector<CVector> &localVertices,
 	}
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
 bool CPolygon::toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const
 {
 	// Some vertices ?
@@ -837,7 +837,14 @@ bool CPolygon::chain (const std::vector<CPolygon> &other, const CMatrix& basis)
 
 
 
+// ***************************************************************************
 CPolygon2D::CPolygon2D(const CPolygon &src, const CMatrix &projMat)
+{
+	fromPolygon(src, projMat);	
+}
+
+// ***************************************************************************
+void CPolygon2D::fromPolygon(const CPolygon &src, const CMatrix &projMat /*=CMatrix::Identity*/)
 {
 	uint size = src.Vertices.size();
 	Vertices.resize(size);
@@ -849,7 +856,6 @@ CPolygon2D::CPolygon2D(const CPolygon &src, const CMatrix &projMat)
 }
 
 // ***************************************************************************
-
 bool		CPolygon2D::isConvex()
 {
 	bool Front  = true, Back = false;	
@@ -1194,8 +1200,11 @@ bool CPolygon2D::isCCWOriented() const
 }
 
 // *******************************************************************************
-void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
+void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY) const
 {
+	#ifdef NL_DEBUG
+		checkValidBorders();
+	#endif
 	// an 'alias' to the vertices
 	const TVec2fVect &V = Vertices;
 	if (Vertices.size() < 3)
@@ -1491,8 +1500,11 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 
 
 // *******************************************************************************
-void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY)
+void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY) const
 {
+	#ifdef NL_DEBUG
+		checkValidBorders();
+	#endif
 	borders.clear();
 	// NB : this version is not much optimized, because of the min/max test
 	// during rasterization.
@@ -1779,8 +1791,11 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 }
 
 // *******************************************************************************
-void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY)
+void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY) const
 {
+	#ifdef NL_DEBUG
+		checkValidBorders();
+	#endif
 	borders.clear();
 	if (Vertices.empty())
 	{		
@@ -1962,6 +1977,18 @@ void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY)
 }
 
 // *******************************************************************************
+void CPolygon2D::checkValidBorders() const
+{
+	for (uint k = 0; k < Vertices.size(); ++k)
+	{
+		nlassert(Vertices[k].x >= -32000.f); // coordinate too big !
+		nlassert(Vertices[k].x < 32000.f);   // coordinate too big !
+		nlassert(Vertices[k].y >= -32000.f); // coordinate too big !
+		nlassert(Vertices[k].y < 32000.f);   // coordinate too big !
+	}
+}
+
+// *******************************************************************************
 /// Sum the dot product of this poly vertices against a plane
 float		CPolygon2D::sumDPAgainstLine(float a, float b, float c) const
 {
@@ -2089,32 +2116,31 @@ bool		CPolygon2D::contains(const CVector2f &p, bool hintIsConvex /*= true*/) con
 	}
 	else
 	{
-		// concave / complex case
-		std::vector<float> xInter;
+		// concave case
+		static std::vector<float> xInter;
+		xInter.clear();
 		for(uint k = 0; k < Vertices.size(); ++k)
 		{
 			const CVector2f &p0 = getSegRef0(k);
-			const CVector2f &p1 = getSegRef1(k);
-			if ((p.y >= p0.y && p.y <= p1.y) ||
-				(p.y >= p1.y && p.y <= p0.y)
-			   )
+			const CVector2f &p1 = getSegRef1(k);		
+			if (p0.y == p1.y)
 			{
-				if (p0.y == p1.y)
+				if (p.y == p0.y)
 				{
-					if (p.y == p0.y)
+					if ((p.x >= p0.x && p.x <= p1.x)
+						|| (p.x >= p1.x && p.x <= p0.x))
 					{
-						if ((p.x >= p0.x && p.x <= p1.x)
-							|| (p.x >= p1.x && p.x <= p0.x))
-						{
-							return true;
-						}
+						return true;
 					}
 				}
-				else
-				{
-					float inter = p0.x + (p.y - p0.y) * (p1.x - p0.x) / (p1.y- p0.y);
-					xInter.push_back(inter);
-				}
+			}
+			if ((p.y >= p0.y && p.y < p1.y) ||
+				(p.y >= p1.y && p.y < p0.y)
+			   )
+			{
+									
+				float inter = p0.x + (p.y - p0.y) * (p1.x - p0.x) / (p1.y- p0.y);
+				xInter.push_back(inter);					
 			}			
 		}
 		if (xInter.size() < 2) return false;
@@ -2139,6 +2165,19 @@ CPolygon2D::CPolygon2D(const CTriangle &tri, const CMatrix &projMat)
 	Vertices[0].set(proj[0].x, proj[0].y);
 	Vertices[1].set(proj[1].x, proj[1].y);
 	Vertices[2].set(proj[2].x, proj[2].y);
+}
+
+// *******************************************************************************
+void CPolygon2D::getBoundingRect(CVector2f &minCorner, CVector2f &maxCorner) const
+{
+	nlassert(!Vertices.empty())
+	minCorner = maxCorner = Vertices[0];
+	uint numVertices = Vertices.size();
+	for(uint k = 0; k < numVertices; ++k)
+	{
+		minCorner.minof(minCorner, Vertices[k]);
+		maxCorner.maxof(minCorner, Vertices[k]);
+	}
 }
 
 // *******************************************************************************

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.66 2005/07/22 12:38:34 legallo Exp $
+ * $Id: render_trav.cpp,v 1.67 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -329,22 +329,25 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 				numWantedVertices += curr->getNumWantedVertices();
 				curr = curr->_Next;
 			}
-			CWaterModel::setupVertexBuffer(Scene->getWaterVB(), numWantedVertices, getDriver());
-			//
-			{		
-				CVertexBufferReadWrite vbrw;
-				Scene->getWaterVB().lock(vbrw);
-				CWaterModel *curr = _FirstWaterModel;
-				void *datas = vbrw.getVertexCoordPointer(0);			
+			if (numWantedVertices != 0)
+			{
+				CWaterModel::setupVertexBuffer(Scene->getWaterVB(), numWantedVertices, getDriver());
 				//
-				uint tri = 0;
-				while (curr)
-				{
-					tri = curr->fillVB(datas, tri, *getDriver());
-					nlassert(tri <= numWantedVertices);
-					curr = curr->_Next;
-				}	
-				nlassert(tri * 3 == numWantedVertices);
+				{						
+					CVertexBufferReadWrite vbrw;
+					Scene->getWaterVB().lock(vbrw);
+					CWaterModel *curr = _FirstWaterModel;
+					void *datas = vbrw.getVertexCoordPointer(0);			
+					//
+					uint tri = 0;
+					while (curr)
+					{
+						tri = curr->fillVB(datas, tri, *getDriver());
+						nlassert(tri <= numWantedVertices);
+						curr = curr->_Next;
+					}	
+					nlassert(tri * 3 == numWantedVertices);
+				}
 			}
 			// Unlink all water model
 			clearWaterModelList();

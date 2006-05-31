@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * TODO: File description
  *
- * $Id: shape_bank.cpp,v 1.36 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.37 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -475,27 +475,23 @@ void CShapeBank::load (const string &shapeNameNotLwr)
 		TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find (shapeName);
 		if (wsmmIt != WaitingShapes.end())
 			return;
-		try
-		{
-			CShapeStream mesh;
-			CIFile meshfile;
-			if (meshfile.open(CPath::lookup(shapeName)))
-			{
-				meshfile.serial( mesh );
-				meshfile.close();
-			}
-			else
-			{
-				nlwarning ("CShapeBank::load() : Can't open file %s", shapeName.c_str());
-			}
 
+		CShapeStream mesh;
+		CIFile meshfile;
+		if (meshfile.open(CPath::lookup(shapeName, false)))
+		{
+			meshfile.serial( mesh );
+			meshfile.close();
+		}
+		else
+		{
+			nlwarning ("CShapeBank::load() : Can't open file %s", shapeName.c_str());
+		}
+
+		if (mesh.getShapePointer() != NULL)
+		{
 			// Add the shape to the map.
 			add( shapeName, mesh.getShapePointer() );
-		}
-		catch(Exception &e)
-		{
-			nlwarning ("CShapeBank::load() : %s", e.what());
-			return;
 		}
 	}	
 }
@@ -608,6 +604,7 @@ bool CShapeBank::isShapeWaiting ()
 
 void CShapeBank::add (const string &shapeNameNotLwr, IShape* pShp)
 {
+	nlassert(pShp);
 	string	shapeName= toLower(shapeNameNotLwr);
 
 	// request a system mem geometry copy?
@@ -790,7 +787,9 @@ IShape* CShapeBank::getShapePtrFromShapeName(const std::string &pShpName)
 	TShapeMap::iterator smIt = ShapeMap.find(pShpName);
 	if( smIt != ShapeMap.end() )
 	{
-		return (IShape*)(smIt->second);
+		// TMP
+		IShape *ptr = (IShape*)(smIt->second);
+		return ptr;
 	}
 	return NULL;
 }

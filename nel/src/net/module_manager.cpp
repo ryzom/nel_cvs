@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.9 2006/01/10 17:38:47 boucher Exp $
+ * $Id: module_manager.cpp,v 1.10 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/sstring.h"
 #include "nel/net/module_manager.h"
 
+#include "nel/net/service.h"
 #include "nel/net/module_gateway.h"
 #include "nel/net/module.h"
 #include "nel/net/module_socket.h"
@@ -53,7 +54,7 @@ NLMISC_CATEGORISED_COMMAND(net, initModuleManager, "force the initialisation of 
 
 
 namespace NLNET
-{
+{		
 	/// Implementation class for module manager
 	class CModuleManager : public IModuleManager, public ICommandsHandler
 	{
@@ -61,6 +62,13 @@ namespace NLNET
 
 	public:
 
+		static void releaseInstance()
+		{
+			if( _Instance )
+				delete _Instance;
+			_Instance = NULL;
+		}
+				
 		struct TModuleLibraryInfo : public CRefCount
 		{
 			/// The file name of the library with access path
@@ -168,12 +176,6 @@ namespace NLNET
 			}
 		}
 
-		void releaseInstance()
-		{
-			delete this;
-			_Instance = NULL;
-		}
-
 		virtual void setUniqueNameRoot(const std::string &uniqueNameRoot)
 		{
 			_UniqueNameRoot = uniqueNameRoot;
@@ -183,7 +185,11 @@ namespace NLNET
 		{
 			if (_UniqueNameRoot.empty())
 			{
-				string hostName = ::NLNET::CInetAddress::localHost().hostName();
+				string hostName;
+				if (IService::isServiceInitialized())
+					hostName = IService::getInstance()->getHostName();
+				else
+					hostName = ::NLNET::CInetAddress::localHost().hostName();
 				int pid = ::getpid();
 
 				_UniqueNameRoot = hostName+":"+toString(pid);
@@ -237,7 +243,7 @@ namespace NLNET
 			}
 
 			// now, load the library
-			string fullName = path+"/"+CLibrary::makeLibName(shortName);
+			string fullName = NLMISC::CPath::standardizePath(path)+CLibrary::makeLibName(shortName);
 			auto_ptr<TModuleLibraryInfo>	mli = auto_ptr<TModuleLibraryInfo>(new TModuleLibraryInfo);
 			if (!mli->LibraryHandler.loadLibrary(fullName, false, true, true))
 			{
@@ -409,14 +415,27 @@ namespace NLNET
 			// init the module with parameter string
 			TParsedCommandLine	mii;
 			mii.parseParamList(paramString);
-			module->initModule(mii);
+			bool initResult = module->initModule(mii);
 
 			// store the module in the manager
 			_ModuleInstances.add(moduleName, module.get());
 			_ModuleIds.add(modBase->_ModuleId, module.get());
 
-			// ok, all is fine, return the module
-			return module.release();
+			if (initResult)
+			{
+				// ok, all is fine, return the module
+				return module.release();
+			}
+			else
+			{
+				// error during initialization, delete the module
+				nlwarning("Create module : the new module '%s' of class '%s' has failed to initilize properly.",\
+					moduleName.c_str(),
+					className.c_str());
+
+				deleteModule(module.release());
+				return NULL;
+			}
 		}
 
 		void deleteModule(IModule *module)
@@ -476,6 +495,7 @@ namespace NLNET
 						// check for finished task
 						if (task->isFinished())
 						{
+							nldebug("NLNETL6: updateModule : task %p is finished, delete and remove from task list", task);
 							// delete the task and resume the next one if any
 							delete task;
 							modBase->_ModuleTasks.erase(modBase->_ModuleTasks.begin());
@@ -614,6 +634,17 @@ namespace NLNET
 			
 			nlassertex(sanityCheck == NULL, ("Someone has kept a smart pointer on the proxy '%s' of class '%s'", sanityCheck->getModuleName().c_str(), sanityCheck->getModuleClassName().c_str()));
 		}
+
+		virtual uint32 getNbModule()
+		{
+			return _ModuleInstances.getAToBMap().size();
+		}
+
+		virtual uint32 getNbModuleProxy()
+		{
+			return _ModuleProxyIds.getAToBMap().size();
+		}
+
 
 
 		NLMISC_COMMAND_HANDLER_TABLE_BEGIN(CModuleManager)
@@ -791,7 +822,11 @@ namespace NLNET
 		return CModuleManager::getInstance();
 	}
 
-
+	void IModuleManager::releaseInstance()
+	{
+		CModuleManager::releaseInstance();
+	}
+	
 	NLMISC_SAFE_SINGLETON_IMPL(CModuleManager);
 
 

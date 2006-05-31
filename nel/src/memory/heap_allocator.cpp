@@ -1,7 +1,7 @@
 /** \file memory/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.20 2005/04/08 13:21:04 legros Exp $
+ * $Id: heap_allocator.cpp,v 1.21 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2045,8 +2045,10 @@ void CHeapAllocator::debugReportMemoryLeak ()
 {
 	debugPushCategoryString (NL_HEAP_MEM_DEBUG_CATEGORY);
 
-	// Sum allocated memory
+	// Sum allocated memory, locations, and leaks
 	uint memory = 0;
+	uint leaks = 0;
+	uint locations = 0;
 
 	// Leak map
 	CLeak *leakMap = NULL;
@@ -2153,13 +2155,17 @@ void CHeapAllocator::debugReportMemoryLeak ()
 		// Report on stderr
 		CHeapAllocatorOutputError (report);
 
+		// sum totals
+		leaks += ite->Count;
+		locations++;
+
 		ite = ite->Next;
 	}
 
 	// Make a report
 	if (memory)
 	{
-		sprintf (report, "%d byte(s) found\n", memory);
+		sprintf (report, "%d byte(s) found, %d leaks, %d locations\n", memory, leaks, locations);
 	}
 	else
 	{

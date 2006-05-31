@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.30 2006/01/10 17:38:47 boucher Exp $
+ * $Id: callback_server.cpp,v 1.31 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,6 +139,34 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
  * Recorded : YES (in baseUpdate())
  * Replayed : YES (in baseUpdate())
  */
+void CCallbackServer::update2 ( sint32 timeout, sint32 mintime )
+{
+	H_AUTO(L3UpdateServer);
+
+	checkThreadId ();
+	nlassert (connected ());
+
+	//	nldebug ("LNETL3S: Client: update()");
+	baseUpdate2 ( timeout, mintime ); // first receive
+
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+#endif
+		// L1-2 Update (nothing to do in replay mode)
+		CBufServer::update (); // then send
+
+#ifdef USE_MESSAGE_RECORDER
+	}
+#endif
+
+}
+
+/*
+ * Updates the network (call this method evenly) (legacy)
+ * Recorded : YES (in baseUpdate())
+ * Replayed : YES (in baseUpdate())
+ */
 void CCallbackServer::update ( sint32 timeout )
 {
 	H_AUTO(L3UpdateServer);
@@ -159,7 +187,6 @@ void CCallbackServer::update ( sint32 timeout )
 #ifdef USE_MESSAGE_RECORDER
 	}
 #endif
-
 }
 
 

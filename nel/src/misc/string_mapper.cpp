@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.11 2004/11/03 17:30:53 berenguier Exp $
+ * $Id: string_mapper.cpp,v 1.12 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -239,7 +239,7 @@ void CStaticStringMapper::serial(IStream &f, std::vector<TSStringId> &strIdVect)
 	// Serialize class components.
 	if (f.isReading())
 	{				
-		f.serialCont(vsTmp);		// FXs played only when attacking and according to the power.
+		f.serialCont(vsTmp);
 		strIdVect.resize(vsTmp.size());
 		for(uint i = 0; i < vsTmp.size(); ++i)
 			strIdVect[i] = add(vsTmp[i]);
@@ -249,7 +249,7 @@ void CStaticStringMapper::serial(IStream &f, std::vector<TSStringId> &strIdVect)
 		vsTmp.resize(strIdVect.size());
 		for (uint i = 0; i < vsTmp.size(); ++i)
 			vsTmp[i] = get(strIdVect[i]);
-		f.serialCont(vsTmp);		// FXs played only when attacking and according to the power.
+		f.serialCont(vsTmp);
 				
 	}
 }

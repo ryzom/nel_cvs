@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 	// init Nel context
 	new NLMISC::CApplicationContext;
 	std::vector<TLibraryInfo*>	testLibs;
-	try
+//	try
 	{
 		// Demonstrates the ability to use multiple test suites
 		//
@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
 		CConfigFile::CVar *pvar = cf.getVarPtr("TestDllPaths");
 		if (pvar != NULL)
 		{
-			for (sint i=0; i<pvar->size(); ++i)
+			for (uint i=0; i<pvar->size(); ++i)
 			{
 				CLibrary::addLibPath(pvar->asString(i));
 			}
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 		pvar = cf.getVarPtr("TestDllList");
 		if (pvar != NULL)
 		{
-			for (sint i=0; i<pvar->size(); i+=2)
+			for (uint i=0; i<pvar->size(); i+=2)
 			{
 				string name = pvar->asString(i);
 				string libName = CLibrary::makeLibName(name);
@@ -212,10 +212,10 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-	catch (...)
-	{
-		cout << "unexpected exception encountered\n";
-	}
+//	catch (...)
+//	{
+//		nlerror( "unexpected exception encountered" );
+//	}
 	return 0;
 }
 

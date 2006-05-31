@@ -1,7 +1,7 @@
 /** \file module_local_gateway.h
  * module gateway interface
  *
- * $Id: module_local_gateway.cpp,v 1.4 2006/01/10 17:38:47 boucher Exp $
+ * $Id: module_local_gateway.cpp,v 1.5 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -257,7 +257,7 @@ namespace NLNET
 				IModule *module = first->second;
 				if (module->getModuleId() != moduleProxy->getForeignModuleId())
 				{
-					module->onModuleUp(moduleProxy);
+					module->_onModuleUp(moduleProxy);
 				}
 			}
 		}
@@ -317,14 +317,21 @@ namespace NLNET
 		/***********************************************************
 		 ** Module methods 
 		 ***********************************************************/
-		void	initModule(const TParsedCommandLine &initInfo)
+		bool	initModule(const TParsedCommandLine &initInfo)
 		{
-			CModuleBase::initModule(initInfo);
+			bool ret = CModuleBase::initModule(initInfo);
 
 			// in fact, this gateway is so simple, that it have no option !
 
 			registerSocket();
 //			IModuleManager::getInstance().registerModuleSocket(this);
+
+			return ret;
+		}
+
+		std::string			buildModuleManifest() const
+		{
+			return string();
 		}
 
 		void				onServiceUp(const std::string &serviceName, uint16 serviceId)
@@ -345,8 +352,9 @@ namespace NLNET
 		void				onModuleDown(IModuleProxy *moduleProxy)
 		{
 		}
-		void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+		bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 		{
+			return false;
 		}
 		void				onModuleSecurityChange(IModuleProxy *moduleProxy)
 		{
@@ -409,7 +417,7 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != pluggedModule->getModuleFullyQualifiedName())
-						pluggedModule->onModuleUp(first->first);
+						pluggedModule->_onModuleUp(first->first);
 				}
 			}
 

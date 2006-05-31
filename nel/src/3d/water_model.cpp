@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.56 2005/02/23 17:31:39 vizerie Exp $
+ * $Id: water_model.cpp,v 1.57 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -58,7 +58,8 @@ NLMISC::CRefPtr<IDriver> CWaterModel::_CurrDrv;
 
 
 
-
+// TMP
+volatile bool forceWaterSimpleRender = false;
 
 //=======================================================================
 void CWaterModel::setupVertexBuffer(CVertexBuffer &vb, uint numWantedVertices, IDriver *drv)
@@ -1267,6 +1268,7 @@ uint CWaterModel::getNumWantedVertices()
 	nlassert(!_ClippedPoly.Vertices.empty());
 	//
 	CRenderTrav					&renderTrav		= getOwnerScene()->getRenderTrav();	
+	if (!renderTrav.Perspective || forceWaterSimpleRender) return 0;
 	CWaterShape					*shape			= NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
 	// viewer pos in world space
 	const NLMISC::CVector &obsPos = renderTrav.CamPos;	
@@ -1678,26 +1680,58 @@ void	CWaterModel::traverseRender()
 	const NLMISC::CVector		&obsPos         = renderTrav.CamPos;
 	const float					zHeight         =  getWorldMatrix().getPos().z;
 	
-
-	NLMISC::CMatrix modelMat;
-	modelMat.setPos(NLMISC::CVector(obsPos.x, obsPos.y, zHeight));
-	drv->setupModelMatrix(modelMat);	
-	bool isAbove = obsPos.z > getWorldMatrix().getPos().z;	
-	CVertexBuffer &vb = renderTrav.Scene->getWaterVB();
-	if (drv->isWaterShaderSupported())
+	if (!renderTrav.Perspective || forceWaterSimpleRender)
 	{
-		setupMaterialNVertexShader(drv, shape, obsPos, isAbove, zHeight);
-		nlassert(vb.getNumVertices() > 0);
-		drv->activeVertexBuffer(vb);
-		drv->renderRawTriangles(CWaterModel::_WaterMat, _StartTri, _NumTris);	
-		drv->activeVertexProgram(NULL);
-	}
+		// not supported, simple uniform render
+		drv->setupModelMatrix(getWorldMatrix());
+		static CMaterial waterMat;
+		static bool initDone = false;
+		if (!initDone)
+		{
+			waterMat.initUnlit();
+			waterMat.setBlend(true);
+			waterMat.setSrcBlend(CMaterial::srcalpha);
+			waterMat.setDstBlend(CMaterial::invsrcalpha);
+			waterMat.setBlend(true);
+			waterMat.setDoubleSided(true);
+			waterMat.setLighting(false);
+		}
+		waterMat.setColor(shape->computeEnvMapMeanColor());
+		static std::vector<NLMISC::CTriangleUV> tris;
+		const NLMISC::CPolygon2D &poly = shape->getShape();
+		tris.clear();
+		for(sint k = 0; k < (sint) poly.Vertices.size() - 2; ++k)
+		{
+			NLMISC::CTriangleUV truv;
+			truv.V0.set(poly.Vertices[0].x, poly.Vertices[0].y, 0.f);
+			truv.V1.set(poly.Vertices[k + 1].x, poly.Vertices[k + 1].y, 0.f);
+			truv.V2.set(poly.Vertices[k + 2].x, poly.Vertices[k + 2].y, 0.f);
+			tris.push_back(truv);
+		}
+		CDRU::drawTrianglesUnlit(tris, waterMat, *drv);
+	}	
 	else
 	{
-		setupSimpleRender(shape, obsPos, isAbove);
-		drv->activeVertexBuffer(vb);
-		drv->activeVertexProgram(NULL);		
-		drv->renderRawTriangles(CWaterModel::_SimpleWaterMat, _StartTri, _NumTris);		
+		NLMISC::CMatrix modelMat;
+		modelMat.setPos(NLMISC::CVector(obsPos.x, obsPos.y, zHeight));
+		drv->setupModelMatrix(modelMat);	
+		bool isAbove = obsPos.z > getWorldMatrix().getPos().z;	
+		CVertexBuffer &vb = renderTrav.Scene->getWaterVB();
+		if (drv->isWaterShaderSupported())
+		{
+			setupMaterialNVertexShader(drv, shape, obsPos, isAbove, zHeight);
+			nlassert(vb.getNumVertices() > 0);
+			drv->activeVertexBuffer(vb);
+			drv->renderRawTriangles(CWaterModel::_WaterMat, _StartTri, _NumTris);	
+			drv->activeVertexProgram(NULL);
+		}
+		else
+		{
+			setupSimpleRender(shape, obsPos, isAbove);
+			drv->activeVertexBuffer(vb);
+			drv->activeVertexProgram(NULL);		
+			drv->renderRawTriangles(CWaterModel::_SimpleWaterMat, _StartTri, _NumTris);		
+		}
 	}
 }
 

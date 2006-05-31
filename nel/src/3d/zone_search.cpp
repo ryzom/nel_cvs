@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.14 2006/01/10 17:38:47 boucher Exp $
+ * $Id: zone_search.cpp,v 1.15 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,7 +156,7 @@ void CZoneSearch::getZonePos (uint16 zoneId, uint &x, uint &y) const
 	y = _SizeZoneY*(zoneId>>8);	
 }
 
-void CZoneSearch::getListZoneId (uint x, uint y, uint sizeArea, vector<uint16> &l)
+void CZoneSearch::getListZoneId (uint x, uint y, uint sizeArea, vector<uint16> &l, const std::vector<uint16> *validZoneIds)
 {
 	sint startPosX, startPosY;
 	uint lastPosX, lastPosY, sizeAreaX, sizeAreaY;
@@ -199,7 +199,21 @@ void CZoneSearch::getListZoneId (uint x, uint y, uint sizeArea, vector<uint16> &
 	{
 		for(uint j = startPosX; j <= lastPosX; j += _SizeZoneX)
 		{
-			l.push_back(getZoneId(j, i));
+			uint16 zoneId = getZoneId(j, i);
+			if (validZoneIds)
+			{
+				bool found = false;
+				for(uint k = 0; k < validZoneIds->size(); ++k)
+				{
+					if (zoneId == (*validZoneIds)[k])
+					{
+						found = true;
+						break;
+					}
+				}
+				if (!found) continue;
+			}
+			l.push_back(zoneId);
 		}
 	}
 }

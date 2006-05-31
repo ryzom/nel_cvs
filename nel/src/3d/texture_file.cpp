@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * TODO: File description
  *
- * $Id: texture_file.cpp,v 1.28 2005/03/31 13:39:22 berenguier Exp $
+ * $Id: texture_file.cpp,v 1.29 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/hierarchical_timer.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -45,159 +46,180 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 	 *	It can be loaded/called through CAsyncFileManager for instance
 	 * ***********************************************/
 	
+	H_AUTO( NL3D_buildBitmapFromFile )
+
 	NLMISC::CIFile f;
-	//nldebug(_FileName.c_str());
-	try
+
+	string file;
 	{
-		string file = CPath::lookup(fileName);
+		H_AUTO( NL3D_buildBitmapPathLookup )
+		file = CPath::lookup(fileName, false);
+	}
+	if( file.empty() )
+	{
+		H_AUTO( NL3D_makeDummyBitmap )
+		// Not found...
+		dest.makeDummy();
+		nlwarning("Missing textureFile: %s", fileName.c_str());
+		return;
+	}
+	{
+		H_AUTO( NL3D_buildBitmapFileCache )
+
 		f.setAsyncLoading (asyncload);
-		f.setCacheFileOnOpen (asyncload);
+		f.setCacheFileOnOpen(false);	//asyncload); //AJM: significant performance loss for caching when loading textures		
+		f.allowBNPCacheFileOnOpen(false);	//asyncload);
+	}
 
-		// if mipmap skip, must not cache, because don't have to load all!!
-		if(asyncload && mipMapSkip>0)
-		{
-			f.setCacheFileOnOpen (false);
-			f.allowBNPCacheFileOnOpen(false);
-		}
-
+	{
+		H_AUTO( NL3D_openBitmapFile)
 		// Load bitmap.
 		if (f.open(file))
 		{
+			H_AUTO( NL3D_loadBitmap )
 			// skip DDS mipmap if wanted
 			dest.load (f, mipMapSkip);
 		}
-		else throw EPathNotFound(fileName);
-
-		// *** Need usercolor computing ?
-
-		// Texture not compressed ?
-		if (dest.PixelFormat == RGBA)
+		else
 		{
-			// Make a filename
-			string path = CFile::getFilename(fileName);
-			string ext = strrchr (fileName.c_str(), '.');
-			path.resize (path.size () - ext.size());
-			path += "_usercolor" + ext;
+			H_AUTO( NL3D_makeDummyBitmap )
+				// Not found...
+			dest.makeDummy();
+			nlwarning("Missing textureFile: %s", fileName.c_str());
+			return;
+		}
+	}
+	// *** Need usercolor computing ?
 
-			// Loopup the texture
-			string file2 = CPath::lookup( path, false, false);
-			if (!file2.empty())
+	// Texture not compressed ?
+	if (dest.PixelFormat == RGBA)
+	{
+		H_AUTO( NL3D_buildBitmapUserColor )
+		// Make a filename
+		string path = CFile::getFilename(fileName);
+		string ext = strrchr (fileName.c_str(), '.');
+		path.resize (path.size () - ext.size());
+		path += "_usercolor" + ext;
+
+		// Loopup the texture
+		string file2 = CPath::lookup( path, false, false);
+		if (!file2.empty())
+		{
+			// The file2 exist, load and compute it
+			CBitmap bitmap;
+			bitmap.loadGrayscaleAsAlpha (true);
+
+			// Open and read the file2
+			NLMISC::CIFile f2;
+			f2.setAsyncLoading (asyncload);
+			f2.setCacheFileOnOpen (asyncload); // Same as async loading
+			if (f2.open(file2))
 			{
-				// The file2 exist, load and compute it
-				CBitmap bitmap;
-				bitmap.loadGrayscaleAsAlpha (true);
+				bitmap.load(f2);
+			}
+			else
+			{
+				// Not found...
+				dest.makeDummy();
+				nlwarning("Missing textureFile: %s", file2.c_str());
+				return;
+			}
 
-				// Open and read the file2
-				NLMISC::CIFile f2;
-				f2.setAsyncLoading (asyncload);
-				f2.setCacheFileOnOpen (asyncload); // Same as async loading
-				if (f2.open(file2))
+			// Texture are the same size ?
+			if ((dest.getWidth() == bitmap.getWidth()) && (dest.getHeight() == bitmap.getHeight()))
+			{
+				// Convert in Alpha
+				if (bitmap.convertToType (CBitmap::Alpha))
 				{
-					bitmap.load(f2);
-				}
-				else throw EPathNotFound(file2);
+					// Compute it
+					uint8 *userColor = (uint8 *)&(bitmap.getPixels ()[0]);
+					CRGBA *color = (CRGBA *)&(dest.getPixels ()[0]);
 
-				// Texture are the same size ?
-				if ((dest.getWidth() == bitmap.getWidth()) && (dest.getHeight() == bitmap.getHeight()))
-				{
-					// Convert in Alpha
-					if (bitmap.convertToType (CBitmap::Alpha))
+					// For each pixel
+					uint pixelCount = dest.getWidth()*dest.getHeight();
+					uint pixel;
+					for (pixel = 0; pixel<pixelCount; pixel++)
 					{
-						// Compute it
-						uint8 *userColor = (uint8 *)&(bitmap.getPixels ()[0]);
-						CRGBA *color = (CRGBA *)&(dest.getPixels ()[0]);
-
-						// For each pixel
-						uint pixelCount = dest.getWidth()*dest.getHeight();
-						uint pixel;
-						for (pixel = 0; pixel<pixelCount; pixel++)
+						if (userColor[pixel]==0) 
 						{
-							if (userColor[pixel]==0) 
+							// New code: use new restrictions from IDriver.
+							float	Rt, Gt, Bt, At;
+							float	Lt;
+							float	Rtm, Gtm, Btm, Atm;
+
+							// read 0-1 RGB pixel.
+							Rt= (float)color[pixel].R/255;
+							Gt= (float)color[pixel].G/255;
+							Bt= (float)color[pixel].B/255;
+							Lt= Rt*0.3f + Gt*0.56f + Bt*0.14f;
+
+							// take Alpha from userColor src.
+							At= (float)userColor[pixel]/255;
+							Atm= 1-Lt*(1-At);
+
+							// If normal case.
+							if(Atm>0)
 							{
-								// New code: use new restrictions from IDriver.
-								float	Rt, Gt, Bt, At;
-								float	Lt;
-								float	Rtm, Gtm, Btm, Atm;
-
-								// read 0-1 RGB pixel.
-								Rt= (float)color[pixel].R/255;
-								Gt= (float)color[pixel].G/255;
-								Bt= (float)color[pixel].B/255;
-								Lt= Rt*0.3f + Gt*0.56f + Bt*0.14f;
-
-								// take Alpha from userColor src.
-								At= (float)userColor[pixel]/255;
-								Atm= 1-Lt*(1-At);
-
-								// If normal case.
-								if(Atm>0)
-								{
-									Rtm= Rt*At / Atm;
-									Gtm= Gt*At / Atm;
-									Btm= Bt*At / Atm;
-								}
-								// Else special case: At==0, and Lt==1.
-								else
-								{
-									Rtm= Gtm= Btm= 0;
-								}
-
-								// copy to buffer.
-								sint	r,g,b,a;
-								r= (sint)(Rtm*255+0.5f);
-								g= (sint)(Gtm*255+0.5f);
-								b= (sint)(Btm*255+0.5f);
-								a= (sint)(Atm*255+0.5f);
-								clamp(r, 0,255);
-								clamp(g, 0,255);
-								clamp(b, 0,255);
-								clamp(a, 0,255);
-								color[pixel].R = (uint8)r;
-								color[pixel].G = (uint8)g;
-								color[pixel].B = (uint8)b;
-								color[pixel].A = (uint8)a;
+								Rtm= Rt*At / Atm;
+								Gtm= Gt*At / Atm;
+								Btm= Bt*At / Atm;
 							}
+							// Else special case: At==0, and Lt==1.
+							else
+							{
+								Rtm= Gtm= Btm= 0;
+							}
+
+							// copy to buffer.
+							sint	r,g,b,a;
+							r= (sint)(Rtm*255+0.5f);
+							g= (sint)(Gtm*255+0.5f);
+							b= (sint)(Btm*255+0.5f);
+							a= (sint)(Atm*255+0.5f);
+							clamp(r, 0,255);
+							clamp(g, 0,255);
+							clamp(b, 0,255);
+							clamp(a, 0,255);
+							color[pixel].R = (uint8)r;
+							color[pixel].G = (uint8)g;
+							color[pixel].B = (uint8)b;
+							color[pixel].A = (uint8)a;
 						}
-					}
-					else
-					{
-						nlinfo ("Can't convert the usercolor texture %s in alpha mode", file2.c_str());
 					}
 				}
 				else
 				{
-					// Error
-					nlinfo ("User color texture is not the same size than the texture. (Tex : %s, Usercolor : %s)", file.c_str(), file2.c_str());
+					nlinfo ("Can't convert the usercolor texture %s in alpha mode", file2.c_str());
 				}
-			}
-		}
-		if(!isPowerOf2(dest.getWidth()) || !isPowerOf2(dest.getHeight()) )
-		{
-			// If the user want to correct those texture so that their canvas is enlarged
-			if (enlargeCanvasNonPOW2Tex)
-			{
-				uint pow2w = NLMISC::raiseToNextPowerOf2(dest.getWidth());
-				uint pow2h = NLMISC::raiseToNextPowerOf2(dest.getHeight());
-				CBitmap enlargedBitmap;
-				enlargedBitmap.resize(pow2w, pow2h, dest.PixelFormat);
-				// blit src bitmap
-				enlargedBitmap.blit(&dest, 0, 0);
-				// swap them
-				dest.swap(enlargedBitmap);
 			}
 			else
 			{
-				// Bug...
-				dest.makeNonPowerOf2Dummy();
-				nlwarning("TextureFile: %s is not a Power Of 2: %d,%d", fileName.c_str(), dest.getWidth(), dest.getHeight());
+				// Error
+				nlinfo ("User color texture is not the same size than the texture. (Tex : %s, Usercolor : %s)", file.c_str(), file2.c_str());
 			}
 		}
 	}
-	catch(EPathNotFound &e)
+	if(!isPowerOf2(dest.getWidth()) || !isPowerOf2(dest.getHeight()) )
 	{
-		// Not found...
-		dest.makeDummy();
-		nlwarning("Missing textureFile: %s (%s)", fileName.c_str(), e.what());
+		H_AUTO( NL3D_buildBitmapPowerOf2 )
+		// If the user want to correct those texture so that their canvas is enlarged
+		if (enlargeCanvasNonPOW2Tex)
+		{
+			uint pow2w = NLMISC::raiseToNextPowerOf2(dest.getWidth());
+			uint pow2h = NLMISC::raiseToNextPowerOf2(dest.getHeight());
+			CBitmap enlargedBitmap;
+			enlargedBitmap.resize(pow2w, pow2h, dest.PixelFormat);
+			// blit src bitmap
+			enlargedBitmap.blit(&dest, 0, 0);
+			// swap them
+			dest.swap(enlargedBitmap);
+		}
+		else
+		{
+			// Bug...
+			nlwarning("TextureFile: %s is not a Power Of 2: %d,%d", fileName.c_str(), dest.getWidth(), dest.getHeight());
+			dest.makeNonPowerOf2Dummy();
+		}
 	}
 }
 
@@ -215,7 +237,8 @@ void CTextureFile::doGenerate(bool async)
 	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
 	 *	It can be loaded/called through CAsyncFileManager for instance
 	 * ***********************************************/
-	
+	H_AUTO( NL3D_TextureFileDoGenerate )
+		
 	buildBitmapFromFile(*this, _FileName, async, _MipMapSkipAtLoad, _EnlargeCanvasNonPOW2Tex);
 }
 

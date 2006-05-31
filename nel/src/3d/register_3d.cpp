@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * TODO: File description
  *
- * $Id: register_3d.cpp,v 1.33 2005/02/22 10:19:11 besson Exp $
+ * $Id: register_3d.cpp,v 1.34 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,8 +51,7 @@
 #include "meshvp_per_pixel_light.h"
 #include "track_sampled_quat.h"
 #include "track_sampled_vector.h"
-
-
+#include "packed_zone.h"
 
 
 
@@ -135,6 +134,10 @@ void	registerSerial3d()
 		// Shapes VPs.
 		NLMISC_REGISTER_CLASS(CMeshVPWindTree);
 		NLMISC_REGISTER_CLASS(CMeshVPPerPixelLight);
+
+		// Packed collisions
+		NLMISC_REGISTER_CLASS(CPackedZone16);
+		NLMISC_REGISTER_CLASS(CPackedZone32);
 
 
 		bInitialized=true;

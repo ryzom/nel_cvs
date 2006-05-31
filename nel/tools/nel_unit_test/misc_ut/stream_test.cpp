@@ -3,11 +3,15 @@
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/sstring.h"
+#include "nel/misc/bit_mem_stream.h"
 
 #include "src/cpptest.h"
 
 using namespace std;
 using namespace NLMISC;
+
+// The following line is known to crash in a Ryzom service
+CBitMemStream globalBms( false, 2048 ); // global to avoid reallocation
 
 // Test suite for stream based classes
 // ! not complete at all at time of writing !
@@ -19,8 +23,14 @@ public:
 		TEST_ADD(CStreamTS::constAndStream);
 		TEST_ADD(CStreamTS::memStreamSwap);
 		TEST_ADD(CStreamTS::copyOnWrite);
-
+		TEST_ADD(CStreamTS::preallocatedBitStream);
 	}
+
+	void preallocatedBitStream()
+	{
+		CBitMemStream localBms( false, 2048 ); // global to avoid reallocation
+	}
+
 
 	void copyOnWrite()
 	{

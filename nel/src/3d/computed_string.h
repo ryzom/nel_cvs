@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.16 2005/02/22 10:19:10 besson Exp $
+ * $Id: computed_string.h,v 1.17 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,101 @@ public:
 };
 
 
+
+class CLetterColors : public ULetterColors
+{
+
+public:
+
+	struct SLetterColor{
+		uint Index;
+		NLMISC::CRGBA Color;
+
+		SLetterColor(uint index, const NLMISC::CRGBA & color)
+		{
+			Index = index;
+			Color = color;
+		}
+
+		operator==(const SLetterColor lc) const
+		{
+			return (Index==lc.Index && Color==lc.Color);
+		}
+	};
+	
+	CLetterColors() {}
+	virtual ~CLetterColors() {}
+
+	void clear() 
+	{
+		_indexedColors.clear();
+	}
+
+	bool empty() const
+	{
+		return _indexedColors.empty();
+	}
+
+	uint size() const
+	{
+		return _indexedColors.size();
+	}
+
+	uint getIndex(uint i) const
+	{
+		if(i>=0 && i<_indexedColors.size())
+			return _indexedColors[i].Index;
+
+		return -1;
+	}
+
+	const CRGBA & getColor(uint i) const
+	{
+		if(i>=0 && i<_indexedColors.size())
+			return _indexedColors[i].Color;
+
+		return CRGBA::Black;
+	}
+
+	const SLetterColor & getLetterColor(uint i) const
+	{
+		if(i>=0 && i<_indexedColors.size())
+			return _indexedColors[i];
+
+		static SLetterColor defaultLetterColor(0, CRGBA::Black);
+		return defaultLetterColor;
+	}
+
+	bool isSameLetterColors(ULetterColors * letterColors)
+	{
+		CLetterColors * letterCol = static_cast<CLetterColors*>(letterColors);
+		bool	sameLetterColors = false;
+		if(_indexedColors.size()==letterCol->size())
+		{
+			sameLetterColors= true;
+			for(uint i=0;i<_indexedColors.size();i++)
+			{
+				if(!(_indexedColors[i] == letterCol->getLetterColor(i)))
+				{
+					sameLetterColors = false;
+					break;
+				}
+			}
+		}
+
+		return sameLetterColors;
+	}
+
+	void pushLetterColor(uint index, const NLMISC::CRGBA & color) 
+	{
+		_indexedColors.push_back(SLetterColor(index, color));
+	}
+
+private:
+	std::vector< SLetterColor > _indexedColors;
+};
+
+
 // ***************************************************************************
 /**
  * CComputedString
@@ -83,6 +178,7 @@ struct CComputedString
 {
 
 public:
+
 	CVertexBuffer Vertices;
 	CMaterial	*Material;
 	CRGBA Color;
@@ -103,6 +199,8 @@ public:
 	/// Optionnal: each render*() method can draw a subset of letters. Default is 0/FFFFFFFF
 	uint32	SelectStart;
 	uint32	SelectSize;
+
+	CLetterColors LetterColors; 
 
 	/**
 	 * Hotspot positions (origine for the string placement)
@@ -177,7 +275,7 @@ public:
 	 *	Additionnaly, this method don't render directly to the driver but add primitives to a CRenderStringBuffer
 	 *	Use the method CRenderStringBuffer::flush() to flush it all.
 	 */
-	void render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuffer, 
+	void render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuffer,  
 					float x, float z,
 					float xmin=0, float ymin=0, float xmax=1, float ymax=1
 					);

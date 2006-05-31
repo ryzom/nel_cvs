@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * TODO: File description
  *
- * $Id: water_shape.cpp,v 1.39 2005/02/22 10:19:13 besson Exp $
+ * $Id: water_shape.cpp,v 1.40 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -261,6 +261,49 @@ CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeig
 	_ColorMapMatColumn0.set(1, 0);
 	_ColorMapMatColumn1.set(0, 1);
 	_ColorMapMatPos.set(0, 0);
+	_EnvMapMeanColorComputed = false;
+}
+
+//============================================
+CRGBA CWaterShape::computeEnvMapMeanColor()
+{
+	// TMP : 
+	// just used for water rendering in multiple parts with parallel projection
+	// -> drawn as an uniform polygon with envmap mean coloe	
+	if (!_EnvMapMeanColorComputed)
+	{
+		_EnvMapMeanColor = NLMISC::CRGBA(0, 0, 255);
+		if (_EnvMap[0])
+		{
+			_EnvMap[0]->generate();
+			_EnvMap[0]->convertToType(CBitmap::RGBA);
+			uint32 r = 0;
+			uint32 g = 0;
+			uint32 b = 0;
+			uint32 a = 0;			
+			uint numPixs = _EnvMap[0]->getHeight() * _EnvMap[0]->getWidth();
+			const CRGBA *src = (const CRGBA *) (&_EnvMap[0]->getPixels(0)[0]);
+			const CRGBA *last = src + numPixs;
+			while (src != last)
+			{
+				r += src->R;
+				g += src->G;
+				b += src->B;
+				a += src->A;
+				++ src;
+			}			
+			if (numPixs != 0)
+			{
+				_EnvMapMeanColor = NLMISC::CRGBA((uint8) (r / numPixs), 
+												 (uint8) (g / numPixs),
+												 (uint8) (b / numPixs),
+												 (uint8) (a / numPixs));
+			}
+			_EnvMap[0]->release();
+		}		
+		_EnvMapMeanColorComputed = true;
+	}
+	return _EnvMapMeanColor;
 }
 
 //============================================

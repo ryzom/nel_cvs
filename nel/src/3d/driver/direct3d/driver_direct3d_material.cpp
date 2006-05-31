@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.24 2005/09/22 14:24:42 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.25 2006/05/31 12:03:14 boucher Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -919,8 +919,8 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
 			}
 			else
-			{
-				setRenderState (D3DRS_COLORVERTEX, FALSE);
+			{								
+				setRenderState (D3DRS_COLORVERTEX, FALSE);				
 				setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
 			}
 		}
@@ -1136,13 +1136,15 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				setTextureState (0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 				setTextureState (0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
 				setTextureState (0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-				setTextureState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-				setTextureState (0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-				setTextureState (0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
+				setTextureState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+				setTextureState (0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);				
 				setTextureState (1, D3DTSS_COLOROP, D3DTOP_MULTIPLYADD);
 				setTextureState (1, D3DTSS_COLORARG0, D3DTA_CURRENT);
 				setTextureState (1, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-				setTextureState (1, D3DTSS_COLORARG2, D3DTA_CURRENT|D3DTA_ALPHAREPLICATE);
+				setTextureState (1, D3DTSS_COLORARG2, D3DTA_CURRENT|D3DTA_ALPHAREPLICATE);				
+				setTextureState (1, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+				setTextureState (1, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+				
 			}
 			break;
 			case CMaterial::Cloud:

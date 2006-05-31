@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.95 2005/10/19 16:58:38 boucher Exp $
+ * $Id: unified_network.cpp,v 1.96 2006/05/31 12:03:18 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -662,7 +662,24 @@ bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 		_CbServer->setExternalPipeForDataAvailable( _MainDataAvailablePipe ); // the main pipe is shared for all connections
 		//nldebug( "Pipe: set (server %p)", _CbServer );
 #endif
-		_CbServer->init(port);
+		bool retry = false;
+		do 
+		{
+			retry = false;
+			try
+			{
+				_CbServer->init(port);
+			}
+			catch (ESocket &)
+			{
+				nlwarning("Failed to init the listen socket on port %u, is the service already running ?", port);
+				// wait a little before retrying
+				nlSleep(5000);
+
+				retry = true;
+			}
+		} while(retry);
+
 		_CbServer->addCallbackArray(unServerCbArray, 1);				// the service ident callback
 		_CbServer->setDefaultCallback(uncbMsgProcessing);				// the default callback wrapper
 		_CbServer->setConnectionCallback(uncbConnection, NULL);
@@ -1148,7 +1165,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 		// update all server connections
 		if (_CbServer)
 		{
-			_CbServer->update(0);
+			_CbServer->update2((sint32)remainingTime, 0);
 		}
 		
 		// update all client connections
@@ -1174,7 +1191,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 				if (conn.CbNetBase->connected ())
 				{
 				nlassert(uc.Connections.size() > j);
-					conn.CbNetBase->update(0);
+					conn.CbNetBase->update2((sint32)remainingTime, 0);
 				}
 				else if (enableRetry && uc.AutoRetry)
 				{

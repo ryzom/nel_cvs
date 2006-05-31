@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.36 2005/02/22 10:19:10 besson Exp $
+ * $Id: computed_string.cpp,v 1.37 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,6 @@
 using namespace std;
 
 namespace NL3D {
-
 
 
 /*------------------------------------------------------------------*\
@@ -180,7 +179,7 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 /*------------------------------------------------------------------*\
 							render2DClip()
 \*------------------------------------------------------------------*/
-void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuffer, 
+void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuffer,
 					float x, float z,
 					float xmin, float zmin, float xmax, float zmax)
 {
@@ -241,13 +240,36 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 	// decal src for selection
 	srcPtr+= SelectStart*4 * srcSize;
 
+	CRGBA	mCol = Color;
+
 	// **** clipping?
 	if(allIn)
 	{
 		// copy All vertices 
 		uint numVerts= nNumQuadSrc*4;
+		uint count = 4;
+		uint lastIndex = 0;
 		for(uint i=0;i<numVerts;i++)
 		{
+			if(count==4){
+				
+				if(!LetterColors.empty())
+				{
+					uint ind = LetterColors.getIndex(lastIndex);
+					if(LetterColors.getIndex(lastIndex)==i/4)
+					{
+						mCol.modulateFromColor(Color, LetterColors.getColor(lastIndex));
+						
+						if(lastIndex+1<LetterColors.size())
+						{
+							lastIndex++;
+						}
+					}
+				}
+
+				count = 0;
+			}
+
 			// copy and translate pos
 			CHECK_VBA_RANGE(srcvba, srcPtr, Vertices.getVertexSize());
 			CHECK_VBA_RANGE(dstvba, dstPtr, rdrBuffer.Vertices.getVertexSize())
@@ -258,13 +280,14 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 			*((CUV*)(dstPtr+ofsDstUV))= *((CUV*)(srcPtr+ofsSrcUV));
 			// color
 			if (vtype == CVertexBuffer::TRGBA)
-				*((CRGBA*)(dstPtr+ofsDstColor))= Color;
+				*((CRGBA*)(dstPtr+ofsDstColor))= mCol;
 			else
-				*((CBGRA*)(dstPtr+ofsDstColor))= Color;
+				*((CBGRA*)(dstPtr+ofsDstColor))= mCol;
 
 			// next
 			srcPtr+= srcSize;
 			dstPtr+= dstSize;
+			count++;
 		}
 
 		// update the rdrBuffer
@@ -289,6 +312,9 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 		CUV *pClipUV2 = (CUV*)(((uint8*)pClipUV1) + dstSize);
 		CUV *pClipUV3 = (CUV*)(((uint8*)pClipUV2) + dstSize);
 		float ratio;
+
+		int lastIndex = 0;
+
 		for (uint32 i = 0; i < numVerts; i+=4)
 		{
 			if (((x+pIniPos0->x) > xmax) || ((x+pIniPos2->x) < xmin) ||
@@ -297,36 +323,49 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 				// Totally clipped do nothing
 			}
 			else
-			{
+			{	
+				if(!LetterColors.empty())
+				{
+					if(LetterColors.getIndex(lastIndex)==(i/4))
+					{
+						mCol.modulateFromColor(Color, LetterColors.getColor(lastIndex));
+						
+						if(lastIndex+1<LetterColors.size())
+						{
+							lastIndex++;
+						}
+					}
+				}
+
 				// copy with no clip
 				// v0
 				*((CVector*) (dstPtr + dstSize*0))= *((CVector*) (srcPtr + srcSize*0));
 				*((CUV*)	 (dstPtr + dstSize*0 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*0 + ofsSrcUV));
 				if (vtype == CVertexBuffer::TRGBA)
-					*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+					*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= mCol;
 				else
-					*((CBGRA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+					*((CBGRA*)	 (dstPtr + dstSize*0 + ofsDstColor))= mCol;
 				// v1
 				*((CVector*) (dstPtr + dstSize*1))= *((CVector*) (srcPtr + srcSize*1));
 				*((CUV*)	 (dstPtr + dstSize*1 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*1 + ofsSrcUV));
 				if (vtype == CVertexBuffer::TRGBA)
-					*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+					*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= mCol;
 				else
-					*((CBGRA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+					*((CBGRA*)	 (dstPtr + dstSize*1 + ofsDstColor))= mCol;
 				// v2
 				*((CVector*) (dstPtr + dstSize*2))= *((CVector*) (srcPtr + srcSize*2));
 				*((CUV*)	 (dstPtr + dstSize*2 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*2 + ofsSrcUV));
 				if (vtype == CVertexBuffer::TRGBA)
-					*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+					*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= mCol;
 				else
-					*((CBGRA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+					*((CBGRA*)	 (dstPtr + dstSize*2 + ofsDstColor))= mCol;
 				// v3
 				*((CVector*) (dstPtr + dstSize*3))= *((CVector*) (srcPtr + srcSize*3));
 				*((CUV*)	 (dstPtr + dstSize*3 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*3 + ofsSrcUV));
 				if (vtype == CVertexBuffer::TRGBA)
-					*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
+					*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= mCol;
 				else
-					*((CBGRA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
+					*((CBGRA*)	 (dstPtr + dstSize*3 + ofsDstColor))= mCol;
 
 				// translate dest
 				pClipPos0->x += x; pClipPos1->x += x; pClipPos2->x += x; pClipPos3->x += x;

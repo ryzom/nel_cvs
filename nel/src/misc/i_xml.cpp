@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.21 2006/01/10 17:38:47 boucher Exp $
+ * $Id: i_xml.cpp,v 1.22 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -108,9 +108,10 @@ void CIXml::release ()
 	if (_Parser)
 	{
 		// Free it
-		xmlFreeDoc (_Parser->myDoc);
+		xmlClearParserCtxt (_Parser);
 		xmlFreeParserCtxt (_Parser);
-		// xmlCleanupParser (); Crash..
+		xmlCleanupParser ();
+
 		_Parser = NULL;
 	}
 
@@ -141,6 +142,8 @@ bool CIXml::init (IStream &stream)
 {
 	// Release
 	release ();
+
+	xmlInitParser();
 
 	// Default : XML mode
 	_BinaryStream = NULL;

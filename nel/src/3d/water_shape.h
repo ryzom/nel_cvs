@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * TODO: File description
  *
- * $Id: water_shape.h,v 1.20 2005/02/22 10:19:13 besson Exp $
+ * $Id: water_shape.h,v 1.21 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -212,6 +212,8 @@ public:
 	void				setUseSceneWaterEnvMap(uint index, bool enable) { nlassert(index < 2); _UsesSceneWaterEnvMap[index] = enable; }
 	bool				getUseSceneWaterEnvMap(uint index) const { nlassert(index < 2); return _UsesSceneWaterEnvMap[index]; }	
 	//@}
+	// TMP : get mean color of over envmap
+	CRGBA				computeEnvMapMeanColor();
 private:
 	friend class	CWaterModel;	
 	void								computeBBox();
@@ -226,7 +228,10 @@ private:
 	bool								_UsesSceneWaterEnvMap[2];	
 	NLMISC::CSmartPtr<ITexture>			_BumpMap[2];	
 	NLMISC::CSmartPtr<ITexture>			_ColorMap;
-
+	// 
+	NLMISC::CRGBA						_EnvMapMeanColor;
+	bool								_EnvMapMeanColorComputed;
+	//
 	NLMISC::CVector2f					_HeightMapScale[2];		
 	NLMISC::CVector2f					_HeightMapSpeed[2];		
 	NLMISC::CVector2f					_ColorMapMatColumn0, _ColorMapMatColumn1, _ColorMapMatPos;	

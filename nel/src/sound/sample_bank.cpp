@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.17 2003/07/22 13:29:21 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.18 2006/05/31 12:03:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,10 +263,10 @@ void				CSampleBank::load(bool async)
 
 	// Load the sample bank from the builded sample_bank file.
 	string bankName(CStringMapper::unmap(_Name)+".sample_bank");
-	string filename = CPath::lookup(bankName);
+	string filename = CPath::lookup(bankName, false);
 	if (filename.empty())
 	{
-		nlwarning("Trying to load an unknown sample bank [%s]", bankName.c_str());
+		nlwarning("Could not find sample bank [%s]", bankName.c_str());
 		return;
 	}
 

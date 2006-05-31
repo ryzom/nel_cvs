@@ -1,7 +1,7 @@
 /** \file fasthls_modifier.h
  * TODO: File description
  *
- * $Id: fasthls_modifier.h,v 1.2 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: fasthls_modifier.h,v 1.3 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -53,6 +53,9 @@ public:
 	/// get the singleton
 	static CFastHLSModifier	&getInstance();
 
+	// release singleton
+	static void releaseInstance();
+
 	/// convert a HLS (0..255) to a RGBA.
 	CRGBA		convert(uint H, uint L, uint S);
 
@@ -86,7 +89,8 @@ private:
 
 	/// Constructor
 	CFastHLSModifier();
-
+	~CFastHLSModifier();
+	
 	void		convertDDSBitmapDXTC1Or1A(NLMISC::CBitmap &dst, const NLMISC::CBitmap &src, uint8 dh, uint dLum, uint dSat);
 	void		convertDDSBitmapDXTC3Or5(NLMISC::CBitmap &dst, const NLMISC::CBitmap &src, uint8 dh, uint dLum, uint dSat);
 };

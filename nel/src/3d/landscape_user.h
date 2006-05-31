@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * TODO: File description
  *
- * $Id: landscape_user.h,v 1.31 2005/02/22 10:19:10 besson Exp $
+ * $Id: landscape_user.h,v 1.32 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,10 +88,10 @@ public:
 	virtual	void	loadAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded);
 	/// Delete old zones, or load new zones, around a position. new Zones are loaded async.
 	virtual	void	refreshZonesAround(const CVector &pos, float radius);
-	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved);
+	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved, const std::vector<uint16> *validZoneIds = NULL);
 	/// Delete old zones, or load new zones, around a position, until it is finished. This is a blocking call.
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved, 
-		NLMISC::IProgressCallback &progress);
+		NLMISC::IProgressCallback &progress, const std::vector<uint16> *validZoneIds = NULL);
 	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const;
 	virtual void    invalidateAllTiles();
 	virtual void	removeAllZones();
@@ -202,6 +202,20 @@ public:
 	virtual	void					addTileCallback(ULandscapeTileCallback *cb);	
 	virtual	void					removeTileCallback(ULandscapeTileCallback *cb);	
 	virtual	bool					isTileCallback(ULandscapeTileCallback *cb);
+	// @}
+
+	// modify ZBuffer test of landscape material
+	virtual	void					setZFunc(UMaterial::ZFunc val);
+
+	/// \name getZone
+	// @{
+	// Get a zone pointer.
+	virtual const CZone*	getZone (sint zoneId) const;
+	// @}
+
+	/// \name raytrace
+	// @{
+	virtual float			getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end);
 	// @}
 
 public:

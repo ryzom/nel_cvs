@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * TODO: File description
  *
- * $Id: scene_group.cpp,v 1.82 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.83 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "water_model.h"
 #include "water_shape.h"
 #include "nel/misc/polygon.h"
+#include "nel/misc/path.h"
 
 
 using namespace NLMISC;
@@ -573,7 +574,16 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver, uint selectedTe
 		{
 			if (!_InstancesInfos[i].DontAddToScene)
 			{
-				_Instances[i] = scene.createInstance (shapeName);
+				// TMP FIX : some pacs_prim files where exported ...
+				if (nlstricmp(NLMISC::CFile::getExtension(shapeName), "pacs_prim") == 0)
+				{
+					nlwarning("Can't read %s (not a shape)", shapeName.c_str());
+					_Instances[i] = NULL;
+				}
+				else
+				{
+					_Instances[i] = scene.createInstance (shapeName);
+				}
 				if( _Instances[i] == NULL )
 				{
 					nlwarning("Not found '%s' file\n", shapeName.c_str());

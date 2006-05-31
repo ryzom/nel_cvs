@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.18 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.19 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,8 +96,11 @@ void		CMeshMultiLodInstance::traverseLoadBalancing()
 		CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)Shape);
 
 		// Reset render pass
-		setTransparency(false);
-		setOpacity(false);
+		if	(!getBypassLODOpacityFlag())
+		{
+			setTransparency(false);
+			setOpacity(false);
+		}
 
 		// Get the wanted number of polygons
 		float polygonCount= getNumTrianglesAfterLoadBalancing ();
@@ -160,13 +163,13 @@ void		CMeshMultiLodInstance::traverseLoadBalancing()
 				if (slot.Flags&CMeshMultiLod::CMeshSlot::BlendOut)
 				{
 					// Render the geom mesh with alpha blending with goodPolyCount
-					setTransparency(true);
+					if (!getBypassLODOpacityFlag()) setTransparency(true);
 					Flags|=CMeshMultiLodInstance::Lod0Blend;
 				}
 				else
 				{
 					// Render the geom mesh without alpha blending with goodPolyCount
-					setTransparency (slot.isTransparent());
+					if (!getBypassLODOpacityFlag()) setTransparency (slot.isTransparent());
 					setOpacity (slot.isOpaque());
 					Flags&=~CMeshMultiLodInstance::Lod0Blend;
 				}
@@ -180,7 +183,7 @@ void		CMeshMultiLodInstance::traverseLoadBalancing()
 				// Render the geom mesh with alpha blending with nextSlot->BeginPolygonCount
 				PolygonCountLod1=nextSlot->MeshGeom->getNumTriangles (distance);
 				Lod1=Lod0+1;
-				setTransparency(true);
+				if (!getBypassLODOpacityFlag()) setTransparency(true);
 			}
 		}
 		else
@@ -188,13 +191,18 @@ void		CMeshMultiLodInstance::traverseLoadBalancing()
 			if (slot.MeshGeom)
 			{
 				// Render without blend with goodPolyCount
-				setTransparency (slot.isTransparent());
-				setOpacity (slot.isOpaque());
+				if (!getBypassLODOpacityFlag())
+				{
+					setTransparency (slot.isTransparent());
+					setOpacity (slot.isOpaque());
+				}
 				Flags&=~CMeshMultiLodInstance::Lod0Blend;
 			}
 			else
 				Lod0=0xffffffff;
 		}
+
+		
 	}
 }
 

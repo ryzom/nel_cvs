@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.90 2006/01/10 17:38:47 boucher Exp $
+ * $Id: service.h,v 1.91 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,9 +214,9 @@ public:
 	// @{
 
 	/// Returns the instance of the service to access to methods/variables class
-	static IService					*getInstance () { nlassert (_Instance != NULL); return _Instance; }
+	static IService					*getInstance ();
 
-	/// Returns true if the service singleton has been in itialized
+	/// Returns true if the service singleton has been initialized
 	static bool						isServiceInitialized() { return _Instance != NULL; }
 
 	/// Returns the current service short name (ie: TS)
@@ -233,6 +233,9 @@ public:
 
 	/// Returns the service identifier
 	TServiceId						getServiceId () const { return _SId; }
+
+	/// Return the host name of the host machine
+	const std::string				&getHostName() const		{ return _HostName; }
 
 	/// Returns the status
 	sint							getExitStatus () const { return _ExitStatus; }
@@ -315,6 +318,8 @@ public:
 	void					addStatusTag(const std::string &statusTag);
 	/// Remove a tag from the status string
 	void					removeStatusTag(const std::string &statusTag);
+	/// Get the current status with attached tags
+	std::string				getFullStatus() const;
 	//@}
 
 	/// \name variables. These variables can be read/modified by the user.
@@ -436,6 +441,8 @@ private:
 	/// Array of arguments pass from the command line
 	NLMISC::CVectorSString				_Args;
 
+	/// Host name of the host machine that run the service
+	std::string							_HostName;
 	/// Listening port of this service
 	NLMISC::CVariable<uint16>			ListeningPort;
 
@@ -552,6 +559,19 @@ public:
 	/// implemente this virtual in you derived class
 	virtual void serviceLoopUpdate() =0;
 };
+
+
+inline IService *IService::getInstance()
+{
+	if (_Instance == NULL) 
+	{ 
+		/* the nel context MUST be initialised */ 
+		nlassertex(NLMISC::INelContext::isContextInitialised(), ("You are trying to access a safe singleton without having initialized a NeL context. The simplest correction is to add 'NLMISC::CApplicationContext myApplicationContext;' at the very begining of your application.")); 
+		// try to retrieve the safe singleton pointer
+		_Instance = reinterpret_cast<IService*>(NLMISC::INelContext::getInstance().getSingletonPointer("IService"));
+	} 
+	return _Instance; 
+}
 
 
 

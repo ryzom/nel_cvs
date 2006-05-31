@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.21 2005/10/03 10:08:05 boucher Exp $
+ * $Id: buf_server.h,v 1.22 2006/05/31 12:03:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ public:
 	virtual void	run();
 
 	/// Close listening socket
-	void			close() { _ListenSock.close(); }
+	void			close();
 
 	/// Returns the listening address
 	const CInetAddress&	localAddr() { return _ListenSock.localAddr(); }

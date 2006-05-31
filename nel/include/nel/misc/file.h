@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.29 2006/01/10 17:38:46 boucher Exp $
+ * $Id: file.h,v 1.30 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,9 @@ public:		// Advanced Usage.
 	/// Get the last 40 files opened. The files can be in a big file.
 	static void		dump (std::vector<std::string> &result);
 	
+	/// clear the dump of the last 40 files opened
+	static void		clearDump ();
+
 protected:
 	virtual void		serialBit(bool &bit) throw(EReadError);
 
@@ -163,7 +166,7 @@ private:
 	static uint32 _FileRead;
 	static uint32 _ReadFromFile;
 	static uint32 _ReadingFromFile;
-	static CSynchronized<std::list<std::string> > _OpenedFiles;
+	static CSynchronized<std::deque<std::string> > _OpenedFiles;
 	
 	bool _IsAsyncLoading;
 

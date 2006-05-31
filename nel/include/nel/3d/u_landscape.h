@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * TODO: File description
  *
- * $Id: u_landscape.h,v 1.32 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_landscape.h,v 1.33 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,13 @@
 #ifndef NL_U_LANDSCAPE_H
 #define NL_U_LANDSCAPE_H
 
+#include "nel/3d/u_material.h"
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
 #include "height_map.h"
+
 #include <string>
 
 namespace NLMISC
@@ -40,6 +43,7 @@ namespace NLMISC
 namespace NL3D
 {
 
+class CZone;
 
 using	NLMISC::CVector;
 using	NLMISC::CRGBA;
@@ -106,11 +110,12 @@ public:
 	 *	This method add or remove only one zone at a time.
 	 *	\zoneRemoved name of the zone removed, without extension (eg: "150_EM"). "" if none.
 	 *	\zoneAdded name of the zone added, without extension (eg: "150_EM"). "" if none.
+	 *  \validZones subset of zones that can be loaded (NULL for default set)
 	 */
-	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved) =0;
+	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved, const std::vector<uint16> *validZoneIds = NULL) =0;
 	/// Delete old zones, or load new zones, around a position, until it is finished. This is a blocking call.
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, 
-		std::vector<std::string> &zonesRemoved, NLMISC::IProgressCallback &progress) =0;
+		std::vector<std::string> &zonesRemoved, NLMISC::IProgressCallback &progress, const std::vector<uint16> *validZoneIds = NULL) =0;
 	/** Get list of zones currently loaded in landscape.
 	 *	\zonesLoaded array of name of the zones added, without extension (eg: "150_EM").
 	 */
@@ -303,6 +308,22 @@ public:
 	virtual	bool					isTileCallback(ULandscapeTileCallback *cb) = 0;
 	// @}
 
+	// modify ZBuffer test of landscape material
+	virtual	void					setZFunc(UMaterial::ZFunc val) = 0;
+
+	/// \name getZone
+	// @{
+	// Get a zone pointer.
+	virtual const CZone*	getZone (sint zoneId) const = 0;
+	// @}
+
+	/// \name raytrace
+	// @{
+	/** Get the ray collision against the TileFaces (ie only under approx 50 m)
+	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
+	 */
+	virtual float			getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end) = 0;
+	// @}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.73 2005/08/19 15:29:25 cado Exp $
+ * $Id: common.cpp,v 1.74 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #  include <cerrno>
 #  include <csignal>
 #  include <pthread.h>
+#  include <sched.h>
 #endif
 
 #include "nel/misc/command.h"

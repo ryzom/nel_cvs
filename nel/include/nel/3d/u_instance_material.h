@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * User interface for instance material
  *
- * $Id: u_instance_material.h,v 1.16 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_instance_material.h,v 1.17 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,7 @@ using NLMISC::CRGBA;
 class UInstanceMaterial
 {
 public:
+	enum ZFunc				{ always=0,never,equal,notequal,less,lessequal,greater,greaterequal, zfuncCount };
 	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
 
 	// This enums MUST be the same than in ITexture!!	
@@ -63,6 +64,12 @@ public:
 	/// \name Modes.
 	// @{
 	bool				isLighted() const;
+	void					setLighting(bool active, 
+										CRGBA emissive=CRGBA(0,0,0), 
+										CRGBA ambient=CRGBA(0,0,0), 
+										CRGBA diffuse=CRGBA(0,0,0), 
+										CRGBA specular=CRGBA(0,0,0),
+										float shininess= 10);
 	bool				isUserColor() const;
 	// @}
 
@@ -74,6 +81,9 @@ public:
 	void			setDstBlend(TBlend val);
 	void			setAlphaTestThreshold(float at);
 	void			setZWrite(bool active);
+	void			setZFunc(ZFunc val);
+	float			getAlphaTestThreshold() const;
+	void			setAlphaTest(bool active);
 
 	bool			getBlend() const;
 	TBlend			getSrcBlend(void)  const;

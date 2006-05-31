@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.36 2005/03/10 15:29:44 berenguier Exp $
+ * $Id: matrix.cpp,v 1.37 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1512,7 +1512,14 @@ void		CMatrix::serial(IStream &f)
 	if(f.isReading())
 		identity();
 	f.serial(StateBit);
-	f.serial(Scale33);
+	// avoid serial of random data
+	if(!f.isReading() && !hasScaleUniform())
+	{
+		float	fs= 1.f;
+		f.serial(fs);
+	}
+	else
+		f.serial(Scale33);
 	if( hasRot() )
 	{
 		f.serial(a11, a12, a13);

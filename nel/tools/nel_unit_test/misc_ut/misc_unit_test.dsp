@@ -154,6 +154,10 @@ SOURCE=.\co_task_test.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\config_file_test.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\csstring_test.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.114 2006/01/10 17:38:47 boucher Exp $
+ * $Id: debug.cpp,v 1.115 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,67 +197,56 @@ void nlError (const char *format, ...)
 
 // the default behavior is to display all in standard output and to a file named "log.log";
 
-void initDebug2 (bool logInFile)
+static void initDebug2 (bool logInFile)
 {
-	static bool alreadyInit = false;
-
-	if (!alreadyInit)
-	{
 #if DEFAULT_DISPLAYER
 
-		// put the standard displayer everywhere
+	// put the standard displayer everywhere
 
-		if (DebugLog==NULL)
-			return;
+	if (DebugLog==NULL)
+		return;
 
-	  //#ifdef NL_DEBUG
-		DebugLog->addDisplayer (sd);
-		//#endif // NL_DEBUG
-		InfoLog->addDisplayer (sd);
-		WarningLog->addDisplayer (sd);
-		AssertLog->addDisplayer (sd);
-		ErrorLog->addDisplayer (sd);
+  //#ifdef NL_DEBUG
+	DebugLog->addDisplayer (sd);
+	//#endif // NL_DEBUG
+	InfoLog->addDisplayer (sd);
+	WarningLog->addDisplayer (sd);
+	AssertLog->addDisplayer (sd);
+	ErrorLog->addDisplayer (sd);
 
-		// put the memory displayer everywhere
+	// put the memory displayer everywhere
 
-		// use the memory displayer and bypass all filter (even for the debug mode)
-		DebugLog->addDisplayer (DefaultMemDisplayer, true);
-		InfoLog->addDisplayer (DefaultMemDisplayer, true);
-		WarningLog->addDisplayer (DefaultMemDisplayer, true);
-		AssertLog->addDisplayer (DefaultMemDisplayer, true);
-		ErrorLog->addDisplayer (DefaultMemDisplayer, true);
+	// use the memory displayer and bypass all filter (even for the debug mode)
+	DebugLog->addDisplayer (DefaultMemDisplayer, true);
+	InfoLog->addDisplayer (DefaultMemDisplayer, true);
+	WarningLog->addDisplayer (DefaultMemDisplayer, true);
+	AssertLog->addDisplayer (DefaultMemDisplayer, true);
+	ErrorLog->addDisplayer (DefaultMemDisplayer, true);
 
-		// put the file displayer only if wanted
+	// put the file displayer only if wanted
 
 #if LOG_IN_FILE
-		if (logInFile)
-		{
-		  //#ifdef NL_DEBUG
-			DebugLog->addDisplayer (fd);
-			//#endif // NL_DEBUG
-			InfoLog->addDisplayer (fd);
-			WarningLog->addDisplayer (fd);
-			AssertLog->addDisplayer (fd);
-			ErrorLog->addDisplayer (fd);
-		}
+	if (logInFile)
+	{
+	  //#ifdef NL_DEBUG
+		DebugLog->addDisplayer (fd);
+		//#endif // NL_DEBUG
+		InfoLog->addDisplayer (fd);
+		WarningLog->addDisplayer (fd);
+		AssertLog->addDisplayer (fd);
+		ErrorLog->addDisplayer (fd);
+	}
 #endif // LOG_IN_FILE
 
-		// put the message box only in release for error
+	// put the message box only in release for error
 
-		if (DefaultMsgBoxDisplayer)
-		{
-			AssertLog->addDisplayer (DefaultMsgBoxDisplayer);
-			ErrorLog->addDisplayer (DefaultMsgBoxDisplayer);
-		}
+	if (DefaultMsgBoxDisplayer)
+	{
+		AssertLog->addDisplayer (DefaultMsgBoxDisplayer);
+		ErrorLog->addDisplayer (DefaultMsgBoxDisplayer);
+	}
 
 #endif // DEFAULT_DISPLAYER
-		alreadyInit = true;
-	}
-	else
-	{
-		nlwarning ("NLMISC::initDebug2() already called");
-		nlstop;
-	}
 }
 
 

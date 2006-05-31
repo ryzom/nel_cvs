@@ -1,7 +1,7 @@
 /** \file md5.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: md5.h,v 1.3 2006/01/10 17:38:46 boucher Exp $
+ * $Id: md5.h,v 1.4 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002,2003,2004 Nevrax Ltd.
@@ -35,25 +35,6 @@ namespace NLMISC
 
 class IStream;
 
-// ****************************************************************************
-/**
- * MD5 High level routines
- * Largely inspired from the RSA Data Security works
- * \author Matthieu Besson
- * \author Nevrax France
- * \date July 2004
- */
-
-inline bool operator <(const struct CHashKeyMD5 &a,const struct CHashKeyMD5 &b)
-{
-	return a < b;
-}
-
-// This function get a filename (it works with big files) and returns his MD5 hash key
-CHashKeyMD5 getMD5(const std::string &filename);
-
-// This function get a buffer with size and returns his MD5 hash key
-CHashKeyMD5 getMD5(const uint8 *buffer, uint32 size);
 
 
 // ****************************************************************************
@@ -94,6 +75,7 @@ struct CHashKeyMD5
 	void clear();
 	std::string toString() const;
 	bool fromString(const std::string &in);
+	bool operator==(const CHashKeyMD5 &in) const;
 	bool operator!=(const CHashKeyMD5 &in) const;
 	bool operator<(const CHashKeyMD5 &in) const;
 
@@ -125,6 +107,29 @@ private:
 	void decode (uint32 *output, const uint8 *input, uint len);
 
 };
+
+
+// ****************************************************************************
+/**
+ * MD5 High level routines
+ * Largely inspired from the RSA Data Security works
+ * \author Matthieu Besson
+ * \author Nevrax France
+ * \date July 2004
+ */
+
+/*
+inline bool operator <(const struct CHashKeyMD5 &a,const struct CHashKeyMD5 &b)
+{
+	return a < b;
+}
+*/
+
+// This function get a filename (it works with big files) and returns his MD5 hash key
+CHashKeyMD5 getMD5(const std::string &filename);
+
+// This function get a buffer with size and returns his MD5 hash key
+CHashKeyMD5 getMD5(const uint8 *buffer, uint32 size);
 
 }; // namespace NLMISC
 

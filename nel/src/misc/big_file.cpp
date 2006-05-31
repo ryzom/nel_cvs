@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.19 2005/06/23 16:35:39 boucher Exp $
+ * $Id: big_file.cpp,v 1.20 2006/05/31 12:03:17 boucher Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -36,7 +36,13 @@ namespace NLMISC {
 //CBigFile *CBigFile::_Singleton = NULL;
 NLMISC_SAFE_SINGLETON_IMPL(CBigFile);
 
-
+// ***************************************************************************
+void CBigFile::releaseInstance()
+{
+	if( _Instance )
+		delete _Instance;
+	_Instance = NULL;
+}
 // ***************************************************************************
 CBigFile::CThreadFileArray::CThreadFileArray()
 {

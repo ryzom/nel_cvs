@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.39 2005/08/01 16:23:41 cado Exp $
+ * $Id: command.h,v 1.40 2006/05/31 12:03:13 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,6 +151,9 @@ public:
 
 	/// if the string begin with an upper case, it s a variable, otherwise, it s a command
 	static bool isCommand (const std::string &str);
+
+	/// Retrieve the interface over command object for the given command name.
+	static ICommand *getCommand(const std::string &commandName);
 	
 	const std::string &getName () const { return _CommandName; }
 
@@ -208,7 +211,7 @@ struct TCommandHandlerClassInfo
 
 	/// The list of command available on this class of object.
 	typedef std::map<std::string, TCommandHandlerInfo>	TCommandsInfo;
-	TCommandsInfo	Commands;
+	TCommandsInfo	_Commands;
 
 	/// Constructor.
 	TCommandHandlerClassInfo()
@@ -219,13 +222,13 @@ struct TCommandHandlerClassInfo
 
 /** Base class for command handler.
  *	Command handler are a mean to build object that support NeL commands
- *	Commands are associated to object class and invoked to named instance.
- *	Each named instance must have a unique name (whatexer it's class).
+ *	_Commands are associated to object class and invoked to named instance.
+ *	Each named instance must have a unique name (whatever it's class).
  *	Unlike NeL global commands, object commands are invoked in the context 
  *	of the object instance.
  *
  *	In order to write an object that support commands, you must devive from
- *	template<class MyClass> CCommandHandler. The class ICommandsHandler
+ *	template<class MyClass> CCommandsHandler. The class ICommandsHandler
  *	is used by the command registry to handle any type of object.
  *
  * \author Boris 'SoniX' Boucher
@@ -320,7 +323,7 @@ struct TCommandHandler : public TCommandHandlerInfo
  *		}
  *	};
  *
- *	You can also derive a class an add some more commands in the 
+ *	You can also derive a class and add some more commands in the 
  *	derived class by using NLMISC_COMMAND_HANDLER_TABLE_EXTEND_BEGIN:
  *
  *	class CMyDerivedClass : public CMyClass
@@ -576,9 +579,9 @@ class CCommandRegistry
 	typedef std::set<std::string>				TCategorySet;
 
 	/// List of commands categories
-	TCategorySet	Categories;
+	TCategorySet	_Categories;
 	/// List of available command
-	TCommand		Commands;
+	TCommand		_Commands;
 
 	typedef CTwinMap<std::string, ICommandsHandler *>	TCommandsHandlers;
 	/// Registry for commands handlers named instance
@@ -611,7 +614,7 @@ public:
 	 * Case-sensitive. Displays the list after two calls with the same non-unique completion.
      * Completes commands used with prefixes (such as "help " for example) as well.
 	 */
-	void	expand (std::string &commandName, NLMISC::CLog &log=*InfoLog);
+	void expand (std::string &commandName, NLMISC::CLog &log=*InfoLog);
 
 	void serialCommands (IStream &f);
 
@@ -623,6 +626,9 @@ public:
 
 	/// if the string begin with an upper case, it s a variable, otherwise, it s a command
 	bool isCommand (const std::string &str);
+
+	/// Retrieve the interface over command object for the given command name.
+	ICommand *getCommand(const std::string &commandName);
 
 	/** declare a command to "enable control char". By default all commands "enable control char"
 	 *

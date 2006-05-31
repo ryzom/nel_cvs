@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.16 2005/08/19 15:31:20 cado Exp $
+ * $Id: ucstring.h,v 1.17 2006/05/31 12:03:13 boucher Exp $
  *
  */
 
@@ -202,6 +202,11 @@ public:
 		return res;
 	}
 
+	// for luabind (can't bind to 'substr' else ...)
+	ucstring luabind_substr(size_type pos = 0, size_type n = npos) const
+	{
+		return ucstringbase::substr(pos, n);
+	}
 
 	/// Convert the utf8 string into this ucstring (16 bits char)
 	void fromUtf8(const std::string &stringUtf8)
@@ -280,6 +285,14 @@ public:
 				push_back(code);
 			}
 		}
+	}
+
+	static ucstring makeFromUtf8(const std::string &stringUtf8)
+	{
+		ucstring ret;
+		ret.fromUtf8(stringUtf8);
+
+		return ret;
 	}
 };
 

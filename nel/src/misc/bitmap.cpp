@@ -1,9 +1,9 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
+ * \todo yoyo: readDDS and decompressDXTC* must work in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.61.4.3 2006/01/12 09:30:28 boucher Exp $
+ * $Id: bitmap.cpp,v 1.61.4.4 2006/05/31 14:06:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1560,6 +1560,27 @@ void CBitmap::buildMipMaps()
 	}
 }
 
+/*-------------------------------------------------------------------*\
+							computeNeededMipMapCount
+\*-------------------------------------------------------------------*/
+uint32 CBitmap::computeNeededMipMapCount() const
+{
+	if(_MipMapCount == 0) return 0;
+	if(!NLMISC::isPowerOf2(_Width)) return 1;
+	if(!NLMISC::isPowerOf2(_Height)) return 1;
+	
+	uint32 mipMapCount = 1;
+	uint32 w = _Width;
+	uint32 h = _Height;
+
+	while(w>1 || h>1)
+	{		
+		w = (w+1)/2;
+		h = (h+1)/2;
+		++mipMapCount;
+	}
+	return mipMapCount;
+}
 
 /*-------------------------------------------------------------------*\
 							releaseMipMaps

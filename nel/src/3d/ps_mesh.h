@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.26 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_mesh.h,v 1.26.16.1 2006/05/31 09:46:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -472,10 +472,12 @@ protected:
 	typedef NLMISC::CSmartPtr<CMesh>		  PMesh;
 	typedef CPSVector<std::string>::V		  TMeshNameVect;
 	typedef CPSVector<PMesh>::V				  TMeshVect;	
+	typedef CPSVector<const CVertexBuffer *>::V	  TVertexBufferVect;
 
 	// name of the shapes being used by this particle mesh.
-	TMeshNameVect _MeshShapeFileName;
-	TMeshVect	  _Meshes;
+	TMeshNameVect		_MeshShapeFileName;
+	TMeshVect			_Meshes;
+	TVertexBufferVect	_MeshVertexBuffers;
 
 	// caches the number of faces (for load balacing)
 	uint _NumFaces;
@@ -490,11 +492,11 @@ protected:
 	class CMeshDisplayShare
 	{
 		public:
-			/// ctor giving the max number of CDipslayMesh structures to be kept simultaneously.
+			/// ctor giving the max number of CMeshDisplay structures to be kept simultaneously.
 			CMeshDisplayShare(uint maxNumMD) : _MaxNumMD(maxNumMD), _NumMD(0) {}
 
 			// Retrieve a mesh display associated with the given mesh
-			CMeshDisplay &getMeshDisplay(CMesh *mesh, uint32 format);
+			CMeshDisplay &getMeshDisplay(CMesh *mesh, const CVertexBuffer &meshVB, uint32 format);
 			
 		private:									
 			struct   CMDEntry
@@ -509,7 +511,7 @@ protected:
 			/// build a set of render pass from a mesh
 			static void buildRdrPassSet(TRdrPassSet &dest, const CMesh &mesh);
 			/// Build a vb from a shape. The format can add an additionnal color
-			static void buildVB(CVertexBuffer &dest, const CMesh &mesh, uint32 format); 
+			static void buildVB(CVertexBuffer &dest, const CVertexBuffer &meshVB, uint32 format); 
 	};
 
 	friend class CMeshDisplayShare;
@@ -517,6 +519,18 @@ protected:
 	
 	/// manage vertex buffers and primitive blocks used for rendering
 	static CMeshDisplayShare		_MeshDisplayShare;	
+
+	/** Map a mesh name to its ram vb
+	  * If a mesh has been already setupped in the driver for another use than particle system meshes.
+	  * then locking it will return us an agp or vram pointer, which is baaad because we are reading from it
+	  * when writing each instance to the final vb.
+	  * This maps a mesh name, to its ram vb
+	  * NB / TODO Nico : would greatly benefits from real instancing using SetStreamFreq (this code was originally written in 2001 ...) ...
+	  * TODO 2 : get rid of all theses statics !!! move then in scene at least (ideally in a render context or something similar, because
+	  * it may be shared between several scenes)
+	  */
+	typedef std::map<std::string, CVertexBuffer> TMeshName2RamVB;
+	static  TMeshName2RamVB _MeshRamVBs;
 
 	/// vertex buffer used with prerotated meshs
 	static CVertexBuffer			_PreRotatedMeshVB;			  // mesh has no normals
@@ -554,6 +568,9 @@ protected:
 	/** Setup material so that global or per mesh color is taken in account. Useful if material hasn't been setup correctly in the export
 	  */
 	void setupMaterialColor(CMaterial &destMat, CMaterial &srcMat);
+
+	// Get a mesh vb from its index into the list of vbs.
+	const CVertexBuffer &getMeshVB(uint index);
 
 
 	/// A 'bitfield' to force some stage to be modulated with the primary color

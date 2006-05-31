@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.46.16.1 2006/02/06 13:48:01 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.46.16.2 2006/05/31 09:46:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -60,6 +60,7 @@ namespace NL3D
 CPSConstraintMesh::CMeshDisplayShare		CPSConstraintMesh::_MeshDisplayShare(16);	
 CVertexBuffer								CPSConstraintMesh::_PreRotatedMeshVB;			  // mesh has no normals
 CVertexBuffer								CPSConstraintMesh::_PreRotatedMeshVBWithNormal;  // mesh has normals
+CPSConstraintMesh::TMeshName2RamVB			CPSConstraintMesh::_MeshRamVBs;
 
 
 
@@ -550,9 +551,8 @@ public:
 	template <class T>	
 	static void drawMeshs(T posIt, CPSConstraintMesh &m, uint size, uint32 srcStep, bool opaque)
 	{
-		NL_PS_FUNC(CPSConstraintMeshHelper_drawMeshs)
-		CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) m._Meshes[0]);	
-		const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
+		NL_PS_FUNC(CPSConstraintMeshHelper_drawMeshs)		
+		const CVertexBuffer   &modelVb = m.getMeshVB(0);
 		
 
 		// size for model vertices
@@ -572,7 +572,7 @@ public:
 		uint leftToDo = size, toProcess;			
 		
 		/// get a vb in which to write. It has the same format than the input mesh, but can also have a color flag added
-		CPSConstraintMesh::CMeshDisplay  &md= m._MeshDisplayShare.getMeshDisplay(m._Meshes[0], modelVb.getVertexFormat() 
+		CPSConstraintMesh::CMeshDisplay  &md= m._MeshDisplayShare.getMeshDisplay(m._Meshes[0], modelVb, modelVb.getVertexFormat() 
 																| (m._ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 		m.setupRenderPasses((float) m._Owner->getOwner()->getSystemDate() - m._GlobalAnimDate, md.RdrPasses, opaque);
@@ -605,7 +605,7 @@ public:
 				const_cast<CVertexBuffer &>(modelVb).setVertexColorFormat(vtc);
 			}
 		}	
-		CVertexBufferRead vbaRead;
+		CVertexBufferRead vbaRead;		
 		modelVb.lock (vbaRead);
 		do
 		{
@@ -733,21 +733,21 @@ public:
 						{
 							lambda = 0.f;
 							opLambda = 1.f;
-							inVB0 = inVB1 = &(m._Meshes[numShapes - 1]->getVertexBuffer());
+							inVB0 = inVB1 = &(m.getMeshVB(numShapes - 1));
 						}
 						else if (*currMorphValue <= 0)
 						{
 							lambda = 0.f;
 							opLambda = 1.f;
-							inVB0 = inVB1 = &(m._Meshes[0]->getVertexBuffer());
+							inVB0 = inVB1 = &(m.getMeshVB(0));
 						}
 						else
 						{
 							uint iMeshIndex = (uint) *currMorphValue;
 							lambda = *currMorphValue - iMeshIndex;
 							opLambda = 1.f - lambda;
-							inVB0 = &(m._Meshes[iMeshIndex]->getVertexBuffer());
-							inVB1 = &(m._Meshes[iMeshIndex + 1]->getVertexBuffer());
+							inVB0 = &(m.getMeshVB(iMeshIndex));
+							inVB1 = &(m.getMeshVB(iMeshIndex + 1));
 						}
 						CVertexBufferRead vba0;
 						inVB0->lock (vba0);
@@ -846,9 +846,8 @@ public:
 									uint32 srcStep,
 									bool opaque)
 	{
-		// get the vb from the original mesh
-		CMesh				  &mesh	= *m._Meshes[0];	
-		const CVertexBuffer	  &modelVb = mesh.getVertexBuffer();
+		// get the vb from the original mesh		
+		const CVertexBuffer	  &modelVb = m.getMeshVB(0);
 
 		/// precompute rotation in a VB from the src mesh
 		CVertexBuffer &prerotVb  = m.makePrerotatedVb(modelVb);
@@ -877,7 +876,7 @@ public:
 		const uint prerotatedModelSize = prerotVb.getVertexSize() * modelVb.getNumVertices();
 
 		/// get a mesh display struct on this shape, with eventually a primary color added.
-		CPSConstraintMesh::CMeshDisplay  &md    = m._MeshDisplayShare.getMeshDisplay(m._Meshes[0], modelVb.getVertexFormat() 
+		CPSConstraintMesh::CMeshDisplay  &md    = m._MeshDisplayShare.getMeshDisplay(m._Meshes[0], modelVb, modelVb.getVertexFormat() 
 																| (m._ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 
@@ -1243,6 +1242,8 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 	
 
 	_Meshes.resize(_MeshShapeFileName.size());	
+	_MeshVertexBuffers.resize(_MeshShapeFileName.size());
+	std::fill(_MeshVertexBuffers.begin(), _MeshVertexBuffers.end(), (CVertexBuffer *) NULL);
 	if (numVertsVect) numVertsVect->resize(_MeshShapeFileName.size());
 	for (uint k = 0; k < _MeshShapeFileName.size(); ++k)
 	{
@@ -1258,7 +1259,7 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 			}
 			else
 			{			
-				_Meshes[k] = mesh;
+				_Meshes[k] = mesh;				
 				/// get  the mesh format, or check that is was the same that previous shapes ' one			
 				if (k == 0)
 				{			
@@ -1358,6 +1359,7 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 			releaseShapes();
 			_Meshes.resize(1);
 			_Meshes[0] = GetDummyMeshFromBank(*_ModelBank);
+			_MeshVertexBuffers[0] = &_Meshes[0]->getVertexBuffer();
 			if (!numVertsVect) break;
 		}
 	}
@@ -1611,6 +1613,7 @@ void CPSConstraintMesh::releaseShapes()
 		}
 	}
 	_Meshes.clear();
+	_MeshVertexBuffers.clear();
 }
 
 //====================================================================================
@@ -2146,7 +2149,7 @@ void CPSConstraintMesh::initPrerotVB()
 }
 
 //====================================================================================
-CPSConstraintMesh::CMeshDisplay &CPSConstraintMesh::CMeshDisplayShare::getMeshDisplay(CMesh *mesh, uint32 format)
+CPSConstraintMesh::CMeshDisplay &CPSConstraintMesh::CMeshDisplayShare::getMeshDisplay(CMesh *mesh, const CVertexBuffer &meshVB, uint32 format)
 {
 	NL_PS_FUNC(CMeshDisplayShare_getMeshDisplay)
 	nlassert(mesh);	
@@ -2171,7 +2174,7 @@ CPSConstraintMesh::CMeshDisplay &CPSConstraintMesh::CMeshDisplayShare::getMeshDi
 	_Cache.front().Format = format;
 	buildRdrPassSet(_Cache.front().MD.RdrPasses, *mesh);
 	_Cache.front().MD.VB.setName("CPSConstraintMesh::CMeshDisplay");
-	buildVB(_Cache.front().MD.VB, *mesh, format);
+	buildVB(_Cache.front().MD.VB, meshVB, format);
 	++ _NumMD;
 	/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
 	nlinfo("mesh setup time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));	*/
@@ -2199,11 +2202,10 @@ void CPSConstraintMesh::CMeshDisplayShare::buildRdrPassSet(TRdrPassSet &dest,  c
 
 
 //====================================================================================
-void CPSConstraintMesh::CMeshDisplayShare::buildVB(CVertexBuffer &dest, const CMesh &mesh, uint32 destFormat)
+void CPSConstraintMesh::CMeshDisplayShare::buildVB(CVertexBuffer &dest, const CVertexBuffer &meshVb, uint32 destFormat)
 {
 	NL_PS_FUNC(CMeshDisplayShare_buildVB)
-	/// we duplicate the original mesh data's 'ConstraintMeshBufSize' times, eventually adding a color	
-	const CVertexBuffer &meshVb = mesh.getVertexBuffer();	
+	/// we duplicate the original mesh data's 'ConstraintMeshBufSize' times, eventually adding a color		
 	nlassert(destFormat == meshVb.getVertexFormat() || destFormat == (meshVb.getVertexFormat() | (uint32) CVertexBuffer::PrimaryColorFlag) );
 	dest.setVertexFormat(destFormat);
 	dest.setPreferredMemory(CVertexBuffer::AGPVolatile, true);
@@ -2374,7 +2376,7 @@ void CPSConstraintMesh::restoreMaterials()
 {
 	NL_PS_FUNC(CPSConstraintMesh_restoreMaterials)
 	update();		
-	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Meshes[0], _Meshes[0]->getVertexBuffer().getVertexFormat() | (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Meshes[0], getMeshVB(0), _Meshes[0]->getVertexBuffer().getVertexFormat() | (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 	TRdrPassSet rdrPasses = md.RdrPasses;
 	// render meshs : we process each rendering pass
 	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin(); rdrPassIt != rdrPasses.end(); ++rdrPassIt)
@@ -2382,5 +2384,37 @@ void CPSConstraintMesh::restoreMaterials()
 		rdrPassIt->Mat = rdrPassIt->SourceMat;		
 	}
 }
+
+//=====================================================================================
+const CVertexBuffer &CPSConstraintMesh::getMeshVB(uint index)
+{
+	nlassert(!_Touched);
+	nlassert(index < _Meshes.size());	
+	nlassert(_MeshVertexBuffers.size() == _Meshes.size());	
+	const CVertexBuffer *vb = _MeshVertexBuffers[index];
+	if (!vb )
+	{
+		CMesh &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) _Meshes[index]);
+		vb = _MeshVertexBuffers[index] = &mesh.getVertexBuffer();
+	}
+	if (vb->getLocation() != CVertexBuffer::NotResident)
+	{
+		TMeshName2RamVB::iterator it = _MeshRamVBs.find(_MeshShapeFileName[index]);
+		if (it == _MeshRamVBs.end())
+		{			
+			CVertexBuffer &destVb = _MeshRamVBs[_MeshShapeFileName[index]];
+			CMesh &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) _Meshes[index]);
+			mesh.getVertexBuffer().copyVertices(destVb);	
+			_MeshVertexBuffers[index] = vb = &destVb;
+		}
+		else
+		{
+			_MeshVertexBuffers[index] = vb = &it->second;
+		}		
+	}
+	nlassert(vb->getLocation() == CVertexBuffer::NotResident);
+	return *vb;
+}
+
 
 } // NL3D

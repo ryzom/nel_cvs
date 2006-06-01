@@ -1,5 +1,8 @@
 [default]
 title=Newsletters Script
+proxy=Manager
 
 [actions]
 action.success=traverse_to:string:newsletters_page
+
+

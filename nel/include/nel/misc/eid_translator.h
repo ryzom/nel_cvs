@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.20.6.1.2.2 2006/05/22 11:18:25 boucher Exp $
+ * $Id: eid_translator.h,v 1.20.6.1.2.3 2006/06/01 17:16:23 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -74,6 +74,8 @@ public:
 
 	typedef std::map<NLMISC::CEntityId, CEntity>	TEntityCont;
 
+	/// clear all the registered entities from the translator.
+	void				clear();
 	// performs all check on a name ( name validity + uniqueness )
 	bool				checkEntityName (const ucstring &entityName);
 	/// return true if a name already exists

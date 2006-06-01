@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.33.6.1.2.4 2006/05/23 15:48:27 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.33.6.1.2.5 2006/06/01 17:16:23 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -233,6 +233,13 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 
 	return true;
 }
+
+void CEntityIdTranslator::clear()
+{
+	NameIndex.clear();
+	RegisteredEntities.clear();
+}
+
 
 bool CEntityIdTranslator::checkEntityName (const ucstring &entityName )
 {

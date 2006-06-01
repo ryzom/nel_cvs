@@ -1,5 +1,5 @@
 <metal:block use-macro="here/global_defines/macros/defines" />
-   <div id="portal-column-two" style="float:right;width:200px;">
+   <div id="portal-column-two" style="float:right;width:200px;min-height:1956px;">
      <div class="visualPadding">
           <metal:leftportlets use-macro="here/portlets_fetcher/macros/right_column" />
      </div>

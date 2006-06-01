@@ -184,34 +184,34 @@ namespace WS
 	
 	void CLoginServiceSkel::pendingUserLost_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
-		uint32	userId;
-			nlRead(__message, serial, userId);
-		pendingUserLost(sender, userId);
+		NLNET::CLoginCookie	cookie;
+			nlRead(__message, serial, cookie);
+		pendingUserLost(sender, cookie);
 	}
 		// An awaited user did not connect before the allowed timeout expire
-	void CLoginServiceProxy::pendingUserLost(NLNET::IModule *sender, uint32 userId)
+	void CLoginServiceProxy::pendingUserLost(NLNET::IModule *sender, const NLNET::CLoginCookie &cookie)
 	{
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->pendingUserLost(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+			_LocalModuleSkel->pendingUserLost(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), cookie);
 		}
 		else
 		{
 			// send the message for remote dispatching and execution or local queing 
 			NLNET::CMessage __message;
 			
-			buildMessageFor_pendingUserLost(__message, userId);
+			buildMessageFor_pendingUserLost(__message, cookie);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
 		}
 	}
 
 	// Message serializer. Return the message received in reference for easier integration
-	const NLNET::CMessage &CLoginServiceProxy::buildMessageFor_pendingUserLost(NLNET::CMessage &__message, uint32 userId)
+	const NLNET::CMessage &CLoginServiceProxy::buildMessageFor_pendingUserLost(NLNET::CMessage &__message, const NLNET::CLoginCookie &cookie)
 	{
 		__message.setType("PUL");
-			nlWrite(__message, serial, userId);
+			nlWrite(__message, serial, const_cast < NLNET::CLoginCookie& > (cookie));
 
 
 		return __message;

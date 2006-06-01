@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.8.2.1 2006/04/20 16:00:35 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.8.2.2 2006/06/01 17:18:33 boucher Exp $
  *
  */
 
@@ -334,12 +334,13 @@ CFES *findBestFES ( uint& totalNbUsers )
 
 	for (list<CFES>::iterator it=FESList.begin(); it!=FESList.end(); ++it)
 	{
-		if ((*it).State == AcceptClientOnly)
+		CFES &fes = *it;
+		if (fes.State == AcceptClientOnly)
 		{
-			if (best == NULL || best->getUsersCountHeuristic() > (*it).getUsersCountHeuristic())
-				best = &(*it);
+			if (best == NULL || best->getUsersCountHeuristic() > fes.getUsersCountHeuristic())
+				best = &fes;
 
-			totalNbUsers += (*it).NbUser;
+			totalNbUsers += fes.NbUser;
 		}
 
 	}
@@ -537,7 +538,7 @@ void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, 
 		totalNbPendingUsers += (*it).NbPendingUsers;
 	}
 
-	CWelcomeServiceMod::getInstance()->pendingUserLost(cookie.getUserId());
+	CWelcomeServiceMod::getInstance()->pendingUserLost(cookie);
 	CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
 }
 
@@ -1409,14 +1410,14 @@ namespace WS
 		}
 	}
 
-	void CWelcomeServiceMod::pendingUserLost(uint32 userId)
+	void CWelcomeServiceMod::pendingUserLost(const NLNET::CLoginCookie &cookie)
 	{
 		if (!_LoginService)
 			return;
 
 		CLoginServiceProxy ls(_LoginService);
 
-		ls.pendingUserLost(this, userId);
+		ls.pendingUserLost(this, cookie);
 	}
 
 

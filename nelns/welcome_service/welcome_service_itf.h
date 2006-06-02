@@ -5,12 +5,13 @@
 
 #ifndef WELCOME_SERVICE_ITF
 #define WELCOME_SERVICE_ITF
+#include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/string_conversion.h"
 #include "nel/net/message.h"
 #include "nel/net/module.h"
 #include "nel/net/module_builder_parts.h"
 #include "nel/net/module_message.h"
 #include "nel/net/module_gateway.h"
-#include "nel/misc/string_conversion.h"
 
 #include "nel/net/login_cookie.h"
 	

@@ -5,167 +5,146 @@
 /* <dtml-with base_properties> */
 
 .weblog-entry {
-min-height:170px; !important;
-background-color: #31322D;
-border: &dtml-borderWidth; solid #555555; 
-padding:3px 5px 4px 3px;
-padding-bottom:30px;
-margin-bottom: 1em;
-text-align:justify;
+   height:100%;
+   min-height:170px; !important;
+   background-color: #31322D;
+   border: &dtml-borderWidth; solid #555555;
+   padding:3px 5px 4px 3px;
+   padding-bottom:30px;
+   margin-bottom: 1em;
+   text-align:justify;
 }
-
-
-
-.weblog-entry div{
-padding:0;
-margin: 0;
-text-align:justify;
-}
-
 
 .unofficial-box {
-  min-height:170px; !important; 
-  background-color: #2C3437;
-  border: &dtml-borderWidth; solid #555F5F; 
-  padding:3px 5px 4px 3px;
-  padding-bottom:30px;
-  margin-bottom: 1em;
-  text-align:justify;
- }
-
-.unofficial-disclaimer { 
-/*  text-decoration: underline; */
- }
-
+   height:100%;
+   min-height:170px; !important;
+   background-color: #2C3437;
+   border: &dtml-borderWidth; solid #555F5F;
+   padding:3px 5px 4px 3px;
+   padding-bottom:30px;
+   margin-bottom: 1em;
+   text-align:justify;
+}
 
 ul.weblog-footer {
-list-style: none;
-clear: both;
-float:right;
-margin-bottom:-5px;
-padding:0;
+   list-style: none;
+   clear: both;
+   float:right;
+   margin-bottom:-5px;
+   padding:0;
 }
 
 ul.weblog-footer li {
-display: inline;
+   display: inline;
 }
 
 ul.weblog-footer a {
-background-color: transparent;
-border: none;
-color: &dtml-globalFontColor;;
-height: auto;
-margin-right: 3px;
-text-decoration: underline;
+   background-color: transparent;
+   border: none;
+   color: &dtml-globalFontColor;;
+   height: auto;
+   margin-right: 3px;
+   text-decoration: underline;
 }
 
 ul.weblog-footer a:hover {
-background-color: &dtml-globalBackgroundColor;;
-color: &dtml-globalFontColor;;
-border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;; 
-border: none;
+   background-color: &dtml-globalBackgroundColor;;
+   color: &dtml-globalFontColor;;
+   border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;; 
+   border: none;
 }
 
 
 .caption {
-color:#4bffff; !important;
-margin:0;
-padding:0;
-margin-top:3px;
+   color:#4bffff; !important;
+   margin:0;
+   padding:0;
+   margin-top:3px;
 }
 
 .topic-image, .weblog-topic-images {
-float:left;
-padding: 3px;
+   float:left;
+   padding: 3px;
 }
 
-.weblog-heading a{
-    color: white;
-    border : none; !important;
-    text-decoration : none; !important;
-}
 .weblog-heading {
-font-weight: bold;
-border : none; !important;
-color : #4bffff; !important;
-padding : 0px;
-margin  : 0px;
+   font-weight:bold;
+   height:100%;
+   width:100%;
 }
 
 .weblog-heading-entry a{
-text-decoration : none;
-text-transform: uppercase;
-color : #4bffff;
-border: none;
+   text-decoration : none;
+   text-transform: uppercase;
+   color : #4bffff;
+   border: none;
 }
 .weblog-heading-entry{
-font-weight: bold;
-border : none; !important;
-color : white; !important;
-padding : 0px;
-margin  : 0px;
+   font-weight: bold;
+   border : none; !important;
+   color : white; !important;
+   padding : 0px;
+   margin  : 0px;
 }
 
 div.topics-topics {
-margin: 3px;
+   margin: 3px;
 }
 
 div.topics-topics img {
-margin: 3px;
+   margin: 3px;
 }
 
-div.weblog-entry-excerpt {
-font-weight: bold;
-margin: 1px;
-padding-bottom:15px;
-}
-
-div.weblog-entry-excerpt {
-margin-top: 3px;
-margin-bottom: 3px;
+div .weblog-entry-excerpt {
+   height:100%;
+   font-weight: bold;
+   margin: 1px;
+   padding-bottom:15px;
+   margin-top: 3px;
+   margin-bottom: 3px;
 }
 
 div.weblog-excerpt {
-margin: 1px;
-font-weight: bold;
+   margin: 1px;
+   font-weight: bold;
 }
 
 div.weblog-body {
-margin: 3px;
+   margin: 3px;
 }
 
 div.weblog-about {
-color: &dtml-discreetColor;;
-margin: 3px;
+   color: &dtml-discreetColor;;
+   margin: 3px;
 }
 
 div.entry-trackback {
-font-size: smaller;
+   font-size: smaller;
 }
 
 
 /* Main display */
 .weblog-photo {
-text-align: center;
-margin: 3px;
+   text-align: center;
+   margin: 3px;
 }
 
 .weblog-photo-full .weblog-photo,
 .weblog-photo-brief .weblog-photo {
-text-align: left;
-margin: 3px;
-float: left;
+   text-align: left;
+   margin: 3px;
+   float: left;
 }
 
 .weblog-photo-full .weblog-photo img,
 .weblog-photo-brief .weblog-photo img {
-text-align: left;
+   text-align: left;
 }
 
 .weblog-photo img {
 border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
-padding: 2px;
-align : right;
+   padding: 2px;
+   align : right;
 }
 
 h2.weblog-heading a{
@@ -193,6 +172,7 @@ color : #4bffff;
 .weblog-summary {
 margin-top: 2px;
 margin-bottom: 2px;
+height:100%;
 }
 
 .weblog-summary img { 

@@ -260,6 +260,7 @@
 	   &nbsp;[&nbsp;
           <a href=""
             tal:attributes="href string:${entry/absolute_url}#comments"><span
+            i18n:domain="RyzomSkin"
             i18n:translate="comments">Comments</span>&nbsp;
             (<span tal:content="python:getDiscussionFor(entry).replyCount(entry)">0</span>)
           </a>
@@ -274,6 +275,7 @@
            &nbsp;|&nbsp;&nbsp;
           <a href=""
             tal:attributes="href string:${entry/absolute_url}/base_edit"
+            i18n:domain="RyzomSkin"
             i18n:translate="edit">Edit</a>&nbsp;]
         </li>
 

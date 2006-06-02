@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.8.2.1 2006/04/20 15:36:36 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.8.2.2 2006/06/02 17:38:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -614,6 +614,7 @@ namespace NLNET
 		/// A transport have received a message
 		virtual void onReceiveMessage(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveMessage);
 			// dispatch the message
 			if (from->NextMessageType != CModuleMessageHeaderCodec::mt_invalid)
 			{
@@ -806,6 +807,7 @@ namespace NLNET
 		/** A gateway receive module operation */
 		void onReceiveModuleMessage(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveModuleMessage);
 			// clean the message type now, any return path will be safe
 			CModuleMessageHeaderCodec::TMessageType msgType = from->NextMessageType;
 			from->NextMessageType = CModuleMessageHeaderCodec::mt_invalid;
@@ -840,6 +842,7 @@ namespace NLNET
 		// A gateway receive a module message header
 		void onReceiveModuleMessageHeader(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveModuleMessageHeader);
 			if (from->NextMessageType != CModuleMessageHeaderCodec::mt_invalid)
 			{
 				// juste warn (but that is VERY BAD)
@@ -868,6 +871,7 @@ namespace NLNET
 		/** A gateway receive a general update message */
 		void onReceiveModuleUpdate(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveModuleUpdate);
 			while (uint32(msgin.getPos()) != msgin.length())
 			{
 				CGatewayRoute::TPendingEventType type;
@@ -906,6 +910,7 @@ namespace NLNET
 		/** A gateway send new modules informations */
 		void onReceiveModuleAdd(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveModuleAdd);
 			TModuleDescCodec modDesc;
 			nlRead(msgin, serial, modDesc);
 
@@ -1006,6 +1011,7 @@ namespace NLNET
 
 		void onReceiveModuleRemove(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveModuleRemove);
 			TModuleId	moduleId;
 			nlRead(msgin, serial, moduleId);
 
@@ -1014,6 +1020,7 @@ namespace NLNET
 
 		void onReceiveModuleDistanceUpdate(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveModuleDistanceUpdate);
 			TModuleId moduleId;
 			uint32	newDistance;
 
@@ -1114,6 +1121,7 @@ namespace NLNET
 
 		void onReceiveModuleSecurityUpdate(CGatewayRoute *from, const CMessage &msgin)
 		{
+			H_AUTO(CModuleGetaway_onReceiveModuleSecurityUpdate);
 //			TModuleId foreignModuleId;
 //			TSecurityData *modSec;
 			TModuleSecurityChangeMsg secChg;
@@ -1178,6 +1186,7 @@ namespace NLNET
 		
 		virtual void onAddModuleProxy(IModuleProxy *addedModule)
 		{
+			H_AUTO(CModuleGetaway_onAddmoduleProxy);
 			// disclose module to local modules 
 			discloseModule(addedModule);
 
@@ -1198,6 +1207,7 @@ namespace NLNET
 
 		virtual void onRemoveModuleProxy(IModuleProxy *removedModule)
 		{
+			H_AUTO(CModuleGetaway_onRemoveModuleProxy);
 			// for each route
 			{
 				// for each route
@@ -1278,6 +1288,7 @@ namespace NLNET
 
 		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message)
 		{
+			H_AUTO(CModuleGetaway_sendModuleMessage);
 			// manage firewall
 			if (addresseeProxy->getGatewayRoute()
 				&& addresseeProxy->getGatewayRoute()->getTransport()->Firewalled)
@@ -1377,6 +1388,7 @@ namespace NLNET
 		}
 		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const CMessage &message)
 		{
+			H_AUTO(CModuleGetaway_dispatchModuleMessage);
 			CMessage::TMessageType msgType = message.getType();
 			// retrieve the address module from the proxy
 			nlassert(addresseeProxy->getGatewayRoute() == NULL);
@@ -1442,6 +1454,7 @@ namespace NLNET
 		}
 		void				onModuleUpdate()
 		{
+			H_AUTO(CModuleGetaway_onModuleUpdate);
 			// send waiting local messages
 			while (!_LocalMessages.empty())
 			{
@@ -1566,6 +1579,7 @@ namespace NLNET
 		virtual void _broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 		{
+			H_AUTO(CModuleGetaway__broadcastModuleMessage);
 			// send the message to all proxies (except the sender module)
 			TLocalModuleIndex::iterator it(_LocalModuleIndex.find(senderModule->getModuleId()));
 			nlassert(it != _LocalModuleIndex.end());

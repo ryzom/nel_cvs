@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10.4.7.2.1 2006/04/20 15:36:36 boucher Exp $
+ * $Id: module.cpp,v 1.10.4.7.2.2 2006/06/02 17:38:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,6 +295,8 @@ namespace NLNET
 
 	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
+		H_AUTO(CModuleBase_onReceiveModuleMessage);
+
 		if (!_ModuleTasks.empty())
 		{
 			// there is a task running, queue in the message
@@ -324,6 +326,8 @@ namespace NLNET
 
 	void CModuleBase::_receiveModuleMessageTask()
 	{
+		H_AUTO(CModuleBase__receiveModuleMessageTask);
+		
 		while (!_MessageDispatchTask->isTerminationRequested())
 		{
 			// we have a message to dispatch
@@ -446,6 +450,8 @@ namespace NLNET
 	 */
 	void CModuleBase::invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed)
 	{
+		H_AUTO(CModuleBase_invokeModuleOperation);
+
 		nlassert(opMsg.getType() == CMessage::Request);
 
 		// check that we are running in a coroutine task
@@ -532,6 +538,8 @@ namespace NLNET
 
 	void CModuleBase::_onModuleUp(IModuleProxy *removedProxy)
 	{
+		H_AUTO(CModuleBase__onModuleUp);
+
 		// call the normal callback in the interceptor list
 		TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
 		for (;first != last; ++first)
@@ -543,6 +551,8 @@ namespace NLNET
 
 	void CModuleBase::_onModuleDown(IModuleProxy *removedProxy)
 	{
+		H_AUTO(CModuleBase__onModuleDown);
+
 		// remove any message from the message queue that come from this proxy
 		{
 			TMessageList::iterator first(_SyncMessages.begin()), last(_SyncMessages.end());
@@ -591,6 +601,8 @@ namespace NLNET
 
 	bool CModuleBase::_onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
+		H_AUTO(CModuleBase__OnProcessModuleMessage);
+
 		// try the call on each interceptor
 		bool result;
 		result = false;
@@ -846,6 +858,8 @@ namespace NLNET
 	void		CModuleProxy::sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 		throw (EModuleNotReachable)
 	{
+		H_AUTO(CModuleProxy_sendModuleMessage);
+
 		if (_Gateway == NULL )
 		{
 			throw EModuleNotReachable();

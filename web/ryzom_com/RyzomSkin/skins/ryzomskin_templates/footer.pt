@@ -16,7 +16,7 @@
   	</td><td id="footer-right">
       <img border="0" src="footer_r.png" width="351" height="110" usemap="#map2">
       <map name="map2"> 
-       <area shape="rect" coords="200,9,331,25" href="http://www.nevrax.com" target="_blank">
+       <!-- area shape="rect" coords="200,9,331,25" href="http://www.nevrax.com" target="_blank" -->
        <area shape="rect" coords="201,37,331,65" href="http://www.themis-group.com/" target="_blank">
        <area shape="rect" coords="196,71,265,97" href="http://www.jolt.co.uk" target="_blank">
        <area shape="rect" coords="93,76,172,88" href="http://www.plone.org" target="_blank">

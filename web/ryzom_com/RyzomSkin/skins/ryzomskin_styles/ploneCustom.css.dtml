@@ -405,6 +405,7 @@ input {
   padding:0;margin:0;border:0;
   text-decoration: none;
   border-left: 1px solid #999;
+  padding-left:0.3em;
   color: black;
 }
 

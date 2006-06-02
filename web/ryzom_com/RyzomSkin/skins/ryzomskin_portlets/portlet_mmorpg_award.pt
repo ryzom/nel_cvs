@@ -1,0 +1,14 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      i18n:domain="plone">
+<metal:block use-macro="here/global_defines/macros/defines" />
+  <body>
+
+    <div style="padding-top:2em;padding-right:5%;padding-left:5%;" metal:define-macro="portlet" class="portletItem">
+      <a href="http://www.mmorpg.com/showFeature.cfm/loadFeature/388/page/6/">
+        <img src="/images/home/ryzom_award2005_mmorpg_s.gif" border="0">
+      </a>
+    </div>
+
+  </body>
+</html>

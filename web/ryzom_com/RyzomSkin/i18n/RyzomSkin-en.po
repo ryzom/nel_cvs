@@ -19,6 +19,9 @@ msgstr ""
 msgid "tun"
 msgstr ""
 
+msgid "by"
+msgstr "by"
+
 msgid "here"
 msgstr "here"
 

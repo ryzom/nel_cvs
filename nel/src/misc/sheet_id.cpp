@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.36.8.1 2006/05/12 13:26:14 saffray Exp $
+ * $Id: sheet_id.cpp,v 1.36.8.2 2006/06/05 10:24:32 miller Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -109,6 +109,7 @@ bool CSheetId::buildSheetId(const std::string& sheetName)
 {
 	nlassert(_Initialised);
 
+	// try looking up the sheet name in _SheetNameToId
 	CStaticMap<CChar,uint32,CCharComp>::const_iterator itId;
 	CChar c;
 	c.Ptr = new char [sheetName.size()+1];
@@ -126,8 +127,18 @@ bool CSheetId::buildSheetId(const std::string& sheetName)
 #endif
 		return true;
 	}
-	return false;		
-	
+
+	// we failed to find the sheet name in the sheetname map so see if the string is numeric
+	if (sheetName.size()>1 && sheetName[0]=='#')
+	{
+		uint32 numericId= atoi(sheetName.c_str()+1);
+		if (NLMISC::toString("#%u",numericId)==sheetName)
+		{
+			_Id.Id= numericId;
+			return true;
+		}
+	}
+	return false;			
 }
 
 void CSheetId::loadSheetId ()
@@ -376,7 +387,7 @@ bool CSheetId::operator < (const CSheetId& sheetRef ) const
 //	toString
 //
 //-----------------------------------------------
-string CSheetId::toString() const
+string CSheetId::toString(bool ifNotFoundUseNumericId) const
 {
 	nlassert(_Initialised);
 
@@ -390,7 +401,14 @@ string CSheetId::toString() const
 		// This nlwarning is commented out because the loggers are mutexed, therefore
 		// you couldn't use toString() within a nlwarning().
 		//nlwarning("<CSheetId::toString> The sheet %08x is not in sheet_id.bin",_Id.Id);
-		return NLMISC::toString( "<Sheet %d not found in sheet_id.bin>", _Id.Id );
+		if (ifNotFoundUseNumericId)
+		{
+			return NLMISC::toString( "#%u", _Id.Id );
+		}
+		else
+		{
+			return NLMISC::toString( "<Sheet %d not found in sheet_id.bin>", _Id.Id );
+		}
 	}
 
 } // toString //

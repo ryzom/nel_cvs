@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.34.4.6 2006/05/10 12:27:55 miller Exp $
+ * $Id: sstring.h,v 1.34.4.7 2006/06/05 10:24:32 miller Exp $
  */
 
 
@@ -356,6 +356,9 @@ public:
 	int atoi() const;
 	signed atosi() const;
 	unsigned atoui() const;
+	sint64 atoi64() const;
+	sint64 atosi64() const;
+	uint64 atoui64() const;
 
 	/// A handy atof routine...
 	double atof() const;

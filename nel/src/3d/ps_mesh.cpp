@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.46.16.2 2006/05/31 09:46:59 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.46.16.3 2006/06/08 09:26:01 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -408,8 +408,7 @@ void CPSMesh::updatePos()
 		const CMatrix &transfo = getLocalToWorldMatrix();
 		do
 		{
-			(*instanceIt)->show();
-
+						
 			tmat.identity();
 			mat.identity();
 
@@ -426,7 +425,16 @@ void CPSMesh::updatePos()
 			
 			(*instanceIt)->setMatrix(transfo * tmat * mat);			
 			if (CParticleSystem::OwnerModel)
-			{			
+			{				
+				// make sure the visibility is the same
+				if (CParticleSystem::OwnerModel->isHrcVisible())
+				{
+					(*instanceIt)->show();
+				}
+				else
+				{
+					(*instanceIt)->hide();
+				}
 				(*instanceIt)->setClusterSystem(CParticleSystem::OwnerModel->getClusterSystem());
 			}
 
@@ -2416,5 +2424,23 @@ const CVertexBuffer &CPSConstraintMesh::getMeshVB(uint index)
 	return *vb;
 }
 
+//=====================================================================================
+void CPSMesh::onShow(bool shown)
+{
+	for(uint k = 0; k < _Instances.getSize(); ++k)
+	{
+		if (_Instances[k])
+		{
+			if (shown)
+			{
+				_Instances[k]->show();
+			}
+			else
+			{
+				_Instances[k]->hide();
+			}
+		}
+	}
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.26.16.1 2006/05/31 09:46:59 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.26.16.2 2006/06/08 09:25:40 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -117,6 +117,9 @@ public:
 
 	virtual void setZBias(float value) {}
 	virtual float getZBias() const { return 0.f; }
+
+	// from CPSLocatedBindable
+	virtual void onShow(bool shown);
 		
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * TODO: File description
  *
- * $Id: particle_system.cpp,v 1.92 2005/08/19 15:32:13 cado Exp $
+ * $Id: particle_system.cpp,v 1.92.4.1 2006/06/08 09:28:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -755,6 +755,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
+	CHECK_INTEGRITY
 	NL_PS_FUNC_MAIN(CParticleSystem_serial)
 	sint version =  f.serialVersion(19);
 
@@ -2172,6 +2173,10 @@ void CParticleSystem::checkIntegrity()
 		nlassert(_UserCoordSystemInfo != NULL);
 		nlassert(_UserCoordSystemInfo->NumRef == userMatrixUsageCount);
 	}
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		nlassert(_ProcessVect[k]->getOwner() == this);
+	}
 }
 
 ///=======================================================================================
@@ -2321,5 +2326,16 @@ void CParticleSystem::dumpHierarchy()
 		}	
 	}
 }
+
+///=======================================================================================
+void CParticleSystem::onShow(bool shown)
+{
+	NL_PS_FUNC_MAIN(CParticleSystem_onShow)
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		_ProcessVect[k]->onShow(shown);		
+	}
+}
+
 
 } // NL3D

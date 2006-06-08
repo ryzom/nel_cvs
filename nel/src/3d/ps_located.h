@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * TODO: File description
  *
- * $Id: ps_located.h,v 1.41 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_located.h,v 1.41.16.1 2006/06/08 09:26:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -569,6 +569,10 @@ public:
 	// For debug only, check if particles life is in the range [0, 1]
 	 void	checkLife() const;
 
+
+	 // from CParticleSystemProcess
+	 virtual void onShow(bool shown);
+
 protected:
 
 
@@ -897,6 +901,10 @@ public:
 	
 	// change z-bias in material (default does nothing)
 	virtual void			setZBias(float value) {}
+
+
+	// called when the show / hide flag has been changed
+	virtual void onShow(bool shown) {}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

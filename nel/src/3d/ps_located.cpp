@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * TODO: File description
  *
- * $Id: ps_located.cpp,v 1.81 2005/08/19 15:32:13 cado Exp $
+ * $Id: ps_located.cpp,v 1.81.4.1 2006/06/08 09:26:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,6 +153,7 @@ void CPSLocated::checkIntegrity() const
 		nlassert(_CollisionNextPos->getSize() == _Pos.getSize());
 		nlassert(_CollisionNextPos->getMaxSize() == _Pos.getMaxSize());
 	}
+	//	
 }
 
 ///***************************************************************************************
@@ -857,11 +858,11 @@ CPSLocated::~CPSLocated()
 		(*it2)->finalize();
 		delete *it2;		
 	} 
-
+	_LocatedBoundCont.clear();
 
 	delete _LifeScheme;
 	delete _MassScheme;
-	delete _CollisionNextPos;
+	delete _CollisionNextPos;	
 	CHECK_PS_INTEGRITY
 }
 
@@ -1433,8 +1434,7 @@ public:
 ///***************************************************************************************
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	NL_PS_FUNC(CPSLocated_serial)
-	CHECK_PS_INTEGRITY	
+	NL_PS_FUNC(CPSLocated_serial)	
 
 	// version 7 : - removed the field _NbFramesToSkip to get some space (it is never used)
 	//			   - removed the requestStack (system graph can't contains loops now)
@@ -1603,6 +1603,15 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 
 	f.serialContPolyPtr(_LocatedBoundCont);
+
+
+	// check that owners are good
+	#ifdef NL_DEBUG
+		for(uint k = 0; k < _LocatedBoundCont.size(); ++k)
+		{
+			nlassert(_LocatedBoundCont[k]->getOwner() == this);
+		}
+	#endif
 	
 	if (ver > 1)
 	{
@@ -3140,5 +3149,15 @@ void CPSLocated::checkLife() const
 		}
 	}
 }
+
+///***************************************************************************************
+void CPSLocated::onShow(bool shown)
+{
+	for(TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		(*it)->onShow(shown);
+	}
+}
+
 
 } // NL3D

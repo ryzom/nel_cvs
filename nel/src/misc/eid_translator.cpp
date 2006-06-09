@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.33.6.1.2.6 2006/06/02 17:38:54 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.33.6.1.2.7 2006/06/09 16:20:21 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -266,7 +266,7 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName )
 */
 }
 
-void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const string &userName)
+void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const string &userName, uint32 shardId)
 {
 	H_AUTO(EIdTrans_registerEntity);
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
@@ -290,11 +290,11 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	}
 	
 	nlinfo ("EIT: Register EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
-	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
+	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot, shardId)));
 	NameIndex.insert(make_pair(entityName, reid));
 }
 
-void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName)
+void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName, uint32 shardId)
 {
 	CEntityId reid(eid);
 	reid.setCreatorId(0);
@@ -305,7 +305,7 @@ void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &en
 	if (it == RegisteredEntities.end())
 	{
 		// just register
-		registerEntity(eid, entityName, entitySlot, uid, userName);
+		registerEntity(eid, entityName, entitySlot, uid, userName, shardId);
 	}
 	else
 	{
@@ -332,6 +332,7 @@ void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &en
 		entity.EntitySlot = entitySlot;
 		entity.UId = uid;
 		entity.UserName = userName;
+		entity.ShardId = shardId;
 	}
 }
 
@@ -647,6 +648,27 @@ uint32 CEntityIdTranslator::getEntityNameStringId(const CEntityId &eid)
 		return entity.EntityNameStringId;
 	}
 }
+
+// get the shard id of an entity
+uint32	CEntityIdTranslator::getEntityShardId(const CEntityId &eid)
+{
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+	
+	const TEntityCont::iterator it = RegisteredEntities.find (reid);
+	if (it == RegisteredEntities.end ())
+	{
+		return 0;
+	}
+	else
+	{
+		CEntity &entity = it->second;
+		return entity.ShardId;
+	}
+}
+
 
 void CEntityIdTranslator::setEntityOnline (const CEntityId &eid, bool online)
 {

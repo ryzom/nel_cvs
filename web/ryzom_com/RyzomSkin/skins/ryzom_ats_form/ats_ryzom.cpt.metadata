@@ -1,0 +1,9 @@
+[security]
+View=0:Authenticated
+
+
+[validators]
+validators = add_level_validate
+
+[actions]
+action.success=traverse_to:string:add_level_script

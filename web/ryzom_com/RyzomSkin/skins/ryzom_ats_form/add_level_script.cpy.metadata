@@ -1,0 +1,4 @@
+[actions]
+
+action.success=redirect_to:string:SuccessView
+ 

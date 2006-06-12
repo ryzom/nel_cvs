@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="plone">
+
+<body>
+
+      <metal:block use-macro="here/global_defines/macros/defines" />
+
+      <metal:main fill-slot="main">
+
+      
+
+ 
+     <form
+       tal:define ="errors options/state/getErrors"
+       tal:attributes="action string:${here/absolute_url}/${template/id};" method = "post">
+
+
+     
+     <input type="hidden" name="form.submitted" value="1" />
+      <p> The ATS (Advanced Test Server) is open in order to test the next features that will be available in the Saga of Ryzom. Access is restricted to selected players.<br>
+         Those who don t currently have access to the ATS but would like to participate should fill in the application form. The Customer Support staff will select new players based on criteria such as characters skill levels, motivation,<br>
+         If you whish to be among the first to use these new features, and if you are committed in helping us by participating on the ATS board, please apply ! </p>
+   
+    <p>
+       How long have you been playing Ryzom? <select name = time size =1 >
+                                              <option>Since the release
+                                              <option>More than a month
+                                              <option>Less than 2 weeks
+                                             </select></p>
+     
+     <p>
+       On wich shard do you usually play? <select name = shard size =1 >
+                                              <option>Aniro (French Community)
+                                              <option>Leanon (German Community)
+                                              <option>Arispotle (Euro Community)
+                                             </select></p>
+
+      <p>Indicate your level in each of these skills:</p>
+      <p tal:define="err erros/leveM|nothing" tal:condition="err" tal:content="err" />
+      Melee Fight:    <input type= integer name=levelM size = 8 tal:attributes = "value request/levelM|nothing" />
+
+      <p tal:define="err erros/leveR|nothing" tal:condition="err" tal:content="err" />
+      Range Fight:    <input type= integer name=levelR size = 8 tal:attributes = "value request/levelR|nothing" /><br><br>
+
+      <p tal:define="err erros/leveO|nothing" tal:condition="err" tal:content="err" />
+      Offensive Magic:<input type= integer name=levelO size = 8 tal:attributes = "value request/levelO|nothing" />
+
+      <p tal:define="err erros/leveD|nothing" tal:condition="err" tal:content="err" />
+      Defensive Magic:<input type= integer name=levelD size = 8 tal:attributes = "value request/levelD|nothing" /><br><br>
+
+      <p tal:define="err erros/leveC|nothing" tal:condition="err" tal:content="err" />
+      Crafter:        <input type= integer name=levelC size = 8 tal:attributes = "value request/levelC|nothing" />
+
+      <p tal:define="err erros/levelH|nothing" tal:condition="err" tal:content="err" />
+      Harvester:      <input type= integer name=levelH size = 8 tal:attributes = "value request/levelH|nothing" /><br><br>
+
+     <p>Describe in a few words why you would like to participate in the ATS program:<br>
+        <input type=text name=motivation size=150 maxlength=200>
+     </p>
+    
+     <input class="context" tabindex="10" name="form_submit" value="OK" type="submit">
+     
+
+    
+
+</form>
+ </metal:main>
+
+
+</body>
+</html> 

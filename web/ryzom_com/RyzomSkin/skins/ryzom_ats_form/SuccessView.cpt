@@ -1,0 +1,24 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="plone">
+
+<body>
+
+      <metal:block use-macro="here/global_defines/macros/defines" />
+
+      <metal:main fill-slot="main">
+
+      
+
+ 
+     <form>
+     <p> 
+           Thank you, your information was succesufly enrigestred .</p>   
+
+</form>
+ </metal:main>
+
+
+</body>
+</html>

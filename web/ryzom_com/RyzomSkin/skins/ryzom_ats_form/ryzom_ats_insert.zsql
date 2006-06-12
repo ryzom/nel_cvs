@@ -1,0 +1,14 @@
+<dtml-comment>
+title:ryzom ats insert
+connection_id:MySQL_database_connection
+arguments:mf rf om dm cr ha text
+</dtml-comment>
+
+insert into ryzom_ats (mf, rf, om, dm, cr, ha, text ) values (
+<dtml-sqlvar mf type="int">,
+<dtml-sqlvar rf type="int">,
+<dtml-sqlvar om type="int">,
+<dtml-sqlvar dm type="int">,
+<dtml-sqlvar cr type="int">,
+<dtml-sqlvar ha type="int">,
+<dtml-sqlvar text type="string">)

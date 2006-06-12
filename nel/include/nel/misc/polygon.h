@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.18.6.6 2006/05/03 17:05:42 vizerie Exp $
+ * $Id: polygon.h,v 1.18.6.7 2006/06/12 09:06:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,9 @@ public:
 
 	// get bounding rect (poly must not be empty)
 	void getBoundingRect(CVector2f &minCorner, CVector2f &maxCorner) const;
+
+	// test self intersection
+	bool selfIntersect() const;
 
 private:
 	/// Sum the dot product of this poly vertices against a line equation a*x + b*y + c

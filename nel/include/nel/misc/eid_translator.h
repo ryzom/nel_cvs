@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.20.6.3 2006/05/30 12:10:42 boucher Exp $
+ * $Id: eid_translator.h,v 1.20.6.4 2006/06/12 09:42:54 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -46,12 +46,22 @@ public:
 	/** Descritor for an entity in the translator */
 	struct CEntity
 	{
-		CEntity () :
-		EntityNameStringId(0), EntitySlot(-1), UId(~0), Online(false)
+		CEntity () 
+			:	EntityNameStringId(0), 
+				EntitySlot(-1), 
+				ShardId(0),
+				UId(~0), 
+				Online(false)
 		{ }
 		
-		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName, sint8 entitySlot) :
-		EntityName(entityName), EntityNameStringId(0), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false)
+		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName, sint8 entitySlot, uint32 shardId =0) 
+			:	EntityName(entityName), 
+				EntityNameStringId(0), 
+				EntitySlot(entitySlot), 
+				ShardId(shardId),
+				UId(uid), 
+				UserName(userName), 
+				Online(false)
 		{ }
 		
 		/// The display name of the entity
@@ -60,6 +70,8 @@ public:
 		uint32		EntityNameStringId;
 		/// the character slot
 		sint8		EntitySlot;
+		/// Shard id of the entity (for multi shard systems)
+		uint32		ShardId;
 		
 		/// User id the character owner (aka account id)
 		uint32		UId;
@@ -74,14 +86,16 @@ public:
 
 	typedef std::map<NLMISC::CEntityId, CEntity>	TEntityCont;
 
+	/// clear all the registered entities from the translator.
+	void				clear();
 	// performs all check on a name ( name validity + uniqueness )
 	bool				checkEntityName (const ucstring &entityName);
 	/// return true if a name already exists
 	bool				entityNameExists(const ucstring &entityName);
 	// register an entity in this manager
-	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
+	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName, uint32 shardId =0);
 	// register or update an entity in this manager
-	void				updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
+	void				updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName, uint32 shardId =0);
 	// unregister an entity from this manager
 	void				unregisterEntity (const CEntityId &eid);
 	// Check if an entity is registered
@@ -92,6 +106,8 @@ public:
 	bool				setEntityNameStringId(const CEntityId &eid, uint32 stringId);
 	// get string id for entityId
 	uint32				getEntityNameStringId(const CEntityId &eid);
+	// get the shard id of an entity
+	uint32				getEntityShardId(const CEntityId &eid);
 	
 	// set an eid to online or not
 	void				setEntityOnline (const CEntityId &eid, bool online);	

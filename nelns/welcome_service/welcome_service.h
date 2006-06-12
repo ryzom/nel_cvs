@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.1.4.7 2006/03/23 13:19:16 boucher Exp $
+ * $Id: welcome_service.h,v 1.1.4.8 2006/06/12 09:43:44 boucher Exp $
  *
  */
 
@@ -97,7 +97,7 @@ namespace WS
 		}
 
 		// inform the LS that a pending client is lost
-		void pendingUserLost(uint32 userId);
+		void pendingUserLost(const NLNET::CLoginCookie &cookie);
 	};
 
 	struct TPendingFEResponseInfo

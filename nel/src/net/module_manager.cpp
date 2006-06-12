@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.10 2006/04/20 14:33:11 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.11 2006/06/12 09:42:55 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -478,6 +478,7 @@ namespace NLNET
 
 		virtual void updateModules()
 		{
+			H_AUTO(CModuleManager_updateModules);
 			// module are updated in creation order (i.e in module ID order)
 			TModuleIds::TAToBMap::const_iterator first(_ModuleIds.getAToBMap().begin()), last(_ModuleIds.getAToBMap().end());
 			for (; first != last; ++first)

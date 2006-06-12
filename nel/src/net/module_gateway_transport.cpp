@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.5.4.6 2006/03/13 17:43:24 boucher Exp $
+ * $Id: module_gateway_transport.cpp,v 1.5.4.7 2006/06/12 09:42:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,7 @@ namespace NLNET
 
 		virtual void update()
 		{
+			H_AUTO(L3S_update);
 			// update the callback server
 			if (_CallbackServer.get() != NULL)
 				_CallbackServer->update2(5, 0);
@@ -275,6 +276,7 @@ namespace NLNET
 		// handle the connection of a new client on the server
 		void onConnection ( TSockId from)
 		{
+			H_AUTO(L3S_onConnection);
 			nlassert(_Routes.find(from) == _Routes.end());
 
 			// Create a new route for this connection
@@ -294,6 +296,7 @@ namespace NLNET
 		// handle the deconnection of a new client on the server
 		void onDisconnection ( TSockId from)
 		{
+			H_AUTO(L3S_onDisconnection);
 			TRouteMap::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());
 
@@ -309,6 +312,7 @@ namespace NLNET
 		// Called to dispatch an incoming message to the gateway
 		void onDispatchMessage(const CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		{
+			H_AUTO(L3S_onDispatchMessage);
 			TRouteMap::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());
 
@@ -369,6 +373,8 @@ namespace NLNET
 
 	void CL3ServerRoute::sendMessage(const CMessage &message) const
 	{
+		H_AUTO(L3SRoute_sendMessage);
+
 		CGatewayL3ServerTransport *trpt = static_cast<CGatewayL3ServerTransport*>(_Transport);
 
 		// send the message
@@ -410,6 +416,7 @@ namespace NLNET
 
 		void sendMessage(const CMessage &message) const
 		{
+			H_AUTO(L3CRoute_sendMessage);
 			if (CallbackClient.connected())
 			{
 				// update the last comme time
@@ -481,6 +488,7 @@ namespace NLNET
 
 		void deletePendingRoute()
 		{
+			H_AUTO(L3C_deletePendingRoute);
 			// delete any route pending
 			while (!_RouteToRemove.empty())
 			{
@@ -503,6 +511,7 @@ namespace NLNET
 
 		virtual void update()
 		{
+			H_AUTO(L3C_update);
 			// delete any route pending
 			deletePendingRoute();
 
@@ -640,6 +649,7 @@ namespace NLNET
 		/// connect to a server
 		void connect(CInetAddress &addr)
 		{
+			H_AUTO(L3C_connect);
 			uint32 connId;
 
 			// affect a connection id
@@ -691,6 +701,7 @@ namespace NLNET
 		// handle the connection of a new client on the server
 		void close ( uint32 connId)
 		{
+			H_AUTO(L3C_close);
 			// some basic checks on connId
 			if (connId >= _RouteIds.size())
 			{
@@ -740,6 +751,7 @@ namespace NLNET
 		// handle the deconnection of a the client from the server
 		void onDisconnection ( TSockId from)
 		{
+			H_AUTO(L3C_onDisconnection);
 			// nothing to do, as route as kept persistent and try to reconnect
 
 			TClientRoutes::iterator it(_Routes.find(from));
@@ -763,6 +775,7 @@ namespace NLNET
 		// Called to dispatch an incoming message to the gateway
 		void onDispatchMessage(const CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		{
+			H_AUTO(L3C_onDispatchMessage);
 			TClientRoutes::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());
 

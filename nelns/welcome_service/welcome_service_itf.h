@@ -5,12 +5,13 @@
 
 #ifndef WELCOME_SERVICE_ITF
 #define WELCOME_SERVICE_ITF
+#include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/string_conversion.h"
 #include "nel/net/message.h"
 #include "nel/net/module.h"
 #include "nel/net/module_builder_parts.h"
 #include "nel/net/module_message.h"
 #include "nel/net/module_gateway.h"
-#include "nel/misc/string_conversion.h"
 
 #include "nel/net/login_cookie.h"
 	
@@ -268,7 +269,7 @@ namespace WS
 		/////////////////////////////////////////////////////////////////
 
 		// An awaited user did not connect before the allowed timeout expire
-		virtual void pendingUserLost(NLNET::IModuleProxy *sender, uint32 userId) =0;
+		virtual void pendingUserLost(NLNET::IModuleProxy *sender, const NLNET::CLoginCookie &cookie) =0;
 
 
 	};
@@ -319,10 +320,10 @@ namespace WS
 		}
 
 		// An awaited user did not connect before the allowed timeout expire
-		void pendingUserLost(NLNET::IModule *sender, uint32 userId);
+		void pendingUserLost(NLNET::IModule *sender, const NLNET::CLoginCookie &cookie);
 
 		// Message serializer. Return the message received in reference for easier integration
-		static const NLNET::CMessage &buildMessageFor_pendingUserLost(NLNET::CMessage &__message, uint32 userId);
+		static const NLNET::CMessage &buildMessageFor_pendingUserLost(NLNET::CMessage &__message, const NLNET::CLoginCookie &cookie);
 	
 
 

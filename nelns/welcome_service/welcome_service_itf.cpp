@@ -55,6 +55,7 @@ namespace WS
 	
 	void CWelcomeServiceSkel::welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
+		H_AUTO(CWelcomeServiceSkel_welcomeUser_WU);
 		uint32	charId;
 			nlRead(__message, serial, charId);
 		std::string	userName;
@@ -74,6 +75,7 @@ namespace WS
 
 	void CWelcomeServiceSkel::disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
+		H_AUTO(CWelcomeServiceSkel_disconnectUser_DU);
 		uint32	userId;
 			nlRead(__message, serial, userId);
 		disconnectUser(sender, userId);
@@ -184,34 +186,35 @@ namespace WS
 	
 	void CLoginServiceSkel::pendingUserLost_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
-		uint32	userId;
-			nlRead(__message, serial, userId);
-		pendingUserLost(sender, userId);
+		H_AUTO(CLoginServiceSkel_pendingUserLost_PUL);
+		NLNET::CLoginCookie	cookie;
+			nlRead(__message, serial, cookie);
+		pendingUserLost(sender, cookie);
 	}
 		// An awaited user did not connect before the allowed timeout expire
-	void CLoginServiceProxy::pendingUserLost(NLNET::IModule *sender, uint32 userId)
+	void CLoginServiceProxy::pendingUserLost(NLNET::IModule *sender, const NLNET::CLoginCookie &cookie)
 	{
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->pendingUserLost(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+			_LocalModuleSkel->pendingUserLost(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), cookie);
 		}
 		else
 		{
 			// send the message for remote dispatching and execution or local queing 
 			NLNET::CMessage __message;
 			
-			buildMessageFor_pendingUserLost(__message, userId);
+			buildMessageFor_pendingUserLost(__message, cookie);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
 		}
 	}
 
 	// Message serializer. Return the message received in reference for easier integration
-	const NLNET::CMessage &CLoginServiceProxy::buildMessageFor_pendingUserLost(NLNET::CMessage &__message, uint32 userId)
+	const NLNET::CMessage &CLoginServiceProxy::buildMessageFor_pendingUserLost(NLNET::CMessage &__message, const NLNET::CLoginCookie &cookie)
 	{
 		__message.setType("PUL");
-			nlWrite(__message, serial, userId);
+			nlWrite(__message, serial, const_cast < NLNET::CLoginCookie& > (cookie));
 
 
 		return __message;
@@ -268,6 +271,7 @@ namespace WS
 	
 	void CWelcomeServiceClientSkel::registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
+		H_AUTO(CWelcomeServiceClientSkel_registerWS_RWS);
 		uint32	shardId;
 			nlRead(__message, serial, shardId);
 		uint32	fixedSessionId;
@@ -277,6 +281,7 @@ namespace WS
 
 	void CWelcomeServiceClientSkel::welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
+		H_AUTO(CWelcomeServiceClientSkel_welcomeUserResult_WUR);
 		uint32	userId;
 			nlRead(__message, serial, userId);
 		bool	ok;
@@ -290,6 +295,7 @@ namespace WS
 
 	void CWelcomeServiceClientSkel::updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
+		H_AUTO(CWelcomeServiceClientSkel_updateConnectedPlayerCount_UCP);
 		uint32	nbOnlinePlayers;
 			nlRead(__message, serial, nbOnlinePlayers);
 		uint32	nbPendingPlayers;

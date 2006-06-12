@@ -1,7 +1,7 @@
 /** \file login_cookie.h
  * container used by the login process to identify a user
  *
- * $Id: login_cookie.h,v 1.7 2005/10/03 10:08:05 boucher Exp $
+ * $Id: login_cookie.h,v 1.7.4.1 2006/06/12 09:42:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ public:
 		if (s.isReading()) _Valid = true;
 	}
 
-	std::string setToString ()
+	std::string setToString () const
 	{
 		if (_Valid)
 		{

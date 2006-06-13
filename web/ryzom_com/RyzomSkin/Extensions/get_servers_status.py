@@ -5,7 +5,7 @@ import urllib2
 def get_servers_status():
 	server_data=urllib2.urlopen('http://atys.ryzom.com/serverstatus/status.php').read()
 	x=0
-	res=[('Anyro','CLOSED'),('Leanon','CLOSED'),('Aryspotle','CLOSED'),('ATS','CLOSED')]
+	res=[]
 	for i in server_data.split('\n'):
 		try:
 			data = i.split('|')
@@ -18,8 +18,7 @@ def get_servers_status():
 				status = 'LOCKED'
 			else:
 				status = 'CLOSED'
-			res[x]=(server,status)
-			x=x+1
+			res+=((server,status),)
 		except:
 			pass 
 	return res

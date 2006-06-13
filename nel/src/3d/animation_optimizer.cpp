@@ -1,7 +1,7 @@
 /** \file animation_optimizer.cpp
  * TODO: File description
  *
- * $Id: animation_optimizer.cpp,v 1.7 2005/02/22 10:19:09 besson Exp $
+ * $Id: animation_optimizer.cpp,v 1.8 2006/06/13 15:01:11 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -129,6 +129,11 @@ void		CAnimationOptimizer::optimize(const CAnimation &animIn, CAnimation &animOu
 		animOut.addTrack(trackName, newTrack);
 	}
 
+	// Parse all SSS shapes of the animation (important for preload of those shapes)
+	const vector<string>	&shapes= animIn.getSSSShapes();
+	for(uint i=0;i<shapes.size();i++)
+		animOut.addSSSShape(shapes[i]);
+	
 	// Set min animation length
 	animOut.setMinEndTime (animIn.getEndTime ());
 	nlassert (animOut.getEndTime() == animIn.getEndTime());

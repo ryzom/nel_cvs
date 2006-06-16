@@ -1,7 +1,7 @@
 /** \file login_cookie.h
  * container used by the login process to identify a user
  *
- * $Id: login_cookie.h,v 1.7.8.1 2006/06/01 17:16:23 boucher Exp $
+ * $Id: login_cookie.h,v 1.7.8.2 2006/06/16 09:27:47 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,9 +117,11 @@ public:
 	/// Strict weak ordering operator
 	bool operator <(const CLoginCookie &other) const
 	{
-		return (_UserAddr < other._UserAddr 
-			|| _UserKey < other._UserKey
-			|| _UserId < other._UserId);
+		if(_UserAddr != other._UserAddr)
+			return _UserAddr < other._UserAddr;
+		if(_UserKey != other._UserKey)
+			return _UserKey < other._UserKey;
+		return _UserId < other._UserId;
 	}
 
 private:

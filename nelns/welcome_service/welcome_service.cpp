@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.8.2.2 2006/06/01 17:18:33 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.8.2.3 2006/06/16 09:35:14 distrib Exp $
  *
  */
 
@@ -446,6 +446,8 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 
 	if (PendingFeResponse.find(cookie) != PendingFeResponse.end())
 	{
+		nldebug( "ERLOG: SCS recvd from %s-%hu => sending %s to SU", serviceName.c_str(), sid, cookie.toString().c_str());
+
 		// this response is not waited by LS
 		TPendingFEResponseInfo &pfri = PendingFeResponse.find(cookie)->second;
 
@@ -455,6 +457,8 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 	}
 	else
 	{
+		nldebug( "ERLOG: SCS recvd from %s-%hu, but pending %s not found", serviceName.c_str(), sid, cookie.toString().c_str());
+
 		// return the result to the LS
 		CUnifiedNetwork::getInstance()->send ("LS", msgout);
 	}
@@ -524,6 +528,8 @@ void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, 
 {
 	CLoginCookie	cookie;
 	msgin.serial(cookie);
+	nldebug( "ERLOG: RPC recvd from %s-%hu => %s removed", serviceName.c_str(), sid, cookie.toString().c_str(), cookie.toString().c_str());
+
 
 	// client' cookie rejected, no longer pending
 	uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;
@@ -836,6 +842,8 @@ TUnifiedCallbackItem FESCallbackArray[] =
 void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the LS warns me that a new client want to come in my shard
+
+	nldebug( "ERLOG: CS recvd from %s-%hu", serviceName.c_str(), sid);
 
 	//
 	// S07: receive the "CS" message from LS and send the "CS" message to the selected FES
@@ -1384,6 +1392,7 @@ namespace WS
 
 	void CWelcomeServiceMod::welcomeUser(NLNET::IModuleProxy *sender, uint32 charId, const std::string &userName, const CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
 	{
+		nldebug( "ERLOG: welcomeUser(%u,%s,%s,%s,%s,%u,%u)", charId, userName.c_str(), cookie.toString().c_str(), priviledge.c_str(), exPriviledge.c_str(), (uint)mode.getValue(), instanceId );
 		string ret = lsChooseShard(userName,
 									cookie,
 									priviledge, 
@@ -1395,6 +1404,7 @@ namespace WS
 		uint32 userId = charId >> 4;
 		if (!ret.empty())
 		{
+			nldebug( "ERLOG: lsChooseShard returned an error => welcomeUserResult");
 			// TODO : correct this
 			string fsAddr;
 			CWelcomeServiceClientProxy wsc(sender);
@@ -1402,6 +1412,7 @@ namespace WS
 		}
 		else
 		{
+			nldebug( "ERLOG: lsChooseShard OK => adding to pending");
 			TPendingFEResponseInfo pfri;
 			pfri.WSMod = this;
 			pfri.UserId = userId;

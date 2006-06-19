@@ -16,6 +16,35 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
+#. Default: "Log in"
+#: action defined in portal_membership
+msgid "Log in"
+msgstr "Log in"
+
+#. Default: "Log out"
+#: action defined in portal_membership
+msgid "Log out"
+msgstr "Log out"
+
+#. Default: "Manage members"
+#: action defined in portal_membership
+msgid "Manage members"
+msgstr "Manage members"
+
+#. Default: "My Folder"
+#: action defined in portal_membership
+msgid "My Folder"
+msgstr "My Folder"
+
+#. Default: "Preferences"
+#: action defined in portal_membership
+msgid "Preferences"
+msgstr "Preferences"
+
+msgid "action_my_subscriptions"
+msgstr "My subscriptions"
+
+
 msgid "tun"
 msgstr ""
 

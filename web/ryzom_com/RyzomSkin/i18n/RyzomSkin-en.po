@@ -44,6 +44,10 @@ msgstr "Preferences"
 msgid "action_my_subscriptions"
 msgstr "My subscriptions"
 
+#. Default: "Log in to add comments"
+#: ./plone_templates/viewThreadsAtBottom.pt
+msgid "label_login_to_add_comments"
+msgstr "Log in to add comments"
 
 msgid "tun"
 msgstr ""

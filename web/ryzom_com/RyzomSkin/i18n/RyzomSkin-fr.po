@@ -44,6 +44,12 @@ msgstr "Préférences"
 msgid "action_my_subscriptions"
 msgstr "Mes abonnements"
 
+#. Default: "Log in to add comments"
+#: ./plone_templates/viewThreadsAtBottom.pt
+msgid "label_login_to_add_comments"
+msgstr "Pour commenter, identifiez-vous"
+
+
 msgid "tun"
 msgstr ""
 

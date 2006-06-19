@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.10 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_light.cpp,v 1.10.16.1 2006/06/19 13:12:49 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "point_light_model.h"
 #include "scene.h"
 #include "particle_system.h"
+#include "particle_system_model.h"
 #include "ps_util.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/vector.h"
@@ -149,6 +150,25 @@ uint32 CPSLight::getType(void) const
 }
 
 //***************************************************************************************************************
+void CPSLight::onShow(bool shown)
+{
+	for(uint k = 0; k < _Lights.getSize(); ++k)
+	{
+		if (_Lights[k])
+		{
+			if (shown)
+			{
+				_Lights[k]->show();
+			}
+			else
+			{
+				_Lights[k]->hide();
+			}
+		}
+	}
+}
+
+//***************************************************************************************************************
 void CPSLight::step(TPSProcessPass pass)
 {	
 	NL_PS_FUNC(CPSLight_step)
@@ -236,6 +256,22 @@ void CPSLight::step(TPSProcessPass pass)
 				NLMISC::CVector pos = *convMat * *posIt;
 				CPointLightModel *plm = *lightIt;
 				if (pos != plm->getPos()) plm->setPos(pos);
+
+
+				if (CParticleSystem::OwnerModel)
+				{				
+					// make sure the visibility is the same
+					if (CParticleSystem::OwnerModel->isHrcVisible())
+					{
+						plm->show();
+					}
+					else
+					{
+						plm->hide();
+					}
+					plm->setClusterSystem(CParticleSystem::OwnerModel->getClusterSystem());
+				}
+
 				CRGBA newCol = *colPointer;
 				newCol.modulateFromColor(newCol, globalColor);
 				if (newCol != plm->PointLight.getDiffuse()) 

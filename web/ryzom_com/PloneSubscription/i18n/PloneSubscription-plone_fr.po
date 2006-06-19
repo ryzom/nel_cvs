@@ -174,7 +174,7 @@ msgstr "Message"
 #. Default: "Send"
 #: skins/PloneSubscription/plonesubscription_macros.pt
 msgid "label_send"
-msgstr "Envoyé"
+msgstr "Envoyer"
 
 #. Default: "Email"
 #: skins/PloneSubscription/subscription_form.cpt

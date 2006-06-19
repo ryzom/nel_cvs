@@ -53,7 +53,7 @@
       <form method="post" action=""
         tal:attributes="action here_url">
         <input type="hidden" name="type_name" value="WeblogEntry"/>
-        <input class="standalone" type="submit" value="Submit Your News"
+        <input class="submit_news_button" type="submit" value="Submit Your News"
           name="folder_factories:method" i18n:domain="RyzomSkin" i18n:attributes="value" />
       </form>
 

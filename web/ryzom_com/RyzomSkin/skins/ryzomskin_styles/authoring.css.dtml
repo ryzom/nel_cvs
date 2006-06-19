@@ -63,6 +63,19 @@
     text-transform: Capitalize;
 }
 
+form input.submit_news_button {
+    color: #ccb97e;
+    font-size: 11px;
+    font-weight: bold;
+    background: transparent url('longbutton.gif') no-repeat;
+    border: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 200px;
+    height: 25px;
+    cursor: pointer;
+}
+
 .discussion form input.standalone {
     color: #ccb97e;
     font-size: 11px;

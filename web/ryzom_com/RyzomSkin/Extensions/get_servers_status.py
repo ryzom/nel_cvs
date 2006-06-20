@@ -3,7 +3,11 @@ from string import join
 from string import split
 import urllib2
 def get_servers_status():
-	server_data=urllib2.urlopen('http://atys.ryzom.com/serverstatus/status.php').read()
+	try:
+		server_data=urllib2.urlopen('http://atys.ryzom.com/serverstatus/status.php').read()
+	except:
+		return [('ATS','CLOSED'),]
+
 	x=0
 	res=[]
 	for i in server_data.split('\n'):

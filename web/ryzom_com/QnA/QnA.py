@@ -23,15 +23,7 @@ QnASchema=BaseSchema.copy()+ Schema((
 	DateTimeField('datearrivee',
 		required=True,
 		widget=CalendarWidget(description="date d'arrivÃ©e",label="Date",)
-	),
-	TextField('text',
-		searchable=1,
-		default_output_type='text/restructured',
-		widget=TextAreaWidget(		
-		description="not visible in the final version" ,
-		visible={'edit':'hidden', 'view':'visible'},
-		)
-        ),	
+	),	
 	TextField('description',
 		searchable=1,
 		widget=TextAreaWidget(description="Enter a little description of the content link",)
@@ -41,6 +33,12 @@ QnASchema=BaseSchema.copy()+ Schema((
 		vocabulary='get_atys_forums2',             
 		schemata='configuration'
 	),
+	TextField('text',
+		searchable=1,
+		default_output_type='text/restructured',
+		widget=RichWidget(description="edit the choice"),
+		schemata='edit'
+        ),
 ),)
  
  

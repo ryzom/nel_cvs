@@ -164,6 +164,7 @@ class QnA(BaseContent):
 		list=newstr[listindex:].split(']',1)[0]
 
 		newstr = re.sub('\[size=.*?\]','<list'+size+'">',newstr)
+		newstr = re.sub('\[SIZE=.*?\]','<list'+size+'">',newstr)
 		newstr = re.sub('\[i\]','<i>',newstr)
 		newstr = re.sub('\[/i\]','</i>',newstr)
 		newstr = re.sub('\[b\]','<b>',newstr)
@@ -173,7 +174,8 @@ class QnA(BaseContent):
 		newstr = re.sub('\[center\]','<center>',newstr)
 		newstr = re.sub('\[/center\]','</center>',newstr)
 		newstr = re.sub('\[/color\]','</color>',newstr)
-		newstr = re.sub('\[/size\]','</size>',newstr) 
+		newstr = re.sub('\[/size\]','</size>',newstr)
+		newstr = re.sub('\[/SIZE\]','</size>',newstr)  
 		newstr = re.sub('\[/url\]','</a>',newstr)
 		newstr = re.sub('\[url\]','<a>',newstr)
 		newstr = re.sub('\[URL\]','<a>',newstr)

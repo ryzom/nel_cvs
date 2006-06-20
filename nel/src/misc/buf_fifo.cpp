@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.29 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.29.26.1 2006/06/20 17:09:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,9 +24,8 @@
  */
 
 #include "stdmisc.h"
-
 #include "nel/misc/time_nl.h"
-
+#include "nel/misc/command.h"
 #include "nel/misc/buf_fifo.h"
 
 using namespace std;
@@ -38,9 +37,13 @@ using namespace std;
 
 namespace NLMISC {
 
+CBufFIFO::TAllBuffers		CBufFIFO::_AllBuffers;
+
 
 CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Empty(true), _Head(NULL), _Tail(NULL), _Rewinder(NULL)
 {
+	_AllBuffers.insert(this);
+
 	// reset statistic
 	_BiggestBlock = 0;
 	_SmallestBlock = 999999999;
@@ -56,6 +59,7 @@ CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Empty(true), _Head(NULL),
 
 CBufFIFO::~CBufFIFO()
 {
+	_AllBuffers.erase(this);
 	if (_Buffer != NULL)
 	{
 		delete []_Buffer;
@@ -687,6 +691,23 @@ bool CBufFIFO::canFit (uint32 s)
 		}
 	}
 	nlstop;
+}
+
+NLMISC_CATEGORISED_COMMAND(misc, dumpAllBuffers, "Dump all the fifo buffer", "no args")
+{
+	log.displayNL("Dumping %u FIFO buffers :", CBufFIFO::_AllBuffers.size());
+
+	CBufFIFO::TAllBuffers::iterator first(CBufFIFO::_AllBuffers.begin()), last(CBufFIFO::_AllBuffers.end());
+	for (; first != last; ++first)
+	{
+		CBufFIFO *buf = *first;
+		
+		log.displayNL("Dumping buffer %p:", buf);
+
+		buf->displayStats(&log);
+	}
+
+	return true;
 }
 
 

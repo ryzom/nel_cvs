@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.5.4.6.2.2 2006/06/16 09:28:26 distrib Exp $
+ * $Id: module_gateway_transport.cpp,v 1.5.4.6.2.3 2006/06/20 17:09:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,7 +115,7 @@ namespace NLNET
 			H_AUTO(L3S_update);
 			// update the callback server
 			if (_CallbackServer.get() != NULL)
-				_CallbackServer->update2(-1, 0);
+				_CallbackServer->update2(100, 0);
 
 			uint32 now = CTime::getSecondsSince1970();
 			// check each connected client for keep alive
@@ -182,6 +182,11 @@ namespace NLNET
 						}
 					}
 				}
+
+				log.displayNL("  Dumping send buffers states");
+				_CallbackServer->displaySendQueueStat(&log);
+				log.displayNL("  Dumping receive buffers states");
+				_CallbackServer->displayReceiveQueueStat(&log);
 			}
 		}
 
@@ -543,7 +548,7 @@ namespace NLNET
 				}
 				else
 				{
-					route->CallbackClient.update2(-1, 0);
+					route->CallbackClient.update2(100, 0);
 
 					// check dead connection. For client, we use a little longer timer to
 					// avoid cross checking of client and server. If server is alive, then we receive
@@ -598,6 +603,11 @@ namespace NLNET
 							first->first);
 					}
 				}
+
+				log.displayNL("     Dumping send buffer state");
+				route->CallbackClient.displaySendQueueStat(&log);
+				log.displayNL("     Dumping receive buffer state");
+				route->CallbackClient.displayReceiveQueueStat(&log);
 			}
 		}
 

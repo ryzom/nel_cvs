@@ -70,7 +70,7 @@ class QnA(BaseContent):
 	#	'permissions': (CMFCorePermissions.ModifyPortalContent,)
 	#	},
 	#)
-        actions = (
+	actions = (
 		{ 'id': 'view',
 		'name': 'view',
 		'action': 'string:${object_url}/qna_view'
@@ -82,14 +82,14 @@ class QnA(BaseContent):
 			try:
 				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
 			except:
-                                pass #try to do better than this
+				pass #try to do better than this
 
 	def setText(self,value,**kwargs):
 		tab=self.getChoice()
 		text=''
 		
 		for post_joined in tab:
-			post_splitted = post_joined.split('|', )
+			post_splitted = post_joined.split('|')
 			
 			try:
 				post_author = post_splitted[1]

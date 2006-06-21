@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * TODO: File description
  *
- * $Id: shadow_map_manager.cpp,v 1.18 2005/02/22 10:19:12 besson Exp $
+ * $Id: shadow_map_manager.cpp,v 1.18.16.1 2006/06/21 14:50:18 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -534,12 +534,14 @@ void			CShadowMapManager::renderProject(CScene *scene)
 
 
 	/* Fog Case: Since we do a modulate, we don't want to modulate the fog color with himself.
-		Instead, if the shadowed pixel is in full fog, we have to modulate him with White
-		=> replace fog color with white temporarly.
+		Instead, if the shadowed pixel is in full fog, we have to modulate him with Blac (modulate with INVERSE-source color, actually ...)
+		=> replace fog color with black temporarily 
 	*/
 	IDriver	*driver= scene->getRenderTrav().getDriver();
 	CRGBA	bkupFogColor= driver->getFogColor();
-	driver->setupFog(driver->getFogStart(), driver->getFogEnd(), CRGBA::White);
+
+	
+	driver->setupFog(driver->getFogStart(), driver->getFogEnd(), CRGBA::Black);
 
 	/* Light case: CVisualCollisionManager use a fakeLight to avoid ShadowMapping on backFaces of meshs
 		Hence must clean all lights, and enalbe only the Light0 in driver

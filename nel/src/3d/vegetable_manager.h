@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * TODO: File description
  *
- * $Id: vegetable_manager.h,v 1.22 2005/02/22 10:19:12 besson Exp $
+ * $Id: vegetable_manager.h,v 1.22.16.1 2006/06/21 16:51:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -314,8 +314,8 @@ private:
 	CVegetableVBAllocator							_VBHardAllocator[CVegetableVBAllocator::VBTypeCount];
 	// The same, but no VBHard.
 	CVegetableVBAllocator							_VBSoftAllocator[CVegetableVBAllocator::VBTypeCount];
-	// Vertex Program. One VertexProgram for each rdrPass
-	CVertexProgram									*_VertexProgram[NL3D_VEGETABLE_NRDRPASS];
+	// Vertex Program. One VertexProgram for each rdrPass (with / without fog)
+	CVertexProgram									*_VertexProgram[NL3D_VEGETABLE_NRDRPASS][2];
 
 
 	// Material. Usefull for texture and alphaTest
@@ -347,7 +347,7 @@ private:
 
 
 	/// init the ith vertexProgram.
-	void					initVertexProgram(uint vpType);
+	void					initVertexProgram(uint vpType, bool fogEnabled);
 
 
 	/// setup the vertexProgram constants.

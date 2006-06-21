@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * TODO: File description
  *
- * $Id: vegetable_manager.cpp,v 1.47.16.1 2006/01/16 13:24:20 mitchell Exp $
+ * $Id: vegetable_manager.cpp,v 1.47.16.2 2006/06/21 16:51:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,8 +121,11 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	// Misc.
 	_NumVegetableFaceRendered= 0;
 
-	std::fill(_VertexProgram, _VertexProgram + NL3D_VEGETABLE_NRDRPASS, (CVertexProgram *) NULL);
-
+	for (uint k = 0; k < NL3D_VEGETABLE_NRDRPASS; ++k)
+	{
+		_VertexProgram[k][0] = NULL;
+		_VertexProgram[k][1] = NULL;
+	}
 }
 
 
@@ -132,8 +135,10 @@ CVegetableManager::~CVegetableManager()
 	// delete All VP
 	for(sint i=0; i <NL3D_VEGETABLE_NRDRPASS; i++)
 	{
-		delete	_VertexProgram[i];
-		_VertexProgram[i]= NULL;
+		delete	_VertexProgram[i][0];
+		delete	_VertexProgram[i][1];
+		_VertexProgram[i][0] = NULL;
+		_VertexProgram[i][1] = NULL;
 	}
 
 	// delete ZSort models.
@@ -541,7 +546,11 @@ const char* NL3D_CommonEndVegetableProgram=
 	MOV o[TEX0].y, v[4].w;																\n\
 	# copy diffuse texture uv to stage 1.												\n\
 	MOV o[TEX1], v[8];																\n\
-	END																					\n\
+";
+
+// fogged version
+const char* NL3D_VegetableProgramFog =
+"	DP4	o[FOGC].x, c[6], R5;															\n\
 ";
 
 
@@ -563,7 +572,7 @@ const char* NL3D_SimpleStartVegetableProgram=
 
 
 // ***************************************************************************
-void					CVegetableManager::initVertexProgram(uint vpType)
+void					CVegetableManager::initVertexProgram(uint vpType, bool fogEnabled)
 {
 	nlassert(_LastDriver); // update driver should have been called at least once !
 	// Init the Vertex Program.
@@ -593,8 +602,15 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 	// common end of VP
 	vpgram+= string(NL3D_CommonEndVegetableProgram);
 
+	if (fogEnabled)
+	{
+		vpgram+= string(NL3D_VegetableProgramFog);
+	}
+
+	vpgram+="\nEND\n";
+
 	// create VP.
-	_VertexProgram[vpType]= new CVertexProgram(vpgram.c_str());
+	_VertexProgram[vpType][fogEnabled ? 1 : 0] = new CVertexProgram(vpgram.c_str());
 
 }
 
@@ -1666,7 +1682,9 @@ void			CVegetableManager::updateDriver(IDriver *driver)
 		_LastDriver = driver;
 		for(i=0; i <NL3D_VEGETABLE_NRDRPASS; i++)
 		{
-			initVertexProgram(i);
+			// both fog & no fog
+			initVertexProgram(i, true);
+			initVertexProgram(i, false);
 		}		
 	}	
 }
@@ -1846,7 +1864,11 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	// Disable Fog.
 	bool	bkupFog;
 	bkupFog= driver->fogEnabled();
-	driver->enableFog(false);
+
+	bool fogged = bkupFog && driver->getFogStart() < _ZSortLayerDistMax;
+
+
+	driver->enableFog(fogged);
 
 
 	// Used by setupVertexProgramConstants(). The center of camera.
@@ -1970,10 +1992,11 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 
 			// which allocator?
 			CVegetableVBAllocator	&vbAllocator= getVBAllocatorForRdrPassAndVBHardMode(rdrPass, vbHardMode);
+			
 
 			// Do the pass only if there is some vertices to draw.
 			if(vbAllocator.getNumUserVerticesAllocated()>0)
-			{
+			{				
 				// additional setup to the material
 				bool	doubleSided= doubleSidedRdrPass(rdrPass);
 				// set the 2Sided flag in the material
@@ -1986,7 +2009,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 				// activate Vertex program first.
 				//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[rdrPass]->getProgram().c_str());
 
-				nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass]));
+				nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass][fogged ? 1 : 0]));
 
 				// Activate the good VBuffer
 				vbAllocator.activate();
@@ -2226,14 +2249,21 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 }
 
 
+
+
+
+
 // ***************************************************************************
 void		CVegetableManager::setupRenderStateForBlendLayerModel(IDriver *driver)
 {
 	// Setup Global.
 	//=============
+	
 	// disable fog, for faster VP.
 	_BkupFog= driver->fogEnabled();
-	driver->enableFog(false);
+	static volatile bool testDist = true;
+	bool fogged = _BkupFog && driver->getFogStart() < _ZSortLayerDistMax;	
+	driver->enableFog(fogged);
 
 	// set model matrix to the manager matrix.
 	driver->setupModelMatrix(_ManagerMatrix);
@@ -2253,7 +2283,12 @@ void		CVegetableManager::setupRenderStateForBlendLayerModel(IDriver *driver)
 
 	// activate Vertex program first.
 	//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[rdrPass]->getProgram().c_str());
-	nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass]));
+	nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass][fogged ? 1 : 0]));
+
+	if (fogged)
+	{
+		driver->setConstantFog(6);
+	}
 
 }
 
@@ -2278,7 +2313,7 @@ void		CVegetableManager::exitRenderStateForBlendLayerModel(IDriver *driver)
 	// disable VertexProgram.
 	driver->activeVertexProgram(NULL);
 
-	// restore Fog.
+	// restore Fog.	
 	driver->enableFog(_BkupFog);
 }
 

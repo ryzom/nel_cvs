@@ -16,6 +16,18 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
+msgid "bug_report"
+msgstr "If you wish to report a bug</b>: please use the "
+
+msgid "link"
+msgstr "bug report form"
+
+msgid "describe"
+msgstr "to describe it. You may also want to have a look at the"
+
+msgid "link_bug"
+msgstr "list of already reported bugs." 
+
 #. Default: "Log in"
 #: action defined in portal_membership
 msgid "Log in"

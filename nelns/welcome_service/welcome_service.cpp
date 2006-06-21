@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.8.2.3 2006/06/16 09:35:14 distrib Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.8.2.4 2006/06/21 18:01:19 boucher Exp $
  *
  */
 
@@ -125,6 +125,11 @@ CVariable<uint>		OpenFrontEndThreshold("ws", "OpenFrontEndThreshold", "Limit num
  */
 CVariable<bool>		UsePatchMode("ws", "UsePatchMode", "Use Frontends as Patch servers (at FS startup)", true, 0, true, cbUsePatchMode );
 
+/**
+ * Use Patch mode
+ */
+CVariable<bool>		DontUseLS("ws", "DontUseLS", "Dont use the login service", false, 0, true);
+
 
 // Shortcut to the module instance
 //CWelcomeServiceMod	*CWelcomeServiceMod::_Instance = NULL;
@@ -186,7 +191,7 @@ public:
 		CInstances::const_iterator ici;
 		for ( ici=_Instances.begin(); ici!=_Instances.end(); ++ici )
 		{
-			if ( ! (*ici).second.isOnlineAsExpected() )
+			if ( ! ici->second.isOnlineAsExpected() )
 				return false;
 		}
 		return true;
@@ -235,9 +240,19 @@ void reportOnlineStatus( bool newStatus )
 {
 	if ( newStatus != OnlineStatus && AllowDispatchMsgToLS )
 	{
-		CMessage msgout( "OL_ST" );
-		msgout.serial( newStatus );
-		CUnifiedNetwork::getInstance()->send( "LS", msgout );
+		if (!DontUseLS)
+		{
+			CMessage msgout( "OL_ST" );
+			msgout.serial( newStatus );
+			CUnifiedNetwork::getInstance()->send( "LS", msgout );
+		}
+
+		if (CWelcomeServiceMod::isInitialized() != NULL)
+		{
+			// send a status report to welcome service client
+			CWelcomeServiceMod::getInstance()->reportWSOpenState(newStatus);
+		}
+
 		OnlineStatus = newStatus;
 	}
 }
@@ -310,12 +325,15 @@ struct CFES
 
 		if ( AllowDispatchMsgToLS )
 		{
-			CMessage	msgout("REPORT_FS_STATE");
-			msgout.serial(SId);
-			msgout.serial(alive);
-			msgout.serial(patching);
-			msgout.serial(PatchAddress);
-			CUnifiedNetwork::getInstance()->send("LS", msgout);
+			if (!DontUseLS)
+			{
+				CMessage	msgout("REPORT_FS_STATE");
+				msgout.serial(SId);
+				msgout.serial(alive);
+				msgout.serial(patching);
+				msgout.serial(PatchAddress);
+				CUnifiedNetwork::getInstance()->send("LS", msgout);
+			}
 		}
 	}
 };
@@ -460,7 +478,10 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 		nldebug( "ERLOG: SCS recvd from %s-%hu, but pending %s not found", serviceName.c_str(), sid, cookie.toString().c_str());
 
 		// return the result to the LS
-		CUnifiedNetwork::getInstance()->send ("LS", msgout);
+		if (!DontUseLS)
+		{
+			CUnifiedNetwork::getInstance()->send ("LS", msgout);
+		}
 	}
 	
 }
@@ -482,7 +503,10 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 	msgin.serial (con);
 	msgout.serial (con);
 
-	CUnifiedNetwork::getInstance()->send ("LS", msgout);
+	if (!DontUseLS)
+	{
+		CUnifiedNetwork::getInstance()->send ("LS", msgout);
+	}
 
 	// add or remove the user number really connected on this shard
 	uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;
@@ -660,12 +684,15 @@ void	setShardOpenState(TShardOpenState state, bool writeInVar = true)
 
 	if ( AllowDispatchMsgToLS )
 	{
-		// send to LS current shard state
-		CMessage	msgout ("SET_SHARD_OPEN");
-		uint8		shardOpenState = (uint8)state;
-
-		msgout.serial (shardOpenState);
-		CUnifiedNetwork::getInstance()->send ("LS", msgout);
+		if (!DontUseLS)
+		{
+			// send to LS current shard state
+			CMessage	msgout ("SET_SHARD_OPEN");
+			uint8		shardOpenState = (uint8)state;
+			
+			msgout.serial (shardOpenState);
+			CUnifiedNetwork::getInstance()->send ("LS", msgout);
+		}
 	}
 }
 
@@ -753,11 +780,14 @@ void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 					// bye bye little player
 					uint32 userid = (*itc).first;
 					nlinfo ("Due to a frontend crash, removed the player %d", userid);
-					CMessage msgout ("CC");
-					msgout.serial (userid);
-					uint8 con = 0;
-					msgout.serial (con);
-					CUnifiedNetwork::getInstance()->send ("LS", msgout);
+					if (!DontUseLS)
+					{
+						CMessage msgout ("CC");
+						msgout.serial (userid);
+						uint8 con = 0;
+						msgout.serial (con);
+						CUnifiedNetwork::getInstance()->send ("LS", msgout);
+					}
 					UserIdSockAssociations.erase (itc);
 				}
 				itc = nitc;
@@ -781,7 +811,8 @@ void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 void cbServiceUp (const std::string &serviceName, uint16 sid, void *arg)
 {
 	OnlineServices.addInstance( serviceName );
-	reportOnlineStatus( OnlineServices.getOnlineStatus() );
+	bool online = OnlineServices.getOnlineStatus();
+	reportOnlineStatus( online );
 
 	// send shard id to service
 	sint32 shardId;
@@ -815,7 +846,8 @@ void cbServiceUp (const std::string &serviceName, uint16 sid, void *arg)
 void cbServiceDown (const std::string &serviceName, uint16 sid, void *arg)
 {
 	OnlineServices.removeInstance( serviceName );
-	reportOnlineStatus( OnlineServices.getOnlineStatus() );
+	bool online = OnlineServices.getOnlineStatus();
+	reportOnlineStatus( online );
 }
 
 
@@ -1065,8 +1097,11 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 	setShardOpenState((TShardOpenState)(ShardOpen.get()), false);
 
 	//
-	CMessage	msgrpn("REPORT_NO_PATCH");
-	CUnifiedNetwork::getInstance()->send("LS", msgrpn);
+	if (!DontUseLS)
+	{
+		CMessage	msgrpn("REPORT_NO_PATCH");
+		CUnifiedNetwork::getInstance()->send("LS", msgrpn);
+	}
 
 	bool	reportPatching = false;
 	list<CFES>::iterator	itfs;
@@ -1248,8 +1283,11 @@ public:
 		{
 			// We are using NeL Login Service
 			CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
-			CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
-			CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
+			if (!DontUseLS)
+			{
+				CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
+				CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
+			}
 		}
 		// List of expected service instances
 		ConfigFile.setCallback( "ExpectedServices", cbUpdateExpectedServices );
@@ -1361,7 +1399,7 @@ namespace WS
 			if ( varFixedSessionId )
 				sessionId = varFixedSessionId->asInt();
 			CWelcomeServiceClientProxy wscp(proxy);
-			wscp.registerWS(this, IService::getInstance()->getShardId(), sessionId);
+			wscp.registerWS(this, IService::getInstance()->getShardId(), sessionId, OnlineServices.getOnlineStatus());
 
 			// Send counts
 			uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;

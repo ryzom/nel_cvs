@@ -34,8 +34,7 @@ QnASchema=BaseSchema.copy()+ Schema((
 		searchable=1,
 		widget=TextAreaWidget(description="Enter a little description of the content link",)
 	),
-	TextField('filtrage',
-		default='getUsersOfficials',
+	TextField('filtrage',		
 		searchable=1,
 		widget=TextAreaWidget(description="Enter a les noms des auteurs Ã  chercher",)
 	),
@@ -76,6 +75,9 @@ class QnA(BaseContent):
 		'permissions': (CMFCorePermissions.View,)
 		},
 	)
+
+	def setFiltrage(self, value, **kwargs):
+		self.getField('filtrage').set(self, str(self.getUsersOfficials()), **kwargs)
 
 	def setTitle(self, value, **kwargs):
 		self.getField('title').set(self, value, **kwargs)
@@ -122,11 +124,11 @@ class QnA(BaseContent):
    		for user in users:
       			for group in user.getGroups():
           			 if groupid==group or prefix+groupid==group:
-              				 avail.append(user)
+              				 avail.append(str(user))
    		return avail
 
 	def getUsersOfficials(self):
-		return self.getGroupUsers('Officials')
+		return join(self.getGroupUsers('Officials'),' ')
 	
 	def get_atys_forums2(self):
 		date1=self.parseTime(str(self.getDatestart()))       	 	

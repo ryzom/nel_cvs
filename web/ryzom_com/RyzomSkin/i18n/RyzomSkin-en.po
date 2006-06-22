@@ -28,6 +28,11 @@ msgstr "to describe it. You may also want to have a look at the"
 msgid "link_bug"
 msgstr "list of already reported bugs." 
 
+#. Default: "Undo"
+#: action defined in portal_undo
+msgid "Undo"
+msgstr "Undo"
+
 #. Default: "Log in"
 #: action defined in portal_membership
 msgid "Log in"

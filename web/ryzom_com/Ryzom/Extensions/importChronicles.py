@@ -3,42 +3,37 @@ from Products.CMFCore.utils import getToolByName
 import MySQLdb
 import re
 
-def createDraft(self, target, id, title, desc, publishDate, excerpt, text,topics,lang,author):	
-	if lang=='en':
-		target.invokeFactory(id=id, type_name='WeblogEntry', title=title,description=desc, text=text)
-		new_obj = getattr(target, id)
-		new_obj.setEffectiveDate(publishDate)
-		new_obj.setModificationDate(publishDate)
-		new_obj.setEntryCategories(topics)
-		new_obj.setDescription(excerpt)
+def createDraft(self, target, id, title, desc, publishDate, excerpt, text,topics,lang,author):
+	target.invokeFactory(id=id, type_name='WeblogEntry', title=title,description=desc, text=text)
+	new_obj = getattr(target, id)
+	new_obj.setEffectiveDate(publishDate)
+	new_obj.setModificationDate(publishDate)
+	new_obj.setEntryCategories(topics)
+	new_obj.setDescription(excerpt)
+	new_obj.setLanguage(lang)
+
+	if lang=='en':		
 		try:
-			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'))
+			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'),mimetype='text/html')
 		except:
-			new_obj.setText(text)
+			new_obj.setText(text,mimetype='text/html')
 		new_obj.setCreators(author)
-		new_obj.setLanguage(lang)
 	else:
-		target.invokeFactory(id=id, type_name='WeblogEntry', title=title,description=desc, text=text)
-		new_obj = getattr(target, id)
-		new_obj.setEffectiveDate(publishDate)
-		new_obj.setModificationDate(publishDate)
-		new_obj.setEntryCategories(topics)
-		new_obj.setDescription(excerpt)	
 		try:
-			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'))
+			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'),mimetype='text/html')
 		except:
 			try:
-				new_obj.setText(text.decode('utf').encode('latin'))
+				new_obj.setText(text.decode('utf').encode('latin'),mimetype='text/html')
 			except:
-				new_obj.setText(text.decode('latin'))
+				new_obj.setText(text.decode('latin'),mimetype='text/html')
 		try:
 			new_obj.setCreators(author)
 		except:
 			try:
-				new_obj.setCreators(author.decode('utf').encode('latin'))
+				new_obj.setCreators(author.decode('utf').encode('latin'),mimetype='text/html')
 			except:
-				new_obj.setCreators(author.decode('latin'))
-		new_obj.setLanguage(lang)
+				new_obj.setCreators(author.decode('latin'),mimetype='text/html')
+
 	return new_obj
 
 
@@ -74,6 +69,7 @@ def importChronicles(self):
 	connectionObject = MySQLdb.connect(host='localhost', user='bernard', passwd='password', db='toto')
 	c = connectionObject.cursor()
 	c.execute("""SELECT distinct * FROM ryzom_news where rubrique='rp_features_fr' or rubrique='rp_features' or rubrique='rp_features_de' or rubrique='rp_news_fr' or rubrique='rp_news' or rubrique='rp_news_de' or rubrique='rp_opinion_fr' or rubrique='rp_opinion' or rubrique='rp_opinion_de' ORDER BY id;""")
+
 	for row in c.fetchall():
 		id=row[0]
 		day=str(row[1])
@@ -137,7 +133,7 @@ def importChronicles(self):
 		#fix the right path for chronicles images
 		blason=re.sub('images/','/chronicles/images/',blason)
 		#insert "blason" in the top-left of the page	
-		text='<img style=\"position: relative;\" src=\"'+blason+'\" align=\"right\" height=\"278\" width=\"170\">'+text
+		text='<div class="weblog_chronicles"> <img class="weblog_blason" style=\"position: relative;\" src=\"'+blason+'\" align=\"right\" height=\"278\" width=\"170\">'+text+'</div>'
 		
 		#need to clean &...; to real character
 		excerpt=taghtml.sub('',excerpt)
@@ -152,12 +148,12 @@ def importChronicles(self):
 		excerpt=excerpt.replace('&agrave;','à').replace('&acirc;','â').replace('&ocirc;','ô').replace('&ucirc;','û')
 		excerpt=excerpt.replace('&nbsp;',' ').replace('&quot;','\"').replace('&Agrave;','A').replace('&icirc;','î')
 		excerpt=excerpt.replace('&uuml;','ü').replace('&ouml;','ö').replace('&auml;','ä').replace('&iuml;','ï')
-		excerpt=excerpt.replace('&szlig;','ß').replace('&ccedil;','ç').replace('&ugrave;','ç')
+		excerpt=excerpt.replace('&szlig;','ß').replace('&ccedil;','ç')
 		excerpt=excerpt.replace('&raquo;','»').replace('&laquo;','«').replace('&ugrave;','ù')
 		excerpt=excerpt.replace('&rsquo;','’').replace('&ndash;','–').replace('&hellip;','…')
-		excerpt=excerpt.replace('&Uuml;','Ü').replace('&ouml;','ö').replace('&auml;','ä').replace('&iuml;','ï')
+		excerpt=excerpt.replace('&Uuml;','Ü').replace('&Iuml;','Ï').replace('&Ouml;','Ö')
 		excerpt=excerpt.replace('&Auml;','Ä').replace('&oelig;','œ').replace('&lt;','<').replace('&lsquo;','‘')
-		excerpt=excerpt.replace('&bdquo;','„').replace('&ldquo;','“').replace('&Ouml;','Ö').replace('&rdquo;','”')
+		excerpt=excerpt.replace('&bdquo;','„').replace('&ldquo;','“').replace('&rdquo;','”')
 
 		#creation du topics s'il n'existe pas
 		try:

@@ -40,34 +40,29 @@ def rewriteLink(d,text,oldid):
 	f.close()
 	return text
 
-def createDraft(self, target, id, title, desc, publishDate, excerpt, text,topics,lang,author):	
+def createDraft(self, target, id, title, desc, publishDate, excerpt, text,topics,lang,author):
+	target.invokeFactory(id=id, type_name='WeblogEntry', title=title,description=desc, text=text)
+	new_obj = getattr(target, id)
+	new_obj.setEffectiveDate(publishDate)
+	new_obj.setModificationDate(publishDate)
+	new_obj.setEntryCategories(topics)
+	new_obj.setDescription(excerpt)
+	new_obj.setLanguage(lang)
+
 	if lang=='en':
-		target.invokeFactory(id=id, type_name='WeblogEntry', title=title,description=desc, text=text)
-		new_obj = getattr(target, id)
-		new_obj.setEffectiveDate(publishDate)
-		new_obj.setModificationDate(publishDate)
-		new_obj.setEntryCategories(topics)
-		new_obj.setDescription(excerpt)
 		try:
-			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'))
+			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'),mimetype='text/html')
 		except:
-			new_obj.setText(text)
+			new_obj.setText(text,mimetype='text/html')
 		new_obj.setCreators(author)
-		new_obj.setLanguage(lang)
 	else:
-		target.invokeFactory(id=id, type_name='WeblogEntry', title=title,description=desc, text=text)
-		new_obj = getattr(target, id)
-		new_obj.setEffectiveDate(publishDate)
-		new_obj.setModificationDate(publishDate)
-		new_obj.setEntryCategories(topics)
-		new_obj.setDescription(excerpt)		
 		try:
-			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'))
+			new_obj.setText(text.replace('\xc2','').decode('cp1252').encode('utf'),mimetype='text/html')
 		except:
 			try:
-				new_obj.setText(text.decode('utf').encode('latin'))
+				new_obj.setText(text.decode('utf').encode('latin'),mimetype='text/html')
 			except:
-				new_obj.setText(text.decode('latin'))
+				new_obj.setText(text.decode('latin'),mimetype='text/html')
 		try:
 			new_obj.setCreators(author)
 		except:
@@ -75,7 +70,6 @@ def createDraft(self, target, id, title, desc, publishDate, excerpt, text,topics
 				new_obj.setCreators(author.decode('utf').encode('latin'))
 			except:
 				new_obj.setCreators(author.decode('latin'))
-		new_obj.setLanguage(lang)
 	return new_obj
 
 

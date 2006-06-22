@@ -1,8 +1,8 @@
 <dtml-comment>
-arguments:start end
+arguments:username start end
 connection_id:db_atys_forums2
 title:Session: Get informations about a character
 </dtml-comment>
 
 select distinct postid,dateline,username,pagetext from post
-where dateline between <dtml-sqlvar start type="string"> and <dtml-sqlvar end type="string"> order by dateline
+where   <dtml-sqltest username type="string" multiple > and dateline between <dtml-sqlvar start type="string"> and <dtml-sqlvar end type="string">  order by dateline

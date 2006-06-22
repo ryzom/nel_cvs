@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from calendar import timegm
+from DateTime import DateTime
+from string import join
+from Products.CMFCore.utils import getToolByName
 import DateTime
 import time
 import re
-
+from Products.ATContentTypes.permission import ChangeEvents
 #import d'archetypes
 try:
     from Products.LinguaPlone.public import *
@@ -18,15 +21,23 @@ from config import *
 QnASchema=BaseSchema.copy()+ Schema((
 	DateTimeField('datestart',
 		required=True,
+		searchable=False,
+		validator='validation_date',
 		widget=CalendarWidget(description="date de dÃ©part ",label="Date",)
 	),
 	DateTimeField('datearrivee',
 		required=True,
+		searchable=False,
 		widget=CalendarWidget(description="date d'arrivÃ©e",label="Date",)
 	),	
 	TextField('description',
 		searchable=1,
 		widget=TextAreaWidget(description="Enter a little description of the content link",)
+	),
+	TextField('filtrage',
+		default='getUsersOffcials',
+		searchable=1,
+		widget=TextAreaWidget(description="Enter a les noms des auteurs Ã  chercher",)
 	),
 	LinesField('choice',		
 		widget=MultiSelectionWidget(label='Categories',format='checkbox'),
@@ -90,15 +101,37 @@ class QnA(BaseContent):
 				text += "Error - " + str(post_splitted)
 		self.getField('text').set(self,str(text),**kwargs)
 		
-       
+	def validation_date(self,date):
+		 return self.parseTime(date) <= self.parseTime(DateTime())      
 
 	def parseTime(self,date):
-		return timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))     
+		return timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))
+   
+	def parseName(self,name):
+		n=name.split()
+		tab=[]
+		for i in n:
+			tab.append("'"+i+"'")
+		return join(tab,',')
+
+	def getGroupUsers(self,groupid):   
+		acl_users = getToolByName(self,'acl_users')
+    		users=acl_users.getUsers()
+   		prefix=acl_users.getGroupPrefix()
+   		avail=[]
+   		for user in users:
+      			for group in user.getGroups():
+          			 if groupid==group or prefix+groupid==group:
+              				 avail.append(user)
+   		return avail
+
+	def getUsersOfficials(self):
+		return self.getGroupUsers('Officials')
 	
 	def get_atys_forums2(self):
 		date1=self.parseTime(str(self.getDatestart()))       	 	
 		date2=self.parseTime(str(self.getDatearrivee()))
-		results=self.qna(start = date1,end = date2)
+		results=self.qna(username = self.getFiltrage().split(), start = date1, end = date2)
 		tab=[]
 		for row in results:                        
 			post_id  = str(row[0])

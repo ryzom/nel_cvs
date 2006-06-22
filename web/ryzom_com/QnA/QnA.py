@@ -35,7 +35,7 @@ QnASchema=BaseSchema.copy()+ Schema((
 		widget=TextAreaWidget(description="Enter a little description of the content link",)
 	),
 	TextField('filtrage',
-		default='getUsersOffcials',
+		default='getUsersOfficials',
 		searchable=1,
 		widget=TextAreaWidget(description="Enter a les noms des auteurs Ã  chercher",)
 	),

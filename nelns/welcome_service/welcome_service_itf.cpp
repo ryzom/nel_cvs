@@ -238,6 +238,10 @@ namespace WS
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
 			
+			res = handlers.insert(std::make_pair(std::string("RWSOS"), &CWelcomeServiceClientSkel::reportWSOpenState_skel));
+			// if this assert, you have a doubly message name in your interface definition !
+			nlassert(res.second);
+			
 			res = handlers.insert(std::make_pair(std::string("WUR"), &CWelcomeServiceClientSkel::welcomeUserResult_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
@@ -276,7 +280,17 @@ namespace WS
 			nlRead(__message, serial, shardId);
 		uint32	fixedSessionId;
 			nlRead(__message, serial, fixedSessionId);
-		registerWS(sender, shardId, fixedSessionId);
+		bool	isOnline;
+			nlRead(__message, serial, isOnline);
+		registerWS(sender, shardId, fixedSessionId, isOnline);
+	}
+
+	void CWelcomeServiceClientSkel::reportWSOpenState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	{
+		H_AUTO(CWelcomeServiceClientSkel_reportWSOpenState_RWSOS);
+		bool	isOnline;
+			nlRead(__message, serial, isOnline);
+		reportWSOpenState(sender, isOnline);
 	}
 
 	void CWelcomeServiceClientSkel::welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
@@ -304,19 +318,37 @@ namespace WS
 	}
 		// Register the welcome service in the ring session manager
 		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
-	void CWelcomeServiceClientProxy::registerWS(NLNET::IModule *sender, uint32 shardId, uint32 fixedSessionId)
+	void CWelcomeServiceClientProxy::registerWS(NLNET::IModule *sender, uint32 shardId, uint32 fixedSessionId, bool isOnline)
 	{
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerWS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, fixedSessionId);
+			_LocalModuleSkel->registerWS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, fixedSessionId, isOnline);
 		}
 		else
 		{
 			// send the message for remote dispatching and execution or local queing 
 			NLNET::CMessage __message;
 			
-			buildMessageFor_registerWS(__message, shardId, fixedSessionId);
+			buildMessageFor_registerWS(__message, shardId, fixedSessionId, isOnline);
+
+			_ModuleProxy->sendModuleMessage(sender, __message);
+		}
+	}
+		// WS report it's current open state
+	void CWelcomeServiceClientProxy::reportWSOpenState(NLNET::IModule *sender, bool isOnline)
+	{
+		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+		{
+			// immediate local synchronous dispatching
+			_LocalModuleSkel->reportWSOpenState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), isOnline);
+		}
+		else
+		{
+			// send the message for remote dispatching and execution or local queing 
+			NLNET::CMessage __message;
+			
+			buildMessageFor_reportWSOpenState(__message, isOnline);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
 		}
@@ -359,11 +391,22 @@ namespace WS
 	}
 
 	// Message serializer. Return the message received in reference for easier integration
-	const NLNET::CMessage &CWelcomeServiceClientProxy::buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId, uint32 fixedSessionId)
+	const NLNET::CMessage &CWelcomeServiceClientProxy::buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId, uint32 fixedSessionId, bool isOnline)
 	{
 		__message.setType("RWS");
 			nlWrite(__message, serial, shardId);
 			nlWrite(__message, serial, fixedSessionId);
+			nlWrite(__message, serial, isOnline);
+
+
+		return __message;
+	}
+
+	// Message serializer. Return the message received in reference for easier integration
+	const NLNET::CMessage &CWelcomeServiceClientProxy::buildMessageFor_reportWSOpenState(NLNET::CMessage &__message, bool isOnline)
+	{
+		__message.setType("RWSOS");
+			nlWrite(__message, serial, isOnline);
 
 
 		return __message;

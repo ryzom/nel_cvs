@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Dynamically resizable FIFO container which contains different size block
  *
- * $Id: buf_fifo.h,v 1.13.16.1 2006/02/28 14:50:57 cado Exp $
+ * $Id: buf_fifo.h,v 1.13.16.2 2006/06/23 17:11:51 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,9 +32,11 @@
 
 #include "time_nl.h"
 #include "mem_stream.h"
+#include "command.h"
 
 
 namespace NLMISC {
+
 
 
 /**
@@ -141,7 +143,7 @@ private:
 	bool	 canFit (uint32 size);
 
 
-	// statisics of the FIFO
+	// statistics of the FIFO
 	uint32 _BiggestBlock;
 	uint32 _SmallestBlock;
 	uint32 _BiggestBuffer;
@@ -152,6 +154,12 @@ private:
 	TTicks _PushedTime;
 	TTicks _FrontedTime;
 	TTicks _ResizedTime;
+
+	typedef std::set<CBufFIFO*> TAllBuffers;
+	// All the buffer for debug output
+	static TAllBuffers		_AllBuffers;
+
+	NLMISC_CATEGORISED_COMMAND_FRIEND(misc, dumpAllBuffers);
 };
 
 

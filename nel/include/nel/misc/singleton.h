@@ -1,7 +1,7 @@
 /** \file singleton.h
  * This class is used to create singleton class following the singleton design pattern
  *
- * $Id: singleton.h,v 1.3.6.5 2006/03/17 20:56:10 miller Exp $
+ * $Id: singleton.h,v 1.3.6.6 2006/06/23 17:11:51 boucher Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -150,6 +150,11 @@ namespace NLMISC
 		}
 
 	public:
+
+		static bool isInitialized()
+		{
+			return _instance() != NULL;
+		}
 		
 		static T* getInstance()
 		{

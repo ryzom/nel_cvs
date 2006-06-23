@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.11 2006/06/12 09:42:55 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.12 2006/06/23 17:11:51 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -509,8 +509,11 @@ namespace NLNET
 					}
 				}
 
-				// update the module internal
-				first->second->onModuleUpdate();
+				{
+					H_AUTO(CModuleManager_updateModules_2);
+					// update the module internal
+					first->second->onModuleUpdate();
+				}
 			}
 		}
 

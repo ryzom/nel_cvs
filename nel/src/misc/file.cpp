@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.42.18.3 2006/05/05 08:44:19 berenguier Exp $
+ * $Id: file.cpp,v 1.42.18.4 2006/06/23 17:11:51 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -605,7 +605,8 @@ void		COFile::serialBuffer(uint8 *buf, uint len) throw(EWriteError)
 {
 	if(!_F)
 		throw	EFileNotOpened(_FileName);
-	if(fwrite(buf, 1, len, _F) < len)
+//	if(fwrite(buf, len, 1, _F) != 1)
+	if(fwrite(buf, 1, len, _F) != len)
 		throw	EWriteError(_FileName);
 }
 // ======================================================================================================

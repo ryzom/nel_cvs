@@ -137,7 +137,7 @@
             <tal:feedbackForm condition="not:isAnon">
         
                 <p class="discreet"
-                   tal:condition="author_hasmail"
+                   tal:condition="python: author_hasmail and sender_hasmail"
                    i18n:translate="description_author_feedback">
                     If you want to contact this author, fill in the form
                     below.

@@ -29,8 +29,15 @@ msgid "link_bug"
 msgstr "list of already reported bugs." 
 
 #. Default: "author_not_have_mail"
+#: message in author.cpt
 msgid "author_not_have_mail"
 msgstr "Sorry, this user hasn't filled in his email address in this website preferences; you can't send him an email using this form. If you have any other mean to contact him, you can ask him to fill his email address to be able to use this form the next time."
+
+#. Default: "sender_not_have_mail"
+#: message in author.cpt
+msgid "sender_not_have_mail"
+msgstr ""
+
 
 #. Default: "Undo"
 #: action defined in portal_undo

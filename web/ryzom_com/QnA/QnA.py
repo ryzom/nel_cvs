@@ -77,7 +77,10 @@ class QnA(BaseContent):
 	)
 
 	def setFiltrage(self, value, **kwargs):
-		self.getField('filtrage').set(self, str(self.getUsersOfficials()), **kwargs)
+		if not value:
+			self.getField('filtrage').set(self, str(self.getUsersOfficials()), **kwargs)
+		else:
+			self.getField('filtrage').set(self, value, **kwargs)
 
 	def setTitle(self, value, **kwargs):
 		self.getField('title').set(self, value, **kwargs)

@@ -28,6 +28,21 @@ msgstr "to describe it. You may also want to have a look at the"
 msgid "link_bug"
 msgstr "list of already reported bugs." 
 
+#. Default: "This is an"
+#: message in weblog_macro.cpt
+msgid "this_is_an"
+msgstr "This is an"
+
+#. Default: "unofficial"
+#: message in weblog_macro.cpt
+msgid "unofficial"
+msgstr "unofficial"
+
+#. Default: "players news"
+#: message in weblog_macro.cpt
+msgid "players_news"
+msgstr "players news"
+
 #. Default: "author_not_have_mail"
 #: message in author.cpt
 msgid "author_not_have_mail"

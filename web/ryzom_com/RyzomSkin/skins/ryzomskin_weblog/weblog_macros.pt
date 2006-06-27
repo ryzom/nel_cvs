@@ -62,7 +62,12 @@
 
 
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
-      <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i></p>
+      <i>
+         <span i18n:domain="RyzomSkin" i18n:translate="this_is_an">This is an</span>
+         <b i18n:domain="RyzomSkin" i18n:translate="unofficial">unofficial</b>
+         <a i18n:domain="RyzomSkin" i18n:translate="players_news" href="/player_news">player news</a>
+      </i>
+      </p>
       <h3 class="weblog-day-title" tal:content="python:localized_time(entry.EffectiveDate(),long_format=1,context=here)" />
 
       <div class="weblog-heading">
@@ -123,8 +128,14 @@
                         isOfficial python: here.isOfficial(author);
                         discussion nocall:here/portal_discussion;">
 
+
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
-      <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i></p>
+      <i>
+         <span i18n:domain="RyzomSkin" i18n:translate="this_is_an">This is an</span>
+         <b i18n:domain="RyzomSkin" i18n:translate="unofficial">unofficial</b>
+         <a i18n:domain="RyzomSkin" i18n:translate="players_news" href="/player_news">player news</a>
+      </i>
+      </p>
       <h3 class="weblog-day-title" tal:content="python:here.toLocalizedTime(entry.EffectiveDate(),long_format=1)" />
 
       <div class="weblog-heading">

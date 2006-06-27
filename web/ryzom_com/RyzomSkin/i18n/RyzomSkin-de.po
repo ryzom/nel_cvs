@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RyzomSkin\n"
 "POT-Creation-Date: 2006-03-21 12:13+0000\n"
-"PO-Revision-Date: 2006-06-14 19:21+0100\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2006-06-22 23:50+0100\n"
+"Last-Translator: Kadael <kadael@jolt.co.uk>\n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,31 +17,36 @@ msgstr ""
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
 msgid "bug_report"
-msgstr "If you wish to report a bug</b>: please use the "
+msgstr "fehlerbericht"
 
 msgid "link"
-msgstr "bug report form"
+msgstr "Fehlerbericht Formular"
 
 msgid "describe"
-msgstr "to describe it. You may also want to have a look at the"
+msgstr "zur beschreiben des Fehlers. Vielleicht möchtest du auch noch einen Blick auf die"
 
 msgid "link_bug"
-msgstr "list of already reported bugs." 
+msgstr "Liste der bereits gemeldeten Fehler werfen?"
 
-#. Default: "This is an"
 #: message in weblog_macro.cpt
 msgid "this_is_an"
 msgstr "This is an"
 
-#. Default: "unofficial"
 #: message in weblog_macro.cpt
-msgid "unofficial"
+msgid "unofficial1"
 msgstr "unofficial"
 
-#. Default: "players news"
+#: message in weblog_macro.cpt
+msgid "unofficial2"
+msgstr ""
+
 #: message in weblog_macro.cpt
 msgid "players_news"
 msgstr "players news"
+
+#: message in weblog_macro.cpt
+msgid "contributor"
+msgstr "Contributor(s)"
 
 #. Default: "author_not_have_mail"
 #: message in author.cpt
@@ -84,13 +89,12 @@ msgid "Preferences"
 msgstr "Meine Einstellungen"
 
 msgid "action_my_subscriptions"
-msgstr "My subscriptions"
-
+msgstr "Mein Abonnement"
 
 #. Default: "Log in to add comments"
 #: ./plone_templates/viewThreadsAtBottom.pt
 msgid "label_login_to_add_comments"
-msgstr "Zum Kommentieren bitte einloggen"
+msgstr "Einloggen zum Kommentieren"
 
 
 msgid "tun"
@@ -103,7 +107,7 @@ msgid "by"
 msgstr "von"
 
 msgid "edit"
-msgstr "edit"
+msgstr "bearbeiten"
 
 msgid "here"
 msgstr "hier"
@@ -112,7 +116,7 @@ msgid "label_submit"
 msgstr "Bestätigen"
 
 msgid "unsubcribed_newsletter"
-msgstr "Solltest du mal dein Abonnement via E-Mail beenden oder ändern wollen, kannst du dies hier tun."
+msgstr "Solltest du dein Abonnement via E-Mail beenden oder ändern wollen, kannst du dies hier tun."
 
 msgid "receive_confirmed1"
 msgstr "Du solltest in Kürze eine Bestätigungsmail erhalten, welche an folgende E-Mailadresse geschickt wird:"

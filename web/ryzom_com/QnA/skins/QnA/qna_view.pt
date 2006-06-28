@@ -10,11 +10,9 @@
          <span metal:use-macro="python: here.widget('datearrivee', mode='view')">titre</span></i>
         <p><span metal:use-macro="python: here.widget('text', mode='view')">data</span></p>
         <a href=""
-           i18n:domain="RyzomSkin"
-           i18n:translate="convert_in_document"
            tal:define="id here/getId"
            tal:attributes="href string:TransformQnaToDocument?qna=${id}">
-          <img src="button.gif" alt="" title="" height="25" width="120">            
+          <span i18n:domain="RyzomSkin" i18n:translate="convert_in_document"></span>
         </a>
       </div>
     </div>

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RyzomSkin\n"
 "POT-Creation-Date: 2006-03-21 12:13+0000\n"
-"PO-Revision-Date: 2006-05-05 14:56+0100\n"
+"PO-Revision-Date: 2006-06-28 17:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -26,11 +26,10 @@ msgid "describe"
 msgstr "to describe it. You may also want to have a look at the"
 
 msgid "link_bug"
-msgstr "list of already reported bugs." 
+msgstr "list of already reported bugs."
 
 msgid "convert_in_document"
 msgstr "Convert QnA in Page Document"
-
 
 #: message in weblog_macro.pt
 msgid "this_is_an"
@@ -48,17 +47,15 @@ msgstr "players news"
 msgid "contributor"
 msgstr "Contributor(s) : "
 
-
 #. Default: "author_not_have_mail"
 #: message in author.cpt
 msgid "author_not_have_mail"
-msgstr "Sorry, this user hasn't filled in his email address in this website preferences; you can't send him an email using this form. If you have any other mean to contact him, you can ask him to fill his email address to be able to use this form the next time."
+msgstr "Sorry, this user hasn't filled in his email address in his website preferences; you can't send him an email using this form. If you have any other mean to contact him, you can ask him to fill his email address to be able to use this form the next time."
 
 #. Default: "sender_not_have_mail"
 #: message in author.cpt
 msgid "sender_not_have_mail"
-msgstr ""
-
+msgstr "You haven't entered an email address in your website preferences."
 
 #. Default: "Undo"
 #: action defined in portal_undo

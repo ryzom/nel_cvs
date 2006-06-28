@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RyzomSkin\n"
 "POT-Creation-Date: 2006-03-21 12:13+0000\n"
-"PO-Revision-Date: 2006-06-28 17:39+0100\n"
+"PO-Revision-Date: 2006-06-28 18:33+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -45,7 +45,7 @@ msgstr "Spielernews"
 
 #: message in weblog_macro.cpt
 msgid "contributor"
-msgstr "Beitragende: "
+msgstr "Mitwirkender: "
 
 #. Default: "author_not_have_mail"
 #: message in author.cpt
@@ -55,7 +55,7 @@ msgstr "Sorry, this user hasn't filled in his email address in this website pref
 #. Default: "sender_not_have_mail"
 #: message in author.cpt
 msgid "sender_not_have_mail"
-msgstr "You haven't entered an email address in your website preferences."
+msgstr "Sie haben keine Emailadresse in ihren Accounteinstellungen angegeben."
 
 #. Default: "Undo"
 #: action defined in portal_undo

@@ -46,8 +46,7 @@ QnASchema=BaseSchema.copy()+ Schema((
 	TextField('text',
 		searchable=1,
 		default_output_type='text/restructured',
-		widget=RichWidget(description="edit the choice"),
-		schemata='edit'
+		widget=RichWidget(description="edit the choice",visible={'edit':'hidden', 'view':'visible'}),
         ),
 ),)
  
@@ -76,6 +75,7 @@ class QnA(BaseContent):
 		},
 	)
 
+	#si le champ "filtrage" est vide il est remplie par le nom des utilisateurs du groupe official
 	def setFiltrage(self, value, **kwargs):
 		if not value:
 			self.getField('filtrage').set(self, str(self.getUsersOfficials()), **kwargs)
@@ -90,10 +90,10 @@ class QnA(BaseContent):
 			except:
 				pass #try to do better than this
 
+
 	def setText(self,value,**kwargs):
 		tab=self.getChoice()
-		text=''
-		
+		text=''		
 		for post_joined in tab:
 			post_splitted = post_joined.split('|-|')
 			try:
@@ -105,10 +105,12 @@ class QnA(BaseContent):
 			except IndexError:
 				text += "Error - " + str(post_splitted)
 		self.getField('text').set(self,str(text),**kwargs)
-		
-	def validation_date(self,date):
-		 return self.parseTime(date) <= self.parseTime(DateTime())      
 
+	#script de validation 	
+	#def validation_date(self,date):
+	#	 return self.parseTime(date) <= self.parseTime(DateTime())      
+
+	#convertit une date en timestamp
 	def parseTime(self,date):
 		return timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))
    
@@ -119,6 +121,7 @@ class QnA(BaseContent):
 			tab.append("'"+i+"'")
 		return join(tab,',')
 
+	#renvoie la liste des utilisateurs d'un groupe
 	def getGroupUsers(self,groupid):   
 		acl_users = getToolByName(self,'acl_users')
     		users=acl_users.getUsers()
@@ -130,9 +133,11 @@ class QnA(BaseContent):
               				 avail.append(str(user))
    		return avail
 
+	#renvoie la liste du groupe officials
 	def getUsersOfficials(self):
 		return join(self.getGroupUsers('Officials'),' ')
-	
+
+
 	def get_atys_forums2(self):
 		date1=self.parseTime(str(self.getDatestart()))       	 	
 		date2=self.parseTime(str(self.getDatearrivee()))
@@ -153,14 +158,24 @@ class QnA(BaseContent):
 					post_text=post_text.decode('latin')
 			post_text=self.filtertext(post_text)
 			#tab.append(str(row[0])+' - '+str(row[1])+' - '+post_text)
-			#tab.append('|'.join((post_date, post_author, post_text, post_id)))
 			tab.append('|-|'.join((post_date,post_author,post_text,post_id)))
 		return tab
 
 	def filtertext(self,text):		
-	# Replace string
-                newstr = re.sub('\[QUOTE=.*?\]','<div class="news_quote">',text)
+		# Replace string
+		newstr=text
+
+		quoteindex=newstr.find('[QUOTE=')+7
+		quoteend=newstr[quoteindex:].find(']')
+		quote=newstr[quoteindex:].split(']',1)[0]
+		newstr = re.sub('\[QUOTE=.*?\]','<div class="news_quote"> Originally Posted by '+quote+'<br />',newstr)
 		newstr = re.sub('\[/QUOTE\]','</div>',newstr)
+
+		quoteindex=newstr.find('[quote=')+7
+		quoteend=newstr[quoteindex:].find(']')
+		quote=newstr[quoteindex:].split(']',1)[0]
+		newstr = re.sub('\[quote=.*?\]','<div class="news_quote"> Originally Posted by '+quote+'<br />',newstr)
+		newstr = re.sub('\[/quote\]','</div>',newstr)
 
 		urlindex=newstr.find('[URL=')+5
 		urlend=newstr[urlindex:].find(']')
@@ -173,33 +188,25 @@ class QnA(BaseContent):
 		newstr = re.sub('\[url=.*?\]','<a href="'+url+'">',newstr)
 
 
-		colorindex=newstr.find('[color=')+6
+		colorindex=newstr.find('[color=')+7
 		colorend=newstr[colorindex:].find(']')
 		color=newstr[colorindex:].split(']',1)[0]
 		newstr = re.sub('\[color=.*?\]','<span style="color"'+color+'">',newstr)
 		
-		COLORindex=newstr.find('[COLOR=')+6
+		COLORindex=newstr.find('[COLOR=')+7
 		COLORend=newstr[COLORindex:].find(']')
 		COLOR=newstr[COLORindex:].split(']',1)[0]
-		newstr = re.sub('\[COLOR=.*?\]','<span style="COLOR"'+COLOR+'">',newstr)
+		newstr = re.sub('\[COLOR=.*?\]','<span style="color"'+COLOR+'">',newstr)
 		
-		fontindex=newstr.find('[font=')+5
+		fontindex=newstr.find('[font=')+6
 		fontend=newstr[urlindex:].find(']')
 		font=newstr[fontindex:].split(']',1)[0]
 		newstr = re.sub('\[font=.*?\]','<font-family'+font+'">',newstr)
 
-		sizeindex=newstr.find('[size=')+5
+		sizeindex=newstr.find('[size=')+6
 		sizeend=newstr[sizeindex:].find(']')
 		size=newstr[sizeindex:].split(']',1)[0]
 		newstr = re.sub('\[size=.*?\]','<font-size'+size+'">',newstr)
-
-		listindex=newstr.find('[size=')+5
-		listend=newstr[listindex:].find(']')
-		list=newstr[listindex:].split(']',1)[0]
-		
-		listindex=newstr.find('[size=')+5
-		listend=newstr[listindex:].find(']')
-		list=newstr[listindex:].split(']',1)[0]
 
 		newstr = re.sub('\[size=.*?\]','<list'+size+'">',newstr)
 		newstr = re.sub('\[SIZE=.*?\]','<list'+size+'">',newstr)
@@ -230,8 +237,8 @@ class QnA(BaseContent):
 		newstr = re.sub('\[/list\]','</elist>',newstr)
 		newstr = re.sub('\[/color\]','</span >',newstr)
 		newstr = re.sub('\[/COLOR\]','</span >',newstr)
-		newstr = re.sub('\[QUOTE\]','<QUOTE>',newstr)
-		newstr = re.sub('\[/QUOTE\]','</QUOTE>',newstr)
+		newstr = re.sub('\[QUOTE\]','<div class="news_quote">',newstr)
+		newstr = re.sub('\[/QUOTE\]','</div>',newstr)
 		newstr = re.sub('\[edit\]','<edit>',newstr)
 		newstr = re.sub('\[/edit\]','</edit>',newstr)
 		newstr = re.sub('\[quote\]','<div class="news_quote">',newstr)

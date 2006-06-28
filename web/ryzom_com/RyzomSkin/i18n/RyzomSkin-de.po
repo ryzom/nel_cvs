@@ -28,17 +28,20 @@ msgstr "zur beschreiben des Fehlers. Vielleicht möchtest du auch noch einen Bli
 msgid "link_bug"
 msgstr "Liste der bereits gemeldeten Fehler werfen?"
 
+msgid "convert_in_document"
+msgstr "Convert QnA in Page Document"
+
 #: message in weblog_macro.cpt
 msgid "this_is_an"
-msgstr "This is an"
+msgstr "Dies ist eine"
 
 #: message in weblog_macro.cpt
 msgid "unofficial"
-msgstr "unofficial"
+msgstr "inoffizielle"
 
 #: message in weblog_macro.cpt
 msgid "players_news"
-msgstr "players news"
+msgstr "Spielernews"
 
 #: message in weblog_macro.cpt
 msgid "contributor"

@@ -28,6 +28,9 @@ msgstr "to describe it. You may also want to have a look at the"
 msgid "link_bug"
 msgstr "list of already reported bugs." 
 
+msgid "convert_in_document"
+msgstr "Convert QnA in Page Document"
+
 
 #: message in weblog_macro.pt
 msgid "this_is_an"

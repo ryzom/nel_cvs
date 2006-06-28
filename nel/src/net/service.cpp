@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.17 2006/05/11 13:43:27 boucher Exp $
+ * $Id: service.cpp,v 1.238.4.18 2006/06/28 15:05:58 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1022,6 +1022,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		{
 			// if not, we use ns only if service is not ns, ls, aes, as
 			_DontUseNS = false;
+		}
+		if (haveLongArg("nons"))
+		{
+			// command line override
+			_DontUseNS = true;
 		}
 
 		//

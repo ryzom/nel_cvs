@@ -33,12 +33,8 @@ msgid "this_is_an"
 msgstr "This is an"
 
 #: message in weblog_macro.cpt
-msgid "unofficial1"
+msgid "unofficial"
 msgstr "unofficial"
-
-#: message in weblog_macro.cpt
-msgid "unofficial2"
-msgstr ""
 
 #: message in weblog_macro.cpt
 msgid "players_news"
@@ -46,7 +42,7 @@ msgstr "players news"
 
 #: message in weblog_macro.cpt
 msgid "contributor"
-msgstr "Contributor(s)"
+msgstr "Contributor(s) : "
 
 #. Default: "author_not_have_mail"
 #: message in author.cpt

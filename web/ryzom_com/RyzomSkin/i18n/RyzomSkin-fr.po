@@ -29,25 +29,21 @@ msgid "link_bug"
 msgstr "list of already reported bugs." 
 
 
-#: message in weblog_macro.cpt
+#: message in weblog_macro.pt
 msgid "this_is_an"
 msgstr "Il s'agit d'une"
 
-#: message in weblog_macro.cpt
-msgid "unofficial1"
-msgstr ""
-
-#: message in weblog_macro.cpt
-msgid "unofficial2"
+#: message in weblog_macro.pt
+msgid "unofficial"
 msgstr "non officiel"
 
-#: message in weblog_macro.cpt
+#: message in weblog_macro.pt
 msgid "players_news"
 msgstr "News de Joueurs"
 
-#: message in weblog_macro.cpt
+#: message in weblog_macro.pt
 msgid "contributor"
-msgstr "Contributeur(s)"
+msgstr "Contributeur(s) : "
 
 
 #. Default: "author_not_have_mail"

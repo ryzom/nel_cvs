@@ -58,14 +58,17 @@
             tal:define="weblog python:here;
 		        author python: entry.Creator();
                         fullname python:here.get_fullname(author);
-                        isOfficial python: here.isOfficial(author);">
+                        isOfficial python: here.isOfficial(author);
+                        boundLanguages here/portal_languages/getLanguageBindings;
+                        lang python:boundLanguages[0];">
 
 
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
       <i>
-         <span i18n:domain="RyzomSkin" i18n:translate="this_is_an">This is an</span>
-         <b i18n:domain="RyzomSkin" i18n:translate="unofficial">unofficial</b>
-         <a i18n:domain="RyzomSkin" i18n:translate="players_news" href="/player_news">player news</a>
+         <span i18n:domain="RyzomSkin" i18n:translate="this_is_an"></span>
+         <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:not lang in 'fr'"></b>
+         <a i18n:domain="RyzomSkin" i18n:translate="players_news" href="/player_news"></a>
+         <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:lang in 'fr'"></b>
       </i>
       </p>
       <h3 class="weblog-day-title" tal:content="python:localized_time(entry.EffectiveDate(),long_format=1,context=here)" />
@@ -82,7 +85,8 @@
              <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
           </span>
           <br />
-          <i style="display:inline;" i18n:domain="RyzomSkin" i18n:translate="contributor" tal:condition="entry/Contributors">Contributor :
+          <i style="display:inline;font-weight:normal;" tal:condition="entry/Contributors">
+             <span i18n:domain="RyzomSkin" i18n:translate="contributor">Contributor :</span>
              <span tal:repeat="contrib entry/Contributors">
                <a tal:attributes="href python:portal_url+'/author/'+contrib" tal:content="python:here.get_fullname(contrib)"></a>
                <span tal:condition="not:repeat/contrib/end" tal:replace="string:, " />
@@ -126,14 +130,17 @@
 		        author python: entry.Creator();
                         fullname python:here.get_fullname(author);
                         isOfficial python: here.isOfficial(author);
-                        discussion nocall:here/portal_discussion;">
+                        discussion nocall:here/portal_discussion;
+                        boundLanguages here/portal_languages/getLanguageBindings;
+                        lang python:boundLanguages[0];">
 
 
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
       <i>
-         <span i18n:domain="RyzomSkin" i18n:translate="this_is_an">This is an</span>
-         <b i18n:domain="RyzomSkin" i18n:translate="unofficial">unofficial</b>
-         <a i18n:domain="RyzomSkin" i18n:translate="players_news" href="/player_news">player news</a>
+         <span i18n:domain="RyzomSkin" i18n:translate="this_is_an"></span>
+         <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:not lang in 'fr'"></b>
+         <a i18n:domain="RyzomSkin" i18n:translate="players_news" href="/player_news"></a>
+         <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:lang in 'fr'"></b>
       </i>
       </p>
       <h3 class="weblog-day-title" tal:content="python:here.toLocalizedTime(entry.EffectiveDate(),long_format=1)" />
@@ -150,9 +157,11 @@
              <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
           </span>
           <br />
-          <i style="display:inline;" i18n:domain="RyzomSkin" i18n:translate="contributor" tal:condition="entry/Contributors">Contributor :
+          <i style="display:inline;font-weight:normal;" tal:condition="entry/Contributors">
+             <span i18n:domain="RyzomSkin" i18n:translate="contributor">Contributor :</span>
              <span tal:repeat="contrib entry/Contributors">
-               <a tal:attributes="href python:portal_url+'/author/'+contrib" tal:content="python:here.get_fullname(contrib)"></a><span tal:condition="not:repeat/contrib/end" tal:replace="string:, " />
+               <a tal:attributes="href python:portal_url+'/author/'+contrib" tal:content="python:here.get_fullname(contrib)"></a>
+               <span tal:condition="not:repeat/contrib/end" tal:replace="string:, " />
              </span>
           </i>
       </div>

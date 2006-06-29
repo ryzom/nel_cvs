@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RyzomSkin\n"
 "POT-Creation-Date: 2006-03-21 12:13+0000\n"
-"PO-Revision-Date: 2006-06-29 14:58+0100\n"
+"PO-Revision-Date: 2006-06-29 18:15+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -50,7 +50,7 @@ msgstr "Mitwirkender: "
 #. Default: "author_not_have_mail"
 #: message in author.cpt
 msgid "author_not_have_mail"
-msgstr "Sorry, this user hasn't filled in his email address in this website preferences; you can't send him an email using this form. If you have any other mean to contact him, you can ask him to fill his email address to be able to use this form the next time."
+msgstr "Entschuldige, dieser Benutzer hat sein E-Mailadressfeld nicht ausgefüllt; du kannst ihm keine E-Mail über dieses Formular zusenden. Wenn du ihn irgendwie anders erreichen kannst, könntest du ihn fragen, ob der sein E-Mailadressfeld ausfüllt, dann kannst du ihm das nächste mal hierrüber eine Mail zukommen lassen."
 
 #. Default: "sender_not_have_mail"
 #: message in author.cpt

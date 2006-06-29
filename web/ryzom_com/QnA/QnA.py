@@ -1,28 +1,29 @@
 # -*- coding: utf-8 -*-
+#import python
 from calendar import timegm
 from DateTime import DateTime
 from string import join
-from Products.CMFCore.utils import getToolByName
 import DateTime
 import time
 import re
+from Products.CMFCore.utils import getToolByName
+
+#import zope/archetype
+from Products.CMFCore import CMFCorePermissions
 from Products.ATContentTypes.permission import ChangeEvents
-#import d'archetypes
 try:
     from Products.LinguaPlone.public import *
 except ImportError: 
     from Products.Archetypes.public import *
-from Products.CMFCore import CMFCorePermissions
 
+#import de fonction du produit
 from config import *
 
-#dÃ©fini le shÃ©ma
- 
+#dÃ©fini le shÃ©ma 
 QnASchema=BaseSchema.copy()+ Schema((
 	DateTimeField('datestart',
 		required=True,
 		searchable=False,
-		validator='validation_date',
 		widget=CalendarWidget(description="date de dÃ©part ",label="Date",)
 	),
 	DateTimeField('datearrivee',
@@ -31,20 +32,22 @@ QnASchema=BaseSchema.copy()+ Schema((
 		widget=CalendarWidget(description="date d'arrivÃ©e",label="Date",)
 	),	
 	TextField('description',
-		searchable=1,
+		searchable=False,
 		widget=TextAreaWidget(description="Enter a little description of the content link",)
 	),
-	TextField('filtrage',		
-		searchable=1,
+	TextField('filtrage',
+		searchable=False,
 		widget=TextAreaWidget(description="Enter a les noms des auteurs Ã  chercher",)
 	),
-	LinesField('choice',		
+	LinesField('choice',
+		searchable=False,
+		default_output_type='text/html',	
 		widget=MultiSelectionWidget(label='Categories',format='checkbox'),
 		vocabulary='get_atys_forums2',             
 		schemata='configuration'
 	),
 	TextField('text',
-		searchable=1,
+		searchable=False,
 		default_output_type='text/restructured',
 		widget=RichWidget(description="edit the choice",visible={'edit':'hidden', 'view':'visible'}),
         ),
@@ -57,15 +60,10 @@ class QnA(BaseContent):
 	"""Add an QnA Document"""
 	schema = QnASchema
 
-	#def __init__(self,BaseContent):
-	#	addDirectoryViews(self, 'sql', GLOBALS)
-        #actions = (
-	#	{ 'id': 'edit',
-	#	'name': 'edit',
-	#	'action': 'string:${object_url}/qna_edit',
-	#	'permissions': (CMFCorePermissions.ModifyPortalContent,)
-	#	},
-	#)
+	archetype_name = "QnA"
+	meta_type = 'QnA'
+	default_view  = 'qna_view'
+	immediate_view = 'qna_view'
 
 	actions = (
 		{ 'id': 'view',
@@ -73,6 +71,11 @@ class QnA(BaseContent):
 		'action': 'string:${object_url}/qna_view',
 		'permissions': (CMFCorePermissions.View,)
 		},
+	#	{ 'id': 'edit',
+	#	'name': 'edit',
+	#	'action': 'string:${object_url}/qna_edit',
+	#	'permissions': (CMFCorePermissions.ModifyPortalContent,)
+	#	},
 	)
 
 	#si le champ "filtrage" est vide il est remplie par le nom des utilisateurs du groupe official
@@ -106,14 +109,37 @@ class QnA(BaseContent):
 				text += "Error - " + str(post_splitted)
 		self.getField('text').set(self,str(text),**kwargs)
 
+
+	#cette fonction est appelle lors de la visualisation du qna et corrige le champ text s'il n'est pas correct
+	def auto_correction(self):
+		text = self.getText()
+		if not text:
+			self.setText('truc')
+		return text
+
+	
+	#def getText(self):
+	#	text = self.getField('text').get(self,value,**kwargs)
+	#	if not text or text=='':
+	#		self.setText('truc')
+	#	return text
+			
+		
+	
 	#script de validation 	
 	#def validation_date(self,date):
-	#	 return self.parseTime(date) <= self.parseTime(DateTime())      
+	#	 return self.parseTime(date) <= self.parseTime(DateTime())   
+   
 
 	#convertit une date en timestamp
-	def parseTime(self,date):
-		return timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))
-   
+	#TODO: gerer les heures du type 00:00
+	def parseTime(self,date):		
+		try:
+			result = timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))
+   		except:
+			result = timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d 00:00:00 %Z"))
+		return result
+
 	def parseName(self,name):
 		n=name.split()
 		tab=[]
@@ -157,9 +183,21 @@ class QnA(BaseContent):
 				except:
 					post_text=post_text.decode('latin')
 			post_text=self.filtertext(post_text)
-			#tab.append(str(row[0])+' - '+str(row[1])+' - '+post_text)
+			#tab.append((post_date,post_author,post_text,post_id))
 			tab.append('|-|'.join((post_date,post_author,post_text,post_id)))
 		return tab
+
+	#def get_atys_forums2(self):
+	#	result=[]
+	#	tab = self.get_atys_forums()
+	#	for i in tab:
+	#		post_id  = str(i[3])
+	#		post_date = str(i[0])
+	#		post_author = str(i[1])
+	#		post_text   = str(i[2])
+	#		result.append(str((post_date,post_author,post_text,post_id))
+	#	return result
+
 
 	def filtertext(self,text):		
 		# Replace string
@@ -212,8 +250,12 @@ class QnA(BaseContent):
 		newstr = re.sub('\[SIZE=.*?\]','<list'+size+'">',newstr)
 		newstr = re.sub('\[i\]','<i>',newstr)
 		newstr = re.sub('\[/i\]','</i>',newstr)
+		newstr = re.sub('\[I\]','<i>',newstr)
+		newstr = re.sub('\[/I\]','</i>',newstr)
 		newstr = re.sub('\[b\]','<b>',newstr)
 		newstr = re.sub('\[/b\]','</b>',newstr)
+		newstr = re.sub('\[B\]','<b>',newstr)
+		newstr = re.sub('\[/B\]','</b>',newstr)
 		newstr = re.sub('\[IMG\]','<IMG>',newstr)
 		newstr = re.sub('\[/IMG\]','</IMG>',newstr)
 		newstr = re.sub('\[center\]','<center>',newstr)
@@ -244,7 +286,6 @@ class QnA(BaseContent):
 		newstr = re.sub('\[quote\]','<div class="news_quote">',newstr)
 		newstr = re.sub('\[/quote\]','</div>',newstr)
 		newstr = re.sub('\[/font\]','</font-family >',newstr)
-
 		newstr = re.sub('\n','<br />',newstr)
 
 		return newstr

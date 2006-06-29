@@ -1,20 +1,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
       lang="en-US"
-      metal:use-macro="here/main_template/macros/master">
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="QnA">
 <body>
-    <div metal:fill-slot="main">
-      <div metal:define-macro="main" tal:omit-tag="">
+    <div metal:fill-slot="main">      
         <div metal:use-macro="here/document_actions/macros/document_actions"></div>
-        <h1><span metal:use-macro="python: here.widget('description', mode='view')">titre</span></h1>
-        <i><span metal:use-macro="python: here.widget('datestart', mode='view')">titre</span>
-         <span metal:use-macro="python: here.widget('datearrivee', mode='view')">titre</span></i>
-        <p><span metal:use-macro="python: here.widget('text', mode='view')">data</span></p>
-        <a href=""
-           tal:define="id here/getId"
-           tal:attributes="href string:TransformQnaToDocument?qna=${id}">
-          <span i18n:domain="RyzomSkin" i18n:translate="convert_in_document"></span>
-        </a>
-      </div>
-    </div>
+        <div tal:define="text here/auto_correction;                         
+                         id here/getId;
+                         choice here/toto;">           
+           <p tal:content="structure text"></p>
+           <br />
+           <a href="" tal:attributes="href string:TransformQnaToDocument?qna=${id}">
+              <span i18n:domain="RyzomSkin" i18n:translate="convert_in_document"></span>
+           </a>
+        </div>
+    </div>    
 </body>
 </html>

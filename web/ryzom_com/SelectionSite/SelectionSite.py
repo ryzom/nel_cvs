@@ -141,10 +141,50 @@ Selection Site
     topicImage = ''
     default_topic_image='default-topic-icon.png',
     
-    schema =  SelectionSchema
+    schema = SelectionSchema
     
-    visit = {}
+    listVisit = {}
+    thirtysum = 0
+    othersum = 0
     
+    def thirtyVisit(self):
+    	#visit = {}
+    	#visit = FanVisitg1.SiteDatabase().save()
+    	#print visit
+    	#listVisit = []
+	#listVisit = visit[site].values()
+	#value = listVisit[-30:0]
+	#for i in value:
+	#	return i
+	return self.listVisit[-30:0]
+    
+    def updateDico(self,dict):
+    	self.listVisit.update(dict)
+	value = listVisit.Values()
+	thirtyList = value[-30:]
+	
+	while (number < 30):
+		sum += thirtyList[number][1]
+		number += 1
+	self.thirtysum = sum
+	
+	otherList = value[0:-30]
+	
+	while (number < len(value)):
+		sum += otherList[number][1]
+		number += 1
+	self.otherSum = sum
+	
+	
+	
+	#conserver les 30 derniere valeur
+	#additionne les valeurs enlever
+	
+    def getVisit(self):
+		return ListVisit
+		
+    def getNombreVisit(self):
+		return nombreVisit
     
    	
     actions = ({

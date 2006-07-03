@@ -11,7 +11,7 @@ def install(self):
 
     install_subskin(self, out, GLOBALS)
 
-  
+    manage_addExternalMethod(portal,'get_servers_status','Get the servers status',PROJECTNAME + '.FanVisitg1','FanVisit')
 
     out.write("Successfully installed %s." % PROJECTNAME)
     return out.getvalue()

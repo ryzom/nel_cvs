@@ -19,7 +19,7 @@ def getSite():
       		siteList.append(site.Title())
       
 	#return siteList
-	dico = FanVisitg1(siteList)
+	dico = FanVisit(siteList)
 	
 	for brains in result:
 		site = brains.getObject()

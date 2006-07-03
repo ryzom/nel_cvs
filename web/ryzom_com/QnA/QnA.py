@@ -95,6 +95,11 @@ class QnA(BaseContent):
 
 
 	def setText(self,value,**kwargs):
+		self.getField('text').set(self,self.generate_text(),**kwargs)		
+
+
+
+	def generate_text(self):
 		tab=self.getChoice()
 		text=''		
 		for post_joined in tab:
@@ -107,8 +112,7 @@ class QnA(BaseContent):
 				text += '<p>-- %s <a href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post_author, post_id, post_id)
 			except IndexError:
 				text += "Error - " + str(post_splitted)
-		self.getField('text').set(self,str(text),**kwargs)
-
+		return text
 
 	#cette fonction est appelle lors de la visualisation du qna et corrige le champ text s'il n'est pas correct
 	def auto_correction(self):
@@ -219,35 +223,44 @@ class QnA(BaseContent):
 		urlend=newstr[urlindex:].find(']')
 		url=newstr[urlindex:].split(']',1)[0]
 		newstr = re.sub('\[URL=.*?\]','<a href="'+url+'">',newstr)
+		newstr = re.sub('\[/URL\]','</a>',newstr)
 
 		urlindex=newstr.find('[url=')+5
 		urlend=newstr[urlindex:].find(']')
 		url=newstr[urlindex:].split(']',1)[0]
 		newstr = re.sub('\[url=.*?\]','<a href="'+url+'">',newstr)
-
+		newstr = re.sub('\[/url\]','</a>',newstr)
 
 		colorindex=newstr.find('[color=')+7
 		colorend=newstr[colorindex:].find(']')
 		color=newstr[colorindex:].split(']',1)[0]
-		newstr = re.sub('\[color=.*?\]','<span style="color"'+color+'">',newstr)
+		newstr = re.sub('\[color=.*?\]','<span style="color:'+color+'">',newstr)
+		newstr = re.sub('\[/color\]','</span>',newstr)
 		
-		COLORindex=newstr.find('[COLOR=')+7
-		COLORend=newstr[COLORindex:].find(']')
-		COLOR=newstr[COLORindex:].split(']',1)[0]
-		newstr = re.sub('\[COLOR=.*?\]','<span style="color"'+COLOR+'">',newstr)
+		colorindex=newstr.find('[COLOR=')+7
+		colorend=newstr[colorindex:].find(']')
+		color=newstr[colorindex:].split(']',1)[0]
+		newstr = re.sub('\[COLOR=.*?\]','<span style="color:'+color+'">',newstr)
+		newstr = re.sub('\[/COLOR\]','</span>',newstr)
 		
 		fontindex=newstr.find('[font=')+6
-		fontend=newstr[urlindex:].find(']')
+		fontend=newstr[fontindex:].find(']')
 		font=newstr[fontindex:].split(']',1)[0]
-		newstr = re.sub('\[font=.*?\]','<font-family'+font+'">',newstr)
+		newstr = re.sub('\[font=.*?\]','<span style="font-family:'+font+'">',newstr)
+		newstr = re.sub('\[/font\]','</span>',newstr)
 
 		sizeindex=newstr.find('[size=')+6
 		sizeend=newstr[sizeindex:].find(']')
 		size=newstr[sizeindex:].split(']',1)[0]
-		newstr = re.sub('\[size=.*?\]','<font-size'+size+'">',newstr)
+		newstr = re.sub('\[size=.*?\]','<span style="font-size:'+size+'">',newstr)
+		newstr = re.sub('\[/size\]','</span>',newstr)
 
-		newstr = re.sub('\[size=.*?\]','<list'+size+'">',newstr)
-		newstr = re.sub('\[SIZE=.*?\]','<list'+size+'">',newstr)
+		sizeindex=newstr.find('[SIZE=')+6
+		sizeend=newstr[sizeindex:].find(']')
+		size=newstr[sizeindex:].split(']',1)[0]
+		newstr = re.sub('\[SIZE=.*?\]','<span style="font-size:'+size+'">',newstr)
+		newstr = re.sub('\[/SIZE\]','</span>',newstr)
+
 		newstr = re.sub('\[i\]','<i>',newstr)
 		newstr = re.sub('\[/i\]','</i>',newstr)
 		newstr = re.sub('\[I\]','<i>',newstr)
@@ -256,36 +269,31 @@ class QnA(BaseContent):
 		newstr = re.sub('\[/b\]','</b>',newstr)
 		newstr = re.sub('\[B\]','<b>',newstr)
 		newstr = re.sub('\[/B\]','</b>',newstr)
-		newstr = re.sub('\[IMG\]','<IMG>',newstr)
-		newstr = re.sub('\[/IMG\]','</IMG>',newstr)
+		newstr = re.sub('\[IMG\]','<img>',newstr)
+		newstr = re.sub('\[/IMG\]','</img>',newstr)
+		newstr = re.sub('\[img\]','<img>',newstr)
+		newstr = re.sub('\[/img\]','</img>',newstr)
 		newstr = re.sub('\[center\]','<center>',newstr)
 		newstr = re.sub('\[/center\]','</center>',newstr)
-		newstr = re.sub('\[/color\]','</color>',newstr)
-		newstr = re.sub('\[/size\]','</size>',newstr)
-		newstr = re.sub('\[/SIZE\]','</size>',newstr)  
-		newstr = re.sub('\[/url\]','</a>',newstr)
+ 
 		newstr = re.sub('\[url\]','<a>',newstr)
 		newstr = re.sub('\[URL\]','<a>',newstr)
-		newstr = re.sub('\[/URL\]','</a>',newstr)
+
 		newstr = re.sub('\[u\]','<h1>',newstr)
 		newstr = re.sub('\[/u\]','</h1>',newstr)
 		newstr = re.sub('\[U\]','<h1>',newstr)
 		newstr = re.sub('\[/U\]','</h1>',newstr)
  		newstr = re.sub('\[email\]','<email>',newstr)
 		newstr = re.sub('\[/email\]','</email>',newstr)
-		newstr = re.sub('\[img\]','<img>',newstr)
-		newstr = re.sub('\[/img\]','</img>',newstr)
-		newstr = re.sub('\[list\]','<list>',newstr)
-		newstr = re.sub('\[/list\]','</elist>',newstr)
-		newstr = re.sub('\[/color\]','</span >',newstr)
-		newstr = re.sub('\[/COLOR\]','</span >',newstr)
+
+		newstr = re.sub('\[list\]','<li>',newstr)
+		newstr = re.sub('\[/list\]','</li>',newstr)
 		newstr = re.sub('\[QUOTE\]','<div class="news_quote">',newstr)
-		newstr = re.sub('\[/QUOTE\]','</div>',newstr)
+		newstr = re.sub('\[quote\]','<div class="news_quote">',newstr)
 		newstr = re.sub('\[edit\]','<edit>',newstr)
 		newstr = re.sub('\[/edit\]','</edit>',newstr)
-		newstr = re.sub('\[quote\]','<div class="news_quote">',newstr)
-		newstr = re.sub('\[/quote\]','</div>',newstr)
-		newstr = re.sub('\[/font\]','</font-family >',newstr)
+
+
 		newstr = re.sub('\n','<br />',newstr)
 
 		return newstr

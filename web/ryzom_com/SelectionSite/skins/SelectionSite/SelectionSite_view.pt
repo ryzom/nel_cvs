@@ -1,0 +1,17 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+      lang="en-US"
+      metal:use-macro="here/main_template/macros/master">
+<body>
+    <div metal:fill-slot="main">
+      <div metal:define-macro="main" tal:omit-tag="">
+        <div metal:use-macro="here/document_actions/macros/document_actions"></div>
+        <h1>Site: <span metal:use-macro="python: here.widget('Site', mode='view')">Site</span></h1>
+        <h2>Category: <span metal:use-macro="python: here.widget('Category', mode='view')">Category</span></h2>
+        <i>Summary: <span metal:use-macro="python: here.widget('Summary', mode='view')">Summary</span></i>
+        <p>Description: <span metal:use-macro="python: here.widget('short_description', mode='view')">Description</span></p>
+        <p>Logo: <span metal:use-macro="python: here.widget('logo', mode='view')">Logo</span></p>
+        <p>Adresse: <span metal:use-macro="python: here.widget('url', mode='view')">Url</span></p>
+      </div>
+    </div>
+</body>
+</html>

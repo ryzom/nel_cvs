@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="plone">
+
+
+<div metal:fill-slot="main">
+
+
+  <head>
+    <title tal:content="template/title">The title</title>
+  </head>
+  <body>
+    
+   
+   <p> Conformation </p><br>
+ 
+   <span tal:define="name user/getUserName"
+             tal:replace="python:test(name=='Anonymous User',
+                                     'need to log in', default)">
+              Congratulation
+              <span tal:replace="name">Name</span>
+            </span>
+   <p> you have make the site</p>
+
+   <div>
+     <tal:site tal:content="request/Site|nothing">
+
+           unkown Site
+       </tal:site> 
+   </div> 
+  </body>
+</div>
+</html>

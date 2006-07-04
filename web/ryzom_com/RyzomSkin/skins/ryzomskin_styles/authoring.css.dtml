@@ -80,11 +80,11 @@ form input.submit_news_button {
     color: #ccb97e;
     font-size: 11px;
     font-weight: bold;
-    background: transparent url('longbutton.gif') no-repeat;
+    background: transparent url('verylongbutton.gif') no-repeat;
     border: 0;
     white-space: nowrap;
     overflow: hidden;
-    width: 200px;
+    width: 250px;
     height: 25px;
     cursor: pointer;
 }
@@ -370,7 +370,7 @@ border-bottom: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
     padding: 0.25em 1em 0.5em 1em;
     margin-bottom: 1em;
 }
-.comment a { 
+.commentTitle { 
  color: white;
 }
 
@@ -389,6 +389,23 @@ color: white;
 margin: 0 1em 1em 1em;
 }
 
+.officials_comment {
+   background-color: #343E41;
+   border: &dtml-borderWidth; solid #555F5F;
+   padding: 0.25em 1em 0.5em 1em;
+   margin-bottom: 1em;
+}
+
+.officials_comment h1,
+.officials_comment h2,
+.officials_comment h3,
+.officials_comment h4,
+.officials_comment h5,
+.officials_comment h6 {
+border-bottom: &dtml-borderWidth; solid &dtml-discreetColor;;
+font-weight: normal;
+color: white;
+}
 .spacer {
 margin: 1em;
 }

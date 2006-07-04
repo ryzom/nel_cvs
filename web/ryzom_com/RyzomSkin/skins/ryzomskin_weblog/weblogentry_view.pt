@@ -21,7 +21,7 @@
       tal:define="parent python:here.quills_tool.getParentWeblog(here);
                   date python:modules['DateTime'].DateTime;
                   localized_time nocall:here/toLocalizedTime;"
-      tal:condition="python:(date < here.ExpirationDate() and date > here.EffectiveDate()) or here.isOfficial(str(member))">
+      tal:condition="python:(1 or here.isOfficial(str(member))">
       
       <!-- la ligne pour mettre les icones print,envoyer,...langage... -->
       <div metal:use-macro="here/document_actions/macros/document_actions"></div>      

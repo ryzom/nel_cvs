@@ -19,6 +19,7 @@ namespace WS
 {
 	
 
+
 	struct TUserRole
 	{
 		enum TValues

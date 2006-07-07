@@ -18,4 +18,4 @@
 152.66.234.28 - - [23/May/2006:00:00:56 +0100] "GET /newcomer/banner_home_left.jpg HTTP/1.1/site7" 200 3579 "http://en.web-dev.nevrax.com/" "Mozilla/5.0 (Windows; U; Windows NT 5.1; hu; rv:1.8.0.3) Gecko/20060426 Firefox/1.5.0.3"
 213.208.119.189 - - [24/May/2006:00:00:01 +0100] "GET /runMaintenanceTasks?set_language=en HTTP/1.0/site8" 200 39 "-" "Wget/1.9.1"
 213.208.119.189 - - [23/May/2006:00:00:01 +0100] "GET /runMaintenanceTasks?set_language=fr HTTP/1.0/site8" 200 39 "-" "Wget/1.9.1"
-213.208.119.200 - - [23/May/2006:00:00:01 +0100] "GET /runMaintenanceTasks?set_language=de HTTP/1.0/site8" 200 39 "-" "Wget/1.9.1"
+213.208.119.200 - - [05/Jul/2006:00:00:01 +0100] "GET /runMaintenanceTasks?set_language=de HTTP/1.0/site8" 200 39 "-" "Wget/1.9.1"

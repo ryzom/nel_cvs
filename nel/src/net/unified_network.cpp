@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.95.4.2 2006/05/11 13:43:27 boucher Exp $
+ * $Id: unified_network.cpp,v 1.95.4.2.2.1 2006/07/07 08:38:14 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -719,7 +719,7 @@ bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	test.addDisplayer (&fd);
 	test.displayNL ("**************INIT***************");
 
-	AliveThread = IThread::create(new CAliveCheck());
+	AliveThread = IThread::create(new CAliveCheck(), 1024*4);
 	AliveThread->start();
 
 	_Initialised = true;

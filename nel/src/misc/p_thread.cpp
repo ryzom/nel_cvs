@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (POSIX threads)
  *
- * $Id: p_thread.cpp,v 1.15.4.2 2006/04/20 14:33:11 boucher Exp $
+ * $Id: p_thread.cpp,v 1.15.4.2.2.1 2006/07/07 08:38:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,9 +37,9 @@ namespace NLMISC {
 /*
  * The IThread static creator
  */
-IThread *IThread::create( IRunnable *runnable )
+IThread *IThread::create( IRunnable *runnable, uint32 stackSize)
 {
-	return new CPThread( runnable );
+	return new CPThread( runnable, stackSize );
 }
 
 
@@ -76,7 +76,10 @@ static void *ProxyFunc( void *arg )
 /*
  * Constructor
  */
-CPThread::CPThread(IRunnable *runnable) : _State(0), Runnable(runnable)
+CPThread::CPThread(IRunnable *runnable, uint32 stackSize) 
+	:	_State(0), 
+		_StackSize(stackSize),
+		Runnable(runnable)
 {}
 
 
@@ -97,7 +100,17 @@ CPThread::~CPThread()
  */
 void CPThread::start()
 {
-	if(pthread_create(&_ThreadHandle, 0, ProxyFunc, this) != 0)
+	pthread_attr_t tattr;
+	pthread_t tid;
+	int ret;
+
+	/* initialized with default attributes */
+	ret = pthread_attr_init(&tattr);
+
+	/* setting the size of the stack also */
+	ret = pthread_attr_setstacksize(&tattr, _StackSize);
+
+	if(pthread_create(&_ThreadHandle, _StackSize != 0 ? &tattr : 0, ProxyFunc, this) != 0)
 	{
 		throw EThread("Cannot start new thread");
 	}

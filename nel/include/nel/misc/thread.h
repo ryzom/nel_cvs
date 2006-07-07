@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.23 2005/08/30 17:08:53 boucher Exp $
+ * $Id: thread.h,v 1.23.12.1 2006/07/07 08:38:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,7 +91,7 @@ public:
 	  * Create a new thread.
 	  * Implemented in the derived class.
 	  */
-	static IThread *create(IRunnable *runnable);
+	static IThread *create(IRunnable *runnable, uint32 stackSize = 0);
 
 	/** 
 	  * Return a pointer on the current thread.

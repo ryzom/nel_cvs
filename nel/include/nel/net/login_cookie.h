@@ -1,7 +1,7 @@
 /** \file login_cookie.h
  * container used by the login process to identify a user
  *
- * $Id: login_cookie.h,v 1.7.4.2 2006/06/23 17:11:51 boucher Exp $
+ * $Id: login_cookie.h,v 1.7.4.2.2.1 2006/07/07 08:38:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,8 +134,17 @@ private:
 
 };
 
+/*
+ * Comparison == operator
+ */
+bool operator== (const CLoginCookie &c1, const CLoginCookie &c2);
+/*
+ * Comparison != operator
+ */
+bool operator!= (const CLoginCookie &c1, const CLoginCookie &c2);
 
 } // NLNET
+
 
 
 #endif // NL_LOGIN_COOKIE_H

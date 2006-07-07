@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.46 2005/03/14 10:44:36 cado Exp $
+ * $Id: inet_address.cpp,v 1.46.24.1 2006/07/07 08:38:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 
 #ifdef NL_OS_WINDOWS
 
-#include <winsock2.h>
+#include <windows.h>
 
 #elif defined NL_OS_UNIX
 

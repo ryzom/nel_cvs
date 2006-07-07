@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.28.16.1 2006/02/28 14:50:57 cado Exp $
+ * $Id: callback_net_base.h,v 1.28.16.1.4.1 2006/07/07 08:38:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,8 +75,14 @@ typedef struct
 class CCallbackNetBase
 {
 public:
+
 	virtual ~CCallbackNetBase() {}
 
+	/** Set the user data */
+	void setUserData(void *userData);
+
+	/** Get the user data */
+	void *getUserData();
 
 	/** Sends a message to special connection.
 	 * On a client, the hostid isn't used.
@@ -194,6 +200,8 @@ protected:
 	// ---------------------------------------
 
 private:
+
+	void				*_UserData;
 
 	NLMISC::TTime		_LastUpdateTime;
 	NLMISC::TTime		_LastMovedStringArray;

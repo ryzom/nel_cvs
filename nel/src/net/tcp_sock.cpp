@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.8.18.1 2006/03/01 15:02:41 boucher Exp $
+ * $Id: tcp_sock.cpp,v 1.8.18.1.4.1 2006/07/07 08:38:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/net/tcp_sock.h"
 
 #ifdef NL_OS_WINDOWS
-#include <winsock2.h>
+#include <windows.h>
 #define socklen_t int
 #define ERROR_NUM WSAGetLastError()
 

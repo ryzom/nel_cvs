@@ -2,59 +2,11 @@ try:
     from Products.LinguaPlone.public import *
 except ImportError: 
     from Products.Archetypes.public import *
-#from Products.Archetypes.Marshall import RFC822Marshaller
-#from Products.Archetypes.Marshall import PrimaryFieldMarshaller
-
 from Products.CMFCore import CMFCorePermissions
-
-#from Products.ATContentTypes.configuration import zconf
-#from Products.ATContentTypes.lib.imagetransform import ATCTImageTransform
-
-#from Products.validation.config import validation
-#from Products.validation.validators.SupplValidators import MaxSizeValidator
-#from Products.validation import V_REQUIRED
-#validation.register(MaxSizeValidator('checkImageMaxSize',maxsize=zconf.ATImage.max_file_size))
-
-
-#from FanVisitg1 import * 
 from config import PROJECTNAME
 
 
 SelectionSchema = BaseSchema.copy() + Schema((   
-#	StringField('Site',
-#		searchable=1,
-#		required=1,
-#		index = 'FieldIndex',
-#		widget=StringWidget(label='site/website',
-#			description='description of the site',
-#		),
-#	),	      
-#	ImageField('counter_selectionsite',
-#		required=0,
-#		default ='side_bg.png',
-#		default_method = 'setImage'#	 	mutator = 'setImage',
-#		default_output_type='image/png',
-#		allowable_content_types=('image/*',),
-#		pil_quality = zconf.pil_config.quality,
-#	 	pil_resize_algo = zconf.pil_config.resize_algo,
-#		max_size = zconf.ATImage.max_image_dimension,
-#		sizes= {'large'   : (768, 768),
-#			'preview' : (400, 400),
-#			'mini'    : (200, 200),
-#			'thumb'   : (128, 128),
-#			'tile'    :  (64, 64),
-#			'icon'    :  (32, 32),
-#			'listing' :  (16, 16),
-#		},	       
-#		widget=ImageWidget(description='counter'),
-#	),
-#	ImageField('topicImage',
-#		required=0,
-#		default ='default-topic-icon.png',
-#		sizes={'64' : (64,64),},
-#		widget=ImageWidget(label="Image",
-#			description="An image for your topic. The image should be 64x64.  If the image is larger it will be scaled down automatically to fit within a 64x64 square."),
-#	),
 	TextField('description',
 		searchable=1,
 		required=0,
@@ -87,34 +39,30 @@ SelectionSchema = BaseSchema.copy() + Schema((
 		allowable_content_types=('image/*',),          
 		widget=ImageWidget(description='upload a logo of the site'),
 	),
-	StringField('category',
+	LinesField('category',
 		searchable=1,
 		required=0,
 		vocabulary=['News','Tutorial'],            
 		widget=SelectionWidget(description='select your category?'),
-		visible= {"edit": "hidden", "view": "hidden"},
 	),
-	StringField('thirtysum',           
+	LinesField('visit',		
+		widget=LinesWidget(description=''),
+	),
+	IntegerField('thirtysum',
+		default = 0,
 		widget=IntegerWidget(description=''),
-		visible= {"edit": "hidden", "view": "hidden"},
 	),
-	StringField('othersum',        
+	IntegerField('othersum',
+		default = 0,
 		widget=IntegerWidget(description=''),
-		visible= {"edit": "hidden", "view": "hidden"},
 	),
 	),
-#	marshall=PrimaryFieldMarshaller(),
 )
   
     
 
 class SelectionSite(BaseContent):
 	"""Selection Site"""
-#	counter_selectionsite = ''
-#	default_counter_image='side_bg.png',
-#	topicImage = ''
-#	default_topic_image='default-topic-icon.png',
-    
 	schema = SelectionSchema
 	archetype_name = "SelectionSite"
 	meta_type = 'SelectionSite'
@@ -135,45 +83,6 @@ class SelectionSite(BaseContent):
 #		'permissions' : (CMFCorePermissions.ModifyPortalContent,),
 #	},
 	)
-    
-#	schema["title"].required = 0
-#	schema["title"].widget.visible = {"edit": "invisible", "view": "invisible"}
-#	schema["counter_selectionsite"].widget.visible = {"edit": "hidden", "view":"hidden"}
-
-	def __init__(self, oid, **kwargs):
-		self.listVisit = {}
-		BaseContent.__init__(self, oid, **kwargs)
-
-	def thirtyVisit(self):
-		return self.listVisit[-30:0]
-    
-	def updateDico(self,dico):
-		#mise a jour du dictionnaire
-		self.listVisit.update(dico)
-		#on recupere la list des clefs trie
-		k = self.listVisit.keys()
-		k.sort()
-		v = []
-		sum = 0
-		#v contient les visites ordonnee par date
-		for i in k:
-			v.append(self.listVisit[i])		
-		for i in v[-30:]:
-			sum += i
-		self.setThirtysum(sum)
-		for i in v[0:-30]:
-			sum += i
-		self.setOtherSum(sum)
-
-	def getVisit(self):
-		return self.listVisit
-		
-#	def getSumVisit(self):
-#		return self.getThirtysum+self.getOtherSum
-
-#	def setSite(self, value):
-#		self.Site = value
-#		return self.setTitle(value)
 
 	def setTitle(self, value, **kwargs):
 		self.getField('title').set(self, value, **kwargs)
@@ -182,5 +91,25 @@ class SelectionSite(BaseContent):
 				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
 			except:
 				pass #try to do better than this
+	def toto(self):
+		return 'toto'
+
+	def addVisit(self,dico):
+		visit = self.getVisit()
+		current_visit = {}
+		for line in visit:
+			t=line.split(':')
+			key=t[0]
+			value=t[1]
+			current_visit.update({key:value})
+		current_visit.update(dico)
+
+		listkey = current_visit.keys()
+		listkey.sort()
+		updated_visit=[]
+		for key in listkey:
+			updated_visit.append(str(key)+':'+str(current_visit[key]))
+		self.setVisit(updated_visit)
+
 
 registerType(SelectionSite, PROJECTNAME)

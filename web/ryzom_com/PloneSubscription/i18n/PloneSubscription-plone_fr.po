@@ -5,13 +5,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PloneSubscription-plone_fr\n"
 "POT-Creation-Date: 2006-02-10 20:18+0000\n"
-"PO-Revision-Date: 2006-02-10 23:46+0100\n"
-"Last-Translator: Encolpe Degoute <encolpe.degoute@ingeniweb.com>\n"
+"PO-Revision-Date: 2006-07-10 18:44+0100\n"
+"Last-Translator: \n"
 "Language-Team:  <support@ingeniweb.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms:  nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Language-code: fr\n"
 "Language-name: Français\n"
 "Preferred-Encodings: utf-8 latin1\n"
@@ -20,22 +20,22 @@ msgstr ""
 "X-Generator: KBabel 1.11.2\n"
 
 msgid "AnonymousSubscriber"
-msgstr "Anonyme abonné"
+msgstr "Abonné anonyme"
 
 msgid "ContentSubscription"
-msgstr "Abonnement au document"
+msgstr "Abonnement"
 
 msgid "ExactSearchSubscription"
 msgstr "Abonnement à une recherche exacte"
 
 msgid "FolderSubscription"
-msgstr "Abonnement à un répertoire"
+msgstr "Abonnement à un dossier"
 
 msgid "GroupSubscriber"
 msgstr "Ensemble d'abonnés"
 
 msgid "KeywordsSubscription"
-msgstr "Abonnement à une recherche de mots clés"
+msgstr "Abonnement à une recherche de mots-clés"
 
 msgid "Subscription"
 msgstr "Abonnement"
@@ -46,7 +46,7 @@ msgid "Subscribe"
 msgstr "M'abonner"
 
 msgid "SubscriptionTemplate"
-msgstr "Modèle de mél"
+msgstr "Modèle d'email"
 
 #. Default: "Unsubscribe"
 #: skins/PloneSubscription/subscription_form.cpt
@@ -54,7 +54,7 @@ msgid "Unsubscribe"
 msgstr "Me désabonner"
 
 msgid "UserSubscriber"
-msgstr "Utilisateur abonné"
+msgstr "Abonné utilisateur"
 
 msgid "action_add_group_subscriptions"
 msgstr "Abonnements"
@@ -63,7 +63,7 @@ msgid "action_add_subscription_provider"
 msgstr "Ajouter un fournisseur d'abonné"
 
 msgid "action_add_templates_provider"
-msgstr "Ajouter un fournisseur de modèles de méls"
+msgstr "Ajouter un fournisseur de modèles d'emails"
 
 msgid "action_add_to_subscriptions"
 msgstr "Ajouter aux abonnements"
@@ -80,7 +80,7 @@ msgid "action_subscription_mailing"
 msgstr "Aperçu des abonnements"
 
 msgid "action_subscription_manage_mail_templates"
-msgstr "Fournisseur de méls"
+msgstr "Fournisseur d'emails"
 
 msgid "action_subscription_manage_subscribers"
 msgstr "Fournisseur d'abonnés"
@@ -101,17 +101,17 @@ msgstr "Pour contacter les abonnés, veuillez utiliser le formulaire suivant."
 #. Default: "Fill in your name and email address."
 #: skins/PloneSubscription/subscription_form.cpt
 msgid "description_subscribe_to"
-msgstr "Renseignez votre nom et votre mél."
+msgstr "Renseignez votre nom et votre adresse email."
 
 #. Default: "This is where you can manage subscriptions"
 #: skins/PloneSubscription/subscription_management.cpt
 msgid "description_subscription_management"
-msgstr "Vous pouvez ici gérer vos abonnements."
+msgstr "Vous pouvez gérer ici vos abonnements."
 
 #. Default: "Fill in your email address."
 #: skins/PloneSubscription/subscription_form.cpt
 msgid "description_unsubscribe_from"
-msgstr "Renseignez votre adresse mél."
+msgstr "Renseignez votre adresse email."
 
 #. <span i18n:translate="header_container_subscriptions" tal:omit-tag="">
 #. Container subscriptions
@@ -154,12 +154,12 @@ msgstr "Formulaire de désabonnement"
 #. Default: "The e-mail address to send this subscription to."
 #: skins/PloneSubscription/subscription_form.cpt
 msgid "help_subscription_email"
-msgstr "L'adresse mél à laquelle envoyer cet abonnement."
+msgstr "L'adresse email à laquelle envoyer cet abonnement."
 
 #. Default: "Your name."
 #: skins/PloneSubscription/subscription_form.cpt
 msgid "help_subscription_name"
-msgstr "Votre nom complet"
+msgstr "Votre nom"
 
 #. Default: "Manage Subscriptions"
 #: skins/PloneSubscription/plonesubscription_macros.pt
@@ -179,7 +179,7 @@ msgstr "Envoyer"
 #. Default: "Email"
 #: skins/PloneSubscription/subscription_form.cpt
 msgid "label_subscription_email"
-msgstr "Mél"
+msgstr "Email"
 
 #. Default: "Name"
 #: skins/PloneSubscription/subscription_form.cpt
@@ -227,10 +227,10 @@ msgid "psm_subscriptions_subscription_provider_added"
 msgstr "Fournisseur d'abonnés ajouté"
 
 msgid "psm_subscriptions_templates_provider_added"
-msgstr "Fournisseur de modèles de méls ajouté"
+msgstr "Fournisseur de modèles d'emails ajouté"
 
 msgid "psm_subscriptions_unauthorized"
-msgstr "Privilèges insuffisants"
+msgstr "Privilèges insuffisants."
 
 msgid "psm_subscriptions_updated"
 msgstr "Les détails de l'abonnement ont été mis à jour."
@@ -243,7 +243,7 @@ msgstr "Fermé"
 #. Default: "Be notified when a document is published in this folder or below."
 #: skins/PloneSubscription/plonesubscription_macros.pt
 msgid "subscription_be_notified_folder"
-msgstr "Être notifié lorsqu'un document est publié dans ce dossier en dessous."
+msgstr "Être alerté lorsqu'un document est publié dans ce dossier et sous-dossiers."
 
 #. Default: "Edit"
 #: skins/PloneSubscription/subscriber_view.cpt
@@ -272,7 +272,7 @@ msgstr "Requis"
 #. Default: "Send a mail to this user"
 #: skins/PloneSubscription/plonesubscription_macros.pt
 msgid "title_send_mail_to_user"
-msgstr "Envoyer un mél a cet utilisateur."
+msgstr "Envoyer un email à cet utilisateur."
 
 #. Default: "Emplacement"
 #: skins/PloneSubscription/subscriber_view.cpt
@@ -316,7 +316,7 @@ msgid "misc_action_subscribe_publications_submissions"
 msgstr "Abonnement aux publications et soumissions"
 
 msgid "no_subscriptions_found"
-msgstr "Vous avez aucun abonnement pour l'instant."
+msgstr "Vous n'avez aucun abonnement en cours."
 
 msgid "subscription_current_results"
 msgstr "Résultats actuels"

@@ -5,6 +5,7 @@ except ImportError:
 from Products.CMFCore import CMFCorePermissions
 from config import PROJECTNAME
 
+import time
 
 SelectionSchema = BaseSchema.copy() + Schema((   
 	TextField('description',
@@ -48,11 +49,14 @@ SelectionSchema = BaseSchema.copy() + Schema((
 	LinesField('visit',		
 		widget=LinesWidget(description=''),
 	),
-	IntegerField('thirtysum',
+	LinesField('month',		
+		widget=LinesWidget(description=''),
+	),
+	IntegerField('monthsum',
 		default = 0,
 		widget=IntegerWidget(description=''),
 	),
-	IntegerField('othersum',
+	IntegerField('allsum',
 		default = 0,
 		widget=IntegerWidget(description=''),
 	),
@@ -91,25 +95,62 @@ class SelectionSite(BaseContent):
 				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
 			except:
 				pass #try to do better than this
-	def toto(self):
-		return 'toto'
 
-	def addVisit(self,dico):
+
+	#create dictionnary with Visit
+	def VisitDico(self):
 		visit = self.getVisit()
-		current_visit = {}
+		dico_visit = {}
 		for line in visit:
 			t=line.split(':')
 			key=t[0]
 			value=t[1]
-			current_visit.update({key:value})
-		current_visit.update(dico)
+			dico_visit.update({key:value})
+		return dico_visit
 
+
+	def addVisit(self,dico):
+		current_visit = self.VisitDico()
+		current_visit.update(dico)
 		listkey = current_visit.keys()
-		listkey.sort()
+		listkey.sort() #faire un trie par date !
 		updated_visit=[]
+		allsum = 0
 		for key in listkey:
 			updated_visit.append(str(key)+':'+str(current_visit[key]))
-		self.setVisit(updated_visit)
+			allsum += int(current_visit[key])
+		self.setAllsum(allsum)
+		self.setVisit(updated_visit)		
+
+	def VisitThisMonth(self):
+		visit = self.VisitDico()
+		currentMonth = time.strftime('%b/%Y', time.localtime())
+		ThisMonth = []
+		monthsum = 0
+		keys = visit.keys()
+		keys.sort()
+		for key in keys:			
+			if key.split('/',1)[1] == currentMonth:
+				ThisMonth.append(str(key)+':'+str(visit[key]))
+				monthsum += int(visit[key])
+		self.setMonthsum(monthsum)
+		self.setMonth(ThisMonth)
+
+		
+
+	def sortVisit(self,dico):
+		listkey = dico.keys()
+		newlistkey=[]
+		for key in listkey:
+			date = key.split('/')
+			day = date[1]
+			month = date[2]
+			year = date[3]
+			newkey = ''.join([year,month,day],'/')
+			newlistkey.append(newkey)
+		newlistkey.sort()
+		return dico
+		
 
 
 registerType(SelectionSite, PROJECTNAME)

@@ -21,7 +21,7 @@ urldaily="news-"+lang+"-subscribe@newsletter.nevrax.com"
 urlmonthly="newsletter-"+lang+"-subscribe@newsletter.nevrax.com"
 body = 'Subscribe'
 mSubject = 'Subscribe'
-headers = 'accept-language:'+lang
+headers = 'Accept-Language: '+lang
 msg = headers+'\n\r'+body
 
 try:

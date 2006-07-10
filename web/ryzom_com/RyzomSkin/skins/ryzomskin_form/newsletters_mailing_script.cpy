@@ -21,6 +21,8 @@ urldaily="news-"+lang+"-subscribe@newsletter.nevrax.com"
 urlmonthly="newsletter-"+lang+"-subscribe@newsletter.nevrax.com"
 body = 'Subscribe'
 mSubject = 'Subscribe'
+headers = 'accept-language:'+lang
+msg = headers+'\n\r'+body
 
 try:
    mailhost=context.MailHost
@@ -30,12 +32,12 @@ except:
 if daily != None:
    mFrom = email
    mTo = urldaily
-   mailhost.send(body, mTo, mFrom, mSubject)
+   mailhost.send(msg, mTo, mFrom, mSubject)
 
 if monthly != None:
    mFrom = email
    mTo = urlmonthly
-   mailhost.send(body, mTo, mFrom, mSubject)
+   mailhost.send(msg, mTo, mFrom, mSubject)
 
 # Always make sure to return the ControllerState object
 return state

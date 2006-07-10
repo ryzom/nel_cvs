@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.cpp,v 1.2.4.3 2006/06/05 10:24:32 miller Exp $
+ * $Id: sstring.cpp,v 1.2.4.4 2006/07/10 16:23:56 miller Exp $
  */
 
 #include "stdmisc.h"
@@ -1762,14 +1762,40 @@ namespace NLMISC
 			nlwarning("Failed to open file for writing: %s",fileName.c_str());
 			return false;
 		}
-		uint32 bytesWritten=fwrite(const_cast<char*>(data()),1,size(),file);
+		uint32 recordsWritten=fwrite(const_cast<char*>(data()),size(),1,file);
 		fclose(file);
-		if (bytesWritten!=size())
+		if (recordsWritten!=1)
 		{
-			nlwarning("Failed to write file contents (requested %u bytes but fwrite returned %u) for file:%s",size(),bytesWritten,fileName.c_str());
+			nlwarning("Failed to write file contents (requested %u bytes but fwrite returned %u) for file:%s",size(),recordsWritten,fileName.c_str());
 			return false;
 		}
+		nldebug("CSSWTF Wrote %u bytes to file %s",size(),fileName.c_str());
 		return true;
+	}
+
+	bool CSString::writeToFileIfDifferent(const CSString& fileName) const
+	{
+		// if the file exists...
+		if (NLMISC::CFile::fileExists(fileName))
+		{
+			// the file exists so check it's the right size
+			if (NLMISC::CFile::getFileSize(fileName)==size())
+			{
+				// the file is the right size so read its data from disk...
+				CSString hold;
+				hold.readFromFile(fileName);
+				// check whether data read from file and our own data are identical
+				if (hold.size()==size() && memcmp(&hold[0],&(*this)[0],size())==0)
+				{
+					// data is identical so drop out
+					nldebug("CSSWTF Request to write data to file %s IGNORED because file already contains correct data",fileName.c_str());
+					return true;
+				}
+			}
+		}
+
+		// the file didn't already exist or content
+		return writeToFile(fileName);
 	}
 
 } // namespace NLMISC

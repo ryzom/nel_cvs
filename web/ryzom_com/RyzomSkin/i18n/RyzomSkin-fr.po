@@ -31,6 +31,10 @@ msgstr "liste de bugs déjà reportés."
 msgid "convert_in_document"
 msgstr "Convert QnA in Page Document"
 
+#: message in portlet_draft.pt
+msgid "portlet_draft_title"
+msgstr "Mes Brouillons"
+
 #: message in weblog_macro.pt
 msgid "this_is_an"
 msgstr "Ceci est une"

@@ -31,6 +31,10 @@ msgstr "Liste der bereits gemeldeten Fehler werfen?"
 msgid "convert_in_document"
 msgstr "Convert QnA in Page Document"
 
+#: message in portlet_draft.pt
+msgid "portlet_draft_title"
+msgstr "Meine Entwürfe"
+
 #: message in weblog_macro.cpt
 msgid "this_is_an"
 msgstr "Dies ist eine"

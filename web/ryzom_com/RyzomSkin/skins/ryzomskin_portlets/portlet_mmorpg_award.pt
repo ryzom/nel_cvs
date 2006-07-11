@@ -6,7 +6,7 @@
 
     <div style="padding-top:2em;padding-right:5%;padding-left:5%;" metal:define-macro="portlet" class="portletItem">
       <a href="http://www.mmorpg.com/showFeature.cfm/loadFeature/388/page/6/">
-        <img src="/images/home/ryzom_award2005_mmorpg_s.gif" border="0">
+        <img src="/images/home/ryzom_award2005_mmorpg_s.gif" border="0" alt="MMORPG.com award 'best story' 2005 for Ryzom"/>
       </a>
     </div>
 

@@ -8,7 +8,7 @@
      tal:define="results python:here.portal_catalog.searchResults(portal_type='WeblogTopic',path='/ryzom/chronicles',sort_on='effective');"
      tal:condition="python:test(template.getId()!='chronicles' and results and '/chronicles' in here.absolute_url(), 1, 0)">
 	<div tal:repeat="topic results" class="hole">
-		<img  class="fakeBorder" src="side_top.png"/>
+		<img  class="fakeBorder" src="side_top.png" alt="" />
 		
     			<dl class="portlet" id="portlet-news">
         			<dt class="portletHeader">
@@ -49,7 +49,7 @@
         			</dd>
     			</dl>		
 		<div class="imageHide">
-		     <img class="fakeBorder" src="side_up.png"/>
+		     <img class="fakeBorder" src="side_up.png" alt="" />
 		</div>
 	</div>
 </div>

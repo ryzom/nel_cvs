@@ -18,7 +18,7 @@
 
         <h1 i18n:translate="box_keywords_subscription">Keywords subscription</h1>
 
-        <dt class="portletBody">
+        <dt class="portletBody" />
 
             <dd class="portletContent" tal:define="keywords request/form/SearchableText">
               <span i18n:translate="box_keywords_subscription_description">
@@ -47,7 +47,7 @@
 </div>
 
 <div class="imageHide">
-<img  class="fakeBorder" src="side_up.png" /><br />
+<img  class="fakeBorder" src="side_up.png" alt="" /><br />
 </div>
 
 </div>

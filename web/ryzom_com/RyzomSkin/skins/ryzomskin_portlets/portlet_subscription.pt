@@ -17,28 +17,25 @@
                          or (template.getId()!='news' and '/news' in here.absolute_url())
                          or ('http://web-dev.nevrax.com' == here.absolute_url()) , 0, 1)">
 
-<img class="fakeBorder" src="ryzom_images/side_top.png" />
+<img class="fakeBorder" src="ryzom_images/side_top.png" alt="" />
 
 <div class="hole" >
     <dl class="portlet" id="portlet_folder_subscription">
         <h1 i18n:translate="box_folder_subscription">Subscription</h1>
-        <dt class="portletBody">
-            <dt class="portletContent">
-                <dd metal:use-macro="here/plonesubscription_macros/macros/selfsubscription">
-                    Allow folder subscription.
-                </dd>                
-                <dd class="portletDetails"
-                     tal:condition="python:mtool.checkPermission('PlacelessSubscription: Manage Subscriptions', context)">
-                    <a href="#"
-                       tal:attributes="href python:context.absolute_url() + '/subscription_management'"
-                       i18n:translate="heading_subscription_management">
-                        Subscription Management
-                    </a>
-                </dd>        
+        <dt class="portletBody" />
+        <dt class="portletContent" />
+        <dd metal:use-macro="here/plonesubscription_macros/macros/selfsubscription">
+            Allow folder subscription.
+        </dd>                
+        <dd class="portletDetails" tal:condition="python:mtool.checkPermission('PlacelessSubscription: Manage Subscriptions', context)">
+            <a href="#" tal:attributes="href python:context.absolute_url() + '/subscription_management'" i18n:translate="heading_subscription_management">
+                Subscription Management
+            </a>
+        </dd>
     </dl>
 </div>
 
-<div class="imageHide"><img  class="fakeBorder" src="side_up.png" /></div>
+<div class="imageHide"><img  class="fakeBorder" src="side_up.png" alt="" /></div>
 
 </div>
 </body>

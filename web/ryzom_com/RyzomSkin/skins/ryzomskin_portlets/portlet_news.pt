@@ -10,7 +10,7 @@
                                                      sort_order='reverse',
                                                      review_state='published')[:5]);"
      tal:condition="python:test(template.getId()!='news' and results, 1, 0)">
-<img  class="fakeBorder" src="side_top.png"/>
+<img  class="fakeBorder" src="side_top.png" alt="" />
 <div class="hole">
     <dl class="portlet" id="portlet-news">
         <dt class="portletHeader">
@@ -51,7 +51,7 @@
       </dl>
 </div>
 <div class="imageHide">
-<img   class="fakeBorder" src="side_up.png"/>
+<img   class="fakeBorder" src="side_up.png" alt="" />
 </div>
 </div>
 </body>

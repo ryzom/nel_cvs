@@ -11,7 +11,7 @@
                                                      review_state='published')[:5]);"
      tal:condition="python:test(template.getId()!='chronicles' and results and (not '/chronicles' in here.absolute_url()), 1, 0)">
 
-<img  class="fakeBorder" src="side_top.png"/>
+<img  class="fakeBorder" src="side_top.png" alt=""/>
 <div class="hole">
     <dl class="portlet" id="portlet-news">
         <dt class="portletHeader">
@@ -60,15 +60,13 @@
               More news&hellip;
             </a>
 
-	<a href=""
-       tal:attributes="href string:${utool}/chronicles/createObject?type_name=WeblogEntry">
-	<img src="add_icon.gif" alt="" title="" height="19" width="22"> Add&hellip;
-    </a>
+	    <a href="" tal:attributes="href string:${utool}/chronicles/createObject?type_name=WeblogEntry">
+	       <img src="add_icon.gif" alt="" title="" height="19" width="22"> Add&hellip;
+            </a>
         </dd>
     </dl>
-
 </div>
-<div class="imageHide"><img class="fakeBorder" src="side_up.png"/></div>
+<div class="imageHide"><img class="fakeBorder" src="side_up.png" alt="" /></div>
 </div>
 </body>
 </html>

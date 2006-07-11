@@ -9,7 +9,7 @@
                  results here/my_worklist;"
      tal:condition="results">
 
-<img class="fakeBorder" src="side_top.png" />
+<img class="fakeBorder" src="side_top.png" alt="" />
 <div class="hole" >
 
 <dl class="portlet" id="portlet-workflow-review">
@@ -43,7 +43,7 @@
 </dl>
 </div>
 
-<div class="imageHide"><img  class="fakeBorder" src="side_up.png" /></div>
+<div class="imageHide"><img  class="fakeBorder" src="side_up.png" alt="" /></div>
 </div>
 </body>
 </html>

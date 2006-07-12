@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.32 2006/01/05 10:31:40 berenguier Exp $
+ * $Id: bitmap.h,v 1.33 2006/07/12 14:37:21 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,6 +417,8 @@ public:
 		return _MipMapCount; 
 	}
 
+	// Compute the number of mipmap needed for that bitmap (independently from the current number of mipmaps that have been set)
+	uint32 computeNeededMipMapCount() const;
 
 	/** 
 	 * Rotate a bitmap in CCW mode.

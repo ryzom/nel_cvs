@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.9 2003/01/21 11:24:25 chafik Exp $
+ * $Id: identifiant.h,v 1.10 2006/07/12 14:37:21 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -428,13 +428,7 @@ namespace NLAIAGENT
 		Copy Constructor.
 		Exception: throw (NLAIE::CExceptionIndexHandeledError)
 		*/
-//<<<<<<< identifiant.h
 		CLocWordNumRef(const CLocWordNumRef &l) throw (NLAIE::CExceptionIndexHandeledError):/*_Id(l._Id),*/_Stock(NULL)
-/*
-		=======
-		CLocWordNumRef(const CLocWordNumRef &l) :_Id(l._Id),_Stock(NULL)
->>>>>>> 1.6
-*/
 		{						
 			TMapRef::iterator itr = _LocRefence->find(_Id);
 			if(itr != _LocRefence->end())

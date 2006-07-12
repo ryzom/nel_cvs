@@ -1,7 +1,7 @@
 /** \file module_l5_transport.h
  * transport for layer 5
  *
- * $Id: module_l5_transport.cpp,v 1.3 2006/01/10 17:38:47 boucher Exp $
+ * $Id: module_l5_transport.cpp,v 1.4 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -264,6 +264,8 @@ namespace NLNET
 		/// Open the server by establishing route with all known services
 		void open(const std::string &subNetName) throw (ETransportError)
 		{
+			H_AUTO(L5_open);
+
 			static TUnifiedCallbackItem L5TransportCallback[] =
 			{
 				{"GW_L5_MSG",	CGatewayL5Transport::cbDispatchL5Message	},
@@ -314,6 +316,8 @@ namespace NLNET
 		/// Close the server, this will close all route
 		void close()
 		{
+			H_AUTO(L5_close);
+
 			if (_Open == false)
 				throw ETransportError("closeServer : The server is not open");
 
@@ -335,6 +339,8 @@ namespace NLNET
 
 		void onServiceUp(const std::string &serviceName, uint16 sid)
 		{
+			H_AUTO(L5_onServiceUp);
+
 			nldebug("LNETL6: L5 transport onServiceUp('%s')", serviceName.c_str());
 			// send the transport descriptor to the new service
 			TTransportDesc	desc;
@@ -352,6 +358,8 @@ namespace NLNET
 
 		void onServiceDown(const std::string &serviceName, uint16 sid)
 		{
+			H_AUTO(L5_onServicedown);
+
 			nldebug("LNETL6: L5 transport onServiceDown('%u')", sid);
 			// retrieve the route
 			TRouteMap::iterator it(_Routes.find(sid));
@@ -373,6 +381,8 @@ namespace NLNET
 		// Called to dispatch an incoming message to the gateway
 		void onDispatchMessage(const CMessage &msgin, uint16 sid)
 		{
+			H_AUTO(L5_onDispatchMessage);
+
 			nldebug("LNETL6: L5 transport onDispatchMessage from service %u", sid);
 			/// retrieve the route for dispatching
 			TRouteMap::iterator it(_Routes.find(sid));
@@ -401,6 +411,8 @@ namespace NLNET
 
 		void onAddTransport(uint16 sid, TTransportDesc &desc)
 		{
+			H_AUTO(L5_onAddTransport);
+
 			nldebug("LNETL6: L5 transport onAddTransport from service %u", sid);
 			// we need to create a route for this transport
 			// create a new route and send the route open message
@@ -439,6 +451,8 @@ namespace NLNET
 
 		void onRemoveTransport(uint16 sid, TTransportDesc &desc)
 		{
+			H_AUTO(L5_onRemoveTransport);
+
 			nldebug("LNETL6: L5 transport onRemoveTransport from service %u", sid);
 			// Remove the route
 			TRouteMap::iterator it(_Routes.find(sid));
@@ -578,6 +592,8 @@ namespace NLNET
 
 	void CL5Route::sendMessage(const CMessage &message) const
 	{
+		H_AUTO(L5Route_sendMessage);
+
 		CGatewayL5Transport *trpt = static_cast<CGatewayL5Transport*>(_Transport);
 
 		// create a transport message

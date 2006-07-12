@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.41 2006/05/31 12:03:17 boucher Exp $
+ * $Id: command.cpp,v 1.42 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,7 +191,7 @@ bool ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 	}
 	catch(exception e)
 	{
-		log.displayNL("Command thrown an exception :");
+		log.displayNL("Command '%s' thrown an exception :", commandWithArgs.c_str());
 		log.displayNL(e.what());
 
 		return false;

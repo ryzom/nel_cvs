@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * TODO: File description
  *
- * $Id: particle_system.h,v 1.55 2005/08/19 15:32:13 cado Exp $
+ * $Id: particle_system.h,v 1.56 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,7 +163,10 @@ public:
 			  * If the system goes from 'hide' to 'show', then no trails are generated
 			  */
 			void	hide(bool hidden) {	_HiddenAtCurrentFrame = hidden; }
-		
+			/** Called by owner model, when the visibility of this ps has changed
+			  * (that is, the show / hide flag, not the 'clipped' state)
+			  */
+			void onShow(bool shown);	
 			/** Set the matrix for elements with matrixMode == PSFXMatrix.
 			  * NB: The previous matrix position is backuped during this call (used to interpolate the system position during integration),
 			  * so this should be called only once per frame

@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.21 2006/05/31 12:03:14 boucher Exp $
+ * $Id: login_server.h,v 1.22 2006/07/12 14:37:21 boucher Exp $
  * 
  */
 
@@ -98,6 +98,10 @@ public:
 
 	/// Return the number of pending client connection.
 	static uint32 getNbPendingUsers();
+
+	/// Refresh the list of pending cookies to remove outdated one 
+	/// (i.e. cookies for users that never connect)
+	static void refreshPendingList();
 
 private:
 

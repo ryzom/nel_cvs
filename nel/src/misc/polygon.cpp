@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.34 2006/05/31 12:03:17 boucher Exp $
+ * $Id: polygon.cpp,v 1.35 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2197,6 +2197,60 @@ bool operator < (const CPolygon2D &lhs, const CPolygon2D &rhs)
 	}
 	return false;
 }
+
+
+// *******************************************************************************
+static inline bool testSegmentIntersection(const CVector2f &a, const CVector2f &b,
+										   const CVector2f &c, const CVector2f &d)
+{			
+	double denom = a.x * double(d.y - c.y) +
+			b.x * double(c.y - d.y) +
+			d.x * double(b.y - a.y) +
+			c.x * double(a.y - b.y);
+
+	if (denom == 0) return false;
+	//
+	double num = a.x * double(d.y - c.y) + 
+				 c.x * double(a.y - d.y) +
+				 d.x * double(c.y - a.y);
+
+	if (num == 0 || (num == denom)) return false;
+	double lambda = num / denom;
+	if (lambda <= 0 || lambda >= 1) return false;
+	//
+	num = - (a.x * double(c.y - b.y) + 
+		  b.x * double(a.y - c.y) +
+		  c.x * double(b.y - a.y));
+
+	if (num == 0 || (num == denom)) return false;
+	lambda = num / denom;
+	if (lambda <= 0 || lambda >= 1) return false;
+	return true;
+}
+
+
+// *******************************************************************************
+bool CPolygon2D::selfIntersect() const
+{
+	if (Vertices.size() < 3) return false;
+	uint numEdges = Vertices.size();
+	for(uint k = 0; k < numEdges; ++k)
+	{
+		// test intersection with all other edges that don't share a vertex with this one
+		const CVector2f &p0 = getSegRef0(k);
+		const CVector2f &p1 = getSegRef1(k);	
+		for(uint l = 0; l < k; ++l)
+		{			
+			const CVector2f &v0 = getSegRef0(l);
+			const CVector2f &v1 = getSegRef1(l);
+			if (v0 == p0 || v0 == p1 || v1 == p0 || v1 == p1) continue;
+			// 						
+			if (testSegmentIntersection(p0, p1, v0, v1)) return true;
+		}
+	}
+	return false;
+}
+
 
 
 } // NLMISC

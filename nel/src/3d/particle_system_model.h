@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * TODO: File description
  *
- * $Id: particle_system_model.h,v 1.46 2005/02/22 10:19:10 besson Exp $
+ * $Id: particle_system_model.h,v 1.47 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -292,6 +292,9 @@ public:
 	void stopSound();
 	void reactivateSound();
 
+	// from CTransform
+	virtual void update();
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
@@ -378,6 +381,7 @@ private:
 	NLMISC::CRGBA							_UserColor;
 	NLMISC::CMatrix							_UserMatrix;	
 	float									_ZBias;
+	CHrcTrav::TVisibility					_LastVisibility;
 
 	#ifdef PS_FAST_ALLOC
 		// for fast allocation of ps resources

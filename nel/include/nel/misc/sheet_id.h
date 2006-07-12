@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.22 2006/05/31 12:03:13 boucher Exp $
+ * $Id: sheet_id.h,v 1.23 2006/07/12 14:37:21 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -135,9 +135,11 @@ public :
 
 	/**
 	 * Return the sheet id as a string
-	 * If the sheet id is not found, the returned string is "<Sheet %d not found in sheet_id.bin>" with the id in %d
+	 * If the sheet id is not found, then:
+	 * - if 'ifNotFoundUseNumericId==false' the returned string is "<Sheet %d not found in sheet_id.bin>" with the id in %d
+	 * - if 'ifNotFoundUseNumericId==tue'   the returned string is "#%u" with the id in %u
 	 */
-	std::string toString() const;
+	std::string toString(bool ifNotFoundUseNumericId=false) const;
 	
 	/**
 	 *	Serial

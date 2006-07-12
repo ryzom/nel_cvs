@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.41 2006/05/31 12:03:17 boucher Exp $
+ * $Id: login_server.cpp,v 1.42 2006/07/12 14:37:22 boucher Exp $
  *
  */
 
@@ -91,7 +91,7 @@ void	notifyWSRemovedPendingCookie(CLoginCookie& cookie)
 	CUnifiedNetwork::getInstance()->send ("WS", msgout);
 }
 
-void refreshPendingList ()
+void CLoginServer::refreshPendingList ()
 {
 	// delete too old cookie
 
@@ -120,7 +120,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	uint32 instanceId, charSlot;
 	CLoginCookie cookie;
 
-	refreshPendingList ();
+//	refreshPendingList ();
 
 	//
 	// S08: receive "CS" message from WS and send "SCS" message to WS
@@ -131,21 +131,35 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	msgin.serial (instanceId);
 	msgin.serial (charSlot);
 
+	vector<list<CPendingUser>::iterator> pendingToRemove;
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
 	{
-		if ((*it).Cookie == cookie)
+		const CPendingUser &pu = *it;
+		if (pu.Cookie == cookie)
 		{
 			// the cookie already exists, erase it and return false
 			nlwarning ("LS: Cookie %s is already in the pending user list", cookie.toString().c_str());
-			notifyWSRemovedPendingCookie((*it).Cookie);
+//			notifyWSRemovedPendingCookie((*it).Cookie);
 			PendingUsers.erase (it);
 			reason = "cookie already exists";
 			// iterator is invalid, set it to end
 			it = PendingUsers.end();
 			break;
 		}
+		else if (pu.Cookie.getUserId() == cookie.getUserId())
+		{
+			// we already have a cooky for this user, remove the old one
+			pendingToRemove.push_back(it);
+		}
 	}
+	// remove any useless cooky
+	while (!pendingToRemove.empty())
+	{
+		PendingUsers.erase(pendingToRemove.back());
+		pendingToRemove.pop_back();
+	}
+
 	if (it == PendingUsers.end ())
 	{
 		// add it to the awaiting client

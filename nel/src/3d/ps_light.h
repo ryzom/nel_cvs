@@ -1,6 +1,6 @@
 /** \file ps_light.h
  *
- * $Id: ps_light.h,v 1.3 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_light.h,v 1.4 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -83,8 +83,10 @@ public:
 		// Set an attribute maker that generate the radius at which light attenuation ends (or NULL to discard)
 		void					setAttenEndScheme(CPSAttribMaker<float> *scheme);
 		// Get attribute maker that generate the radius for attenuation end (or NULL if constant radius is used)
-		CPSAttribMaker<float>  *getAttenEndScheme() const { return _AttenEndScheme; }
+		CPSAttribMaker<float>  *getAttenEndScheme() const { return _AttenEndScheme; }		
 	//@}	
+	// from CPSLocatedBindable
+	virtual void onShow(bool shown);
 protected:
 	virtual void				newElement(const CPSEmitterInfo &info);
 	virtual void				deleteElement(uint32 index);

@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * TODO: File description
  *
- * $Id: particle_system_process.h,v 1.20 2005/02/22 10:19:11 besson Exp $
+ * $Id: particle_system_process.h,v 1.21 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,6 +208,9 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 			
 		// get the index of the process in the system
 		uint		 getIndex() const { return _Index; }		
+
+		// called by owner miodel when the show / hide flag has changed
+		virtual void onShow(bool shown) = 0;
 
 	protected:
 		CParticleSystem *_Owner ;

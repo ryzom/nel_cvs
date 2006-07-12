@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.36 2006/05/31 12:03:14 boucher Exp $
+ * $Id: driver_direct3d.cpp,v 1.37 2006/07/12 14:37:22 boucher Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1954,7 +1954,12 @@ void CDriverD3D::forceTextureResize(uint divisor)
 bool CDriverD3D::fogEnabled()
 {
 	H_AUTO_D3D(CDriverD3D_fogEnabled);
-	return _RenderStateCache[D3DRS_FOGENABLE].Value == TRUE;
+	// Return _RenderStateCache[D3DRS_FOGENABLE].Value == TRUE;
+	// Nico Patch : must return the _FogEnabled value here, because it MAY be
+	// different of the one found in _RenderStateCache[D3DRS_FOGENABLE]
+	// this happens for example when dest blend is one : the actual content of _RenderStateCache[D3DRS_FOGENABLE]
+	// is then restored when current material alpha blending settings are modified, or when a new material is set.
+	return _FogEnabled;
 }
 
 // ***************************************************************************

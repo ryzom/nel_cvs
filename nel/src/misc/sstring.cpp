@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.cpp,v 1.3 2006/05/31 12:03:17 boucher Exp $
+ * $Id: sstring.cpp,v 1.4 2006/07/12 14:37:22 boucher Exp $
  */
 
 #include "stdmisc.h"
@@ -1416,6 +1416,18 @@ namespace NLMISC
 		return false;
 	}
 
+	static const uint32 MaxUint32= ~0u;
+	static const uint32 MaxUint32LastDigit= MaxUint32-(MaxUint32/10)*10;
+	static const uint32 MaxUint32PreLastDigit= (MaxUint32/10);
+
+	static const uint32 MaxNegSint32= ~0u/2+1;
+	static const uint32 MaxNegSint32LastDigit= MaxNegSint32-(MaxNegSint32/10)*10;
+	static const uint32 MaxNegSint32PreLastDigit= (MaxNegSint32/10);
+
+	static const uint32 MaxPosSint32= ~0u/2;
+	static const uint32 MaxPosSint32LastDigit= MaxPosSint32-(MaxPosSint32/10)*10;
+	static const uint32 MaxPosSint32PreLastDigit= (MaxPosSint32/10);
+
 	int CSString::atoi() const
 	{
 		if (empty())
@@ -1459,17 +1471,17 @@ namespace NLMISC
 			}
 			if (!neg)
 			{
-				if (result>=429496729/*~0u/10*/)
+				if (result>=MaxUint32PreLastDigit/*~0u/10*/)
 				{
-					if (result>429496729 || offset>5)
+					if (result>MaxUint32PreLastDigit || offset>MaxUint32LastDigit)
 						return 0;
 				}
 			}
 			else
 			{
-				if (result>=214748364 /*~0u/20*/)
+				if (result>=MaxNegSint32PreLastDigit /*~0u/20+1*/)
 				{
-					if (result>214748364 || offset>8)
+					if (result>MaxNegSint32PreLastDigit || offset>MaxNegSint32LastDigit)
 						return 0;
 				}
 			}
@@ -1519,9 +1531,9 @@ namespace NLMISC
 				case '9':	offset=9; break;
 				default:	return 0;
 			}
-			if (result>=214748364 /*~0u/20*/)
+			if (result>=MaxPosSint32PreLastDigit /*~0u/20*/)
 			{
-				if (result>214748364u || offset>(neg?8u:7u))
+				if (result>MaxPosSint32PreLastDigit || offset>(neg?MaxNegSint32LastDigit:MaxPosSint32LastDigit))
 					return 0;
 			}
 			result=10*result+offset;
@@ -1549,9 +1561,164 @@ namespace NLMISC
 			case '9':	offset=9; break;
 			default:	return 0;
 			}
-			if (result>=429496729/*~0u/10*/)
+			if (result>=MaxUint32PreLastDigit/*~0u/10*/)
 			{
-				if (result>429496729 || offset>5)
+				if (result>MaxUint32PreLastDigit || offset>MaxUint32LastDigit)
+					return 0;
+			}
+			result=10*result+offset;
+		}
+		return result;
+	}
+
+	static const uint64 MaxUint64= (uint64)0-(uint64)1;
+	static const uint64 MaxUint64LastDigit= MaxUint64-(MaxUint64/10)*10;
+	static const uint64 MaxUint64PreLastDigit= (MaxUint64/10);
+
+	static const uint64 MaxNegSint64= ((uint64)0-(uint64)1)/2+1;
+	static const uint64 MaxNegSint64LastDigit= MaxNegSint64-(MaxNegSint64/10)*10;
+	static const uint64 MaxNegSint64PreLastDigit= (MaxNegSint64/10);
+
+	static const uint64 MaxPosSint64= ((uint64)0-(uint64)1)/2;
+	static const uint64 MaxPosSint64LastDigit= MaxPosSint64-(MaxPosSint64/10)*10;
+	static const uint64 MaxPosSint64PreLastDigit= (MaxPosSint64/10);
+
+	sint64 CSString::atoi64() const
+	{
+		if (empty())
+			return 0;
+
+		bool neg= false;
+		uint64 result;
+		switch (*begin())
+		{
+			case '+':	result=0; break;
+			case '-':	result=0; neg=true; break;
+			case '0':	result=0; break;
+			case '1':	result=1; break;
+			case '2':	result=2; break;
+			case '3':	result=3; break;
+			case '4':	result=4; break;
+			case '5':	result=5; break;
+			case '6':	result=6; break;
+			case '7':	result=7; break;
+			case '8':	result=8; break;
+			case '9':	result=9; break;
+			default:	return 0;
+		}
+
+		for (const_iterator it=begin()+1;it!=end();++it)
+		{
+			uint64 offset;
+			switch (*it)
+			{
+				case '0':	offset=0; break;
+				case '1':	offset=1; break;
+				case '2':	offset=2; break;
+				case '3':	offset=3; break;
+				case '4':	offset=4; break;
+				case '5':	offset=5; break;
+				case '6':	offset=6; break;
+				case '7':	offset=7; break;
+				case '8':	offset=8; break;
+				case '9':	offset=9; break;
+				default:	return 0;
+			}
+			if (!neg)
+			{
+				if (result>=MaxUint64PreLastDigit/*~0u/10*/)
+				{
+					if (result>MaxUint64PreLastDigit || offset>MaxUint64LastDigit)
+						return 0;
+				}
+			}
+			else
+			{
+				if (result>=MaxNegSint64PreLastDigit /*~0u/20+1*/)
+				{
+					if (result>MaxNegSint64PreLastDigit || offset>MaxNegSint64LastDigit)
+						return 0;
+				}
+			}
+			result=10*result+offset;
+		}
+		return neg? -(sint64)result: (sint64)result;
+	}
+
+	sint64 CSString::atosi64() const
+	{
+		if (empty())
+			return 0;
+
+		bool neg= false;
+		uint64 result;
+		switch (*begin())
+		{
+			case '+':	result=0; break;
+			case '-':	result=0; neg=true; break;
+			case '0':	result=0; break;
+			case '1':	result=1; break;
+			case '2':	result=2; break;
+			case '3':	result=3; break;
+			case '4':	result=4; break;
+			case '5':	result=5; break;
+			case '6':	result=6; break;
+			case '7':	result=7; break;
+			case '8':	result=8; break;
+			case '9':	result=9; break;
+			default:	return 0;
+		}
+
+		for (const_iterator it=begin()+1;it!=end();++it)
+		{
+			uint64 offset;
+			switch (*it)
+			{
+				case '0':	offset=0; break;
+				case '1':	offset=1; break;
+				case '2':	offset=2; break;
+				case '3':	offset=3; break;
+				case '4':	offset=4; break;
+				case '5':	offset=5; break;
+				case '6':	offset=6; break;
+				case '7':	offset=7; break;
+				case '8':	offset=8; break;
+				case '9':	offset=9; break;
+				default:	return 0;
+			}
+			if (result>=MaxPosSint64PreLastDigit /*~0u/20*/)
+			{
+				if (result>MaxPosSint64PreLastDigit || offset>(neg?MaxNegSint64LastDigit:MaxPosSint64LastDigit))
+					return 0;
+			}
+			result=10*result+offset;
+		}
+		return neg? -(sint64)result: (sint64)result;
+	}
+
+	uint64 CSString::atoui64() const
+	{
+		uint64 result=0;
+		for (const_iterator it=begin();it!=end();++it)
+		{
+			uint64 offset;
+			switch (*it)
+			{
+			case '0':	offset=0; break;
+			case '1':	offset=1; break;
+			case '2':	offset=2; break;
+			case '3':	offset=3; break;
+			case '4':	offset=4; break;
+			case '5':	offset=5; break;
+			case '6':	offset=6; break;
+			case '7':	offset=7; break;
+			case '8':	offset=8; break;
+			case '9':	offset=9; break;
+			default:	return 0;
+			}
+			if (result>=MaxUint64PreLastDigit/*~0u/10*/)
+			{
+				if (result>MaxUint64PreLastDigit || offset>MaxUint64LastDigit)
 					return 0;
 			}
 			result=10*result+offset;
@@ -1595,14 +1762,40 @@ namespace NLMISC
 			nlwarning("Failed to open file for writing: %s",fileName.c_str());
 			return false;
 		}
-		uint32 bytesWritten=fwrite(const_cast<char*>(data()),1,size(),file);
+		uint32 recordsWritten=fwrite(const_cast<char*>(data()),size(),1,file);
 		fclose(file);
-		if (bytesWritten!=size())
+		if (recordsWritten!=1)
 		{
-			nlwarning("Failed to write file contents (requested %u bytes but fwrite returned %u) for file:%s",size(),bytesWritten,fileName.c_str());
+			nlwarning("Failed to write file contents (requested %u bytes but fwrite returned %u) for file:%s",size(),recordsWritten,fileName.c_str());
 			return false;
 		}
+		nldebug("CSSWTF Wrote %u bytes to file %s",size(),fileName.c_str());
 		return true;
+	}
+
+	bool CSString::writeToFileIfDifferent(const CSString& fileName) const
+	{
+		// if the file exists...
+		if (NLMISC::CFile::fileExists(fileName))
+		{
+			// the file exists so check it's the right size
+			if (NLMISC::CFile::getFileSize(fileName)==size())
+			{
+				// the file is the right size so read its data from disk...
+				CSString hold;
+				hold.readFromFile(fileName);
+				// check whether data read from file and our own data are identical
+				if (hold.size()==size() && memcmp(&hold[0],&(*this)[0],size())==0)
+				{
+					// data is identical so drop out
+					nldebug("CSSWTF Request to write data to file %s IGNORED because file already contains correct data",fileName.c_str());
+					return true;
+				}
+			}
+		}
+
+		// the file didn't already exist or content
+		return writeToFile(fileName);
 	}
 
 } // namespace NLMISC

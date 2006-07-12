@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.3 2006/05/31 12:17:14 boucher Exp $
+ * $Id: welcome_service.h,v 1.4 2006/07/12 14:37:22 boucher Exp $
  *
  */
 
@@ -78,6 +78,15 @@ namespace WS
 			CWelcomeServiceSkel::init(this);
 		}
 
+		void reportWSOpenState(bool shardOpen)
+		{
+			if (_RingSessionManager == NULL) // skip if the RSM is offline
+				return;
+
+			CWelcomeServiceClientProxy wscp(_RingSessionManager);
+			wscp.reportWSOpenState(this, shardOpen);
+		}
+
 		// forward response from the front end for a player slot to play in
 		// to the client of this welcome service (usually the Ring Session Manager)
 		void frontendResponse(NLNET::IModuleProxy *waiterModule, uint32 userId, const std::string &reason, const NLNET::CLoginCookie &cookie, const std::string &fsAddr)
@@ -89,7 +98,7 @@ namespace WS
 		// send the current number of players on this shard to the Ring Session Manager
 		void updateConnectedPlayerCount(uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
 		{
-			if (!_RingSessionManager) // skip if the RSM is offline
+			if (_RingSessionManager == NULL) // skip if the RSM is offline
 				return;
 
 			CWelcomeServiceClientProxy wscp(_RingSessionManager);
@@ -97,7 +106,7 @@ namespace WS
 		}
 
 		// inform the LS that a pending client is lost
-		void pendingUserLost(uint32 userId);
+		void pendingUserLost(const NLNET::CLoginCookie &cookie);
 	};
 
 	struct TPendingFEResponseInfo

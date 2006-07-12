@@ -5,12 +5,13 @@
 
 #ifndef WELCOME_SERVICE_ITF
 #define WELCOME_SERVICE_ITF
+#include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/string_conversion.h"
 #include "nel/net/message.h"
 #include "nel/net/module.h"
 #include "nel/net/module_builder_parts.h"
 #include "nel/net/module_message.h"
 #include "nel/net/module_gateway.h"
-#include "nel/misc/string_conversion.h"
 
 #include "nel/net/login_cookie.h"
 	
@@ -268,7 +269,7 @@ namespace WS
 		/////////////////////////////////////////////////////////////////
 
 		// An awaited user did not connect before the allowed timeout expire
-		virtual void pendingUserLost(NLNET::IModuleProxy *sender, uint32 userId) =0;
+		virtual void pendingUserLost(NLNET::IModuleProxy *sender, const NLNET::CLoginCookie &cookie) =0;
 
 
 	};
@@ -319,10 +320,10 @@ namespace WS
 		}
 
 		// An awaited user did not connect before the allowed timeout expire
-		void pendingUserLost(NLNET::IModule *sender, uint32 userId);
+		void pendingUserLost(NLNET::IModule *sender, const NLNET::CLoginCookie &cookie);
 
 		// Message serializer. Return the message received in reference for easier integration
-		static const NLNET::CMessage &buildMessageFor_pendingUserLost(NLNET::CMessage &__message, uint32 userId);
+		static const NLNET::CMessage &buildMessageFor_pendingUserLost(NLNET::CMessage &__message, const NLNET::CLoginCookie &cookie);
 	
 
 
@@ -370,6 +371,8 @@ namespace WS
 		
 		void registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
+		void reportWSOpenState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+
 		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		void updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
@@ -386,7 +389,9 @@ namespace WS
 
 		// Register the welcome service in the ring session manager
 		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
-		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId, uint32 fixedSessionId) =0;
+		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId, uint32 fixedSessionId, bool isOnline) =0;
+		// WS report it's current open state
+		virtual void reportWSOpenState(NLNET::IModuleProxy *sender, bool isOnline) =0;
 		// return for welcome user
 		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg) =0;
 		// transmits the current player counts
@@ -442,14 +447,19 @@ namespace WS
 
 		// Register the welcome service in the ring session manager
 		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
-		void registerWS(NLNET::IModule *sender, uint32 shardId, uint32 fixedSessionId);
+		void registerWS(NLNET::IModule *sender, uint32 shardId, uint32 fixedSessionId, bool isOnline);
+		// WS report it's current open state
+		void reportWSOpenState(NLNET::IModule *sender, bool isOnline);
 		// return for welcome user
 		void welcomeUserResult(NLNET::IModule *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg);
 		// transmits the current player counts
 		void updateConnectedPlayerCount(NLNET::IModule *sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers);
 
 		// Message serializer. Return the message received in reference for easier integration
-		static const NLNET::CMessage &buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId, uint32 fixedSessionId);
+		static const NLNET::CMessage &buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId, uint32 fixedSessionId, bool isOnline);
+	
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_reportWSOpenState(NLNET::CMessage &__message, bool isOnline);
 	
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_welcomeUserResult(NLNET::CMessage &__message, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg);

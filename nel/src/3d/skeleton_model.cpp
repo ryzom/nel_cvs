@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.69 2006/01/10 17:38:47 boucher Exp $
+ * $Id: skeleton_model.cpp,v 1.70 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,6 +128,7 @@ CSkeletonModel::CSkeletonModel()
 	_DisplayedAsLodCharacter= false;
 	_LodCharacterDistance= 0;
 	_OOLodCharacterDistance= 0;
+	_IsEnableLOD=true;
 
 	_DefaultMRMSetup= true;
 
@@ -759,6 +760,7 @@ void	CSkeletonModel::traverseAnimDetail()
 	float	dist= (getWorldMatrix().getPos() - getOwnerScene()->getClipTrav().CamPos).norm();
 	// Use dist to get current lod to use for this skeleton
 	uint	newLod= skeShape->getLodForDistance( dist );
+	if(!_IsEnableLOD) newLod = 0;
 	if(newLod != _CurLod)
 	{
 		// set new lod to use.
@@ -785,7 +787,7 @@ void	CSkeletonModel::traverseAnimDetail()
 	float	lodBoneInterp;
 	const CSkeletonShape::CLod	*lodNext= NULL;
 	// if a lod exist after current lod, and if lod interpolation enabled
-	if( _CurLod < skeShape->getNumLods()-1 && _LodInterpMultiplier>0 )
+	if( _CurLod < skeShape->getNumLods()-1 && _LodInterpMultiplier>0 && _IsEnableLOD)
 	{
 		// get next lod.
 		lodNext= &skeShape->getLod(_CurLod+1);

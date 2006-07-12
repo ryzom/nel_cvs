@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * TODO: File description
  *
- * $Id: particle_system_model.cpp,v 1.74 2005/02/22 10:19:10 besson Exp $
+ * $Id: particle_system_model.cpp,v 1.75 2006/07/12 14:37:22 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,7 +130,8 @@ CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL),
 											   _SoundActive(true),
 											   _BypassGlobalUserParam(0),
 											   _UserColor(CRGBA::White),
-											   _ZBias(0.f)
+											   _ZBias(0.f),
+											   _LastVisibility(CHrcTrav::Show)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -1120,6 +1121,20 @@ void CParticleSystemModel::reactivateSound()
 	if (_SoundActive) return;
 	if (_ParticleSystem) _ParticleSystem->reactivateSound();
 	_SoundActive = true;
+}
+
+//===================================================================
+void CParticleSystemModel::update()
+{
+	CTransformShape::update();
+	if (_LocalVis != _LastVisibility)
+	{
+		if (_ParticleSystem)
+		{
+			_ParticleSystem->onShow(_LocalVis == CHrcTrav::Show);
+		}
+		_LastVisibility = _LocalVis;
+	}
 }
 
  

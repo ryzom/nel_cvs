@@ -111,7 +111,7 @@
             <table style="width: 100%; border: 1px solid #fefefe">
                 <tal:fields repeat="field python:schematas[fieldset].fields()">
                     <tr tal:condition="python:field.getName() != 'id' or visible_ids">
-                        <td style="width:50%; vertical-align:top">
+                        <td>
                             <div class="field"
                                  tal:define="otherfield python:other.Schemata()[fieldset][field.getName()];
                                              otherwidget python:otherfield.widget;
@@ -122,7 +122,7 @@
 
                                 <!-- This is the canonical content -->
 
-                                <div tal:define="target_language other/Language">
+                                <div tal:define="target_language other/Language" style="color:lightsalmon;">
                                     <label tal:content="python:otherwidget.Label(here, target_language=target_language)">
                                         Field
                                     </label>
@@ -134,10 +134,16 @@
 
                                 <div>
                                     <div tal:condition="renderablefield"
-                                         style="height:35em; overflow:scroll"
+                                         style="height:17em; overflow:scroll"
                                          content="structure python:otherfield.getAccessor(other)()">
                                         <metal:fieldMacro use-macro="python:other.widget(otherfield.getName(), mode='view')"/>
                                         <!-- if a renderable field, use the accessor and have scrollbars-->
+                                    </div>
+                                    <div tal:condition="renderablefield"
+                                         style="height:7em; overflow:scroll">                                        
+                                         <div tal:content="python:here.portal_transforms.convertTo('text/html',
+                                                           str(otherfield.getAccessor(other)()))">
+                                         </div>  
                                     </div>
                                     
                                     <div tal:condition="not: renderablefield">
@@ -146,8 +152,10 @@
                                 </div>
                             </div>
                         </td>
+                       </tr>
 
-                        <td style="width:50%; vertical-align:top">                            
+                       <tr>
+                        <td>
                             <tal:notLangIndependent condition="not: field/languageIndependent">
                                 <metal:fieldMacro use-macro="python:here.widget(field.getName(), mode='edit')">
                                 Translatable widget
@@ -173,7 +181,7 @@
                             </tal:langIndependent>
                         </td>
 
-                    </tr>
+                   </tr>
                 </tal:fields>
                     <tr>
                         <td></td>

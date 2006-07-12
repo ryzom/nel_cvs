@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * TODO: File description
  *
- * $Id: coarse_mesh_build.cpp,v 1.12 2005/02/22 10:19:10 besson Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.13 2006/07/12 09:27:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -507,11 +507,21 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 					uint index;
 					CIndexBufferRead ibaRead;
 					primitiveBlock.lock (ibaRead);
-					nlassert(ibaRead.getFormat() == CIndexBuffer::Indices32);
-					const uint32 *indexPtr=(uint32 *) ibaRead.getPtr();
-					uint32 numIndex=primitiveBlock.getNumIndexes();
-					for (index=0; index<numIndex; index++)
-						vertexToRemap.insert (indexPtr[index]);
+					if (ibaRead.getFormat() == CIndexBuffer::Indices32)
+					{
+						const uint32 *indexPtr=(uint32 *) ibaRead.getPtr();
+						uint32 numIndex=primitiveBlock.getNumIndexes();
+						for (index=0; index<numIndex; index++)
+							vertexToRemap.insert (indexPtr[index]);
+					}
+					else
+					{
+						nlassert(ibaRead.getFormat() == CIndexBuffer::Indices16);
+						const uint16 *indexPtr=(uint16 *) ibaRead.getPtr();
+						uint32 numIndex=primitiveBlock.getNumIndexes();
+						for (index=0; index<numIndex; index++)
+							vertexToRemap.insert ((uint32) indexPtr[index]);
+					}
 
 					// Remap the vertex
 					std::set<uint>::iterator iteRemap=vertexToRemap.begin();

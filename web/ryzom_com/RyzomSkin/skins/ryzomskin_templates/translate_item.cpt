@@ -1,0 +1,236 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en"
+      lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="linguaplone">
+
+<metal:head fill-slot="javascript_head_slot">
+
+    <tal:block define="schematas here/Schemata;
+                       fieldsets python:[key for key in schematas.keys() if key != 'metadata'];
+                       default_fieldset python:(not schematas or schematas.has_key('default')) and 'default' or fieldsets[0];
+                       fieldset request/fieldset|options/fieldset|default_fieldset;
+                       fields python:schematas[fieldset].editableFields(here);
+                       css python:here.getUniqueWidgetAttr(fields, 'helper_css');
+                       js python:here.getUniqueWidgetAttr(fields, 'helper_js');">
+
+      <tal:block define="macro here/archetypes_custom_js/macros/javascript_head | nothing"
+                 condition="macro">
+          <metal:block use-macro="macro" />
+      </tal:block>
+
+      <tal:css condition="css"
+               repeat="item css">
+        <style type="text/css"
+               media="all"
+               tal:condition="python:exists('portal/%s' % item)"
+               tal:content="string:@import url($portal_url/$item);">
+        </style>
+      </tal:css>
+
+      <tal:js condition="js"
+              repeat="item js">
+        <script type="text/javascript"
+                charset="iso-8859-1"
+                tal:condition="python:exists('portal/%s' % item)"
+                tal:attributes="src string:$portal_url/$item">
+        </script>
+      </tal:js>
+
+    </tal:block>
+
+</metal:head>
+
+<body>
+
+    <metal:slots metal:fill-slot="column_two_slot"></metal:slots>
+
+    <div metal:fill-slot="main">
+
+        <metal:main define-macro="main"
+                    tal:define="errors options/state/getErrors|nothing;
+                                Iterator python:modules['Products.Archetypes'].IndexIterator;
+                                tabindex python:Iterator();
+                                schematas here/Schemata;
+                                fieldsets python:[key for key in schematas.keys() if key != 'metadata'];
+                                default_fieldset python:(not schematas or schematas.has_key('default')) and 'default' or fieldsets[0];
+                                fieldset request/fieldset|options/fieldset|default_fieldset;
+                                portal_type python:here.getPortalTypeName().lower();
+                                edit_template python:'%s_edit' % portal_type;
+                                edit_macros python:path('here/%s/macros|here/edit_macros/macros' % edit_template);
+                                other python:here.getCanonical();
+                                visible_ids visible_ids|here/visibleIdsEnabled|nothing">
+
+        <h1 tal:content="here/title_or_id"
+             metal:use-macro="edit_macros/header|default" />
+
+        <form name="edit_form"
+              method="post"
+              enctype="multipart/form-data"
+              tal:define="lang_name nocall:here/portal_languages/getNameForLanguageCode"
+              tal:attributes="action python:here.absolute_url()+'/'+template.id">
+
+            <p class="documentDescription"
+               i18n:translate="description_translating_from_to"
+               tal:define="langs here/getUntranslatedLanguages">
+                Translating from
+                <span i18n:name="from">
+                    <select name="lp_translating_from"
+                            tal:define="lp_translating_from request/lp_translating_from | here/getCanonicalLanguage">
+                        <option selected="selected"
+                                tal:define="code here/getCanonicalLanguage"
+                                tal:content="python:lang_name(code)"
+                                tal:attributes="selected python:lp_translating_from == code;
+                                                value code">Language</option>
+                        <option tal:repeat="lang langs"
+                                tal:content="python:lang[1]"
+                                tal:attributes="selected python:lp_translating_from == lang[0];
+                                                value python:lang[0]">Language</option>
+                    </select>
+                </span>
+                to
+                <span i18n:name="to">
+                    <select name="lp_translating_to"
+                            tal:define="lp_translating_to request/lp_translating_to | here/getLanguage">
+                        <option selected="selected"
+                                tal:define="code here/getLanguage"
+                                tal:content="python:lang_name(code)"
+                                tal:attributes="selected python:lp_translating_to == code;
+                                                value code">Language</option>
+                        <option tal:repeat="lang langs"
+                                tal:content="python:lang[1]"
+                                tal:attributes="selected python:lp_translating_to == lang[0];
+                                                value python:lang[0]">Language</option>
+                    </select>
+                </span>
+            </p>
+
+            <table style="width: 100%; border: 1px solid #fefefe">
+                <tal:fields repeat="field python:schematas[fieldset].fields()">
+                    <tr tal:condition="python:field.getName() != 'id' or visible_ids">
+                        <td style="width:50%; vertical-align:top">
+                            <div class="field"
+                                 tal:define="otherfield python:other.Schemata()[fieldset][field.getName()];
+                                             otherwidget python:otherfield.widget;
+                                             textformat python:otherfield.getContentType(other);
+                                             textareafields python:('TextField','LinesField');
+                                             renderableMimeTypes here/mimetypesToRenderInTranslationForm;
+                                             renderablefield python:textformat in renderableMimeTypes">
+
+                                <!-- This is the canonical content -->
+
+                                <div tal:define="target_language other/Language">
+                                    <label tal:content="python:otherwidget.Label(here, target_language=target_language)">
+                                        Field
+                                    </label>
+                                    <div class="discreet"
+                                         tal:content="python:otherwidget.Description(here, target_language=target_language)">
+                                        Description
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div tal:condition="renderablefield"
+                                         style="height:35em; overflow:scroll"
+                                         content="structure python:otherfield.getAccessor(other)()">
+                                        <metal:fieldMacro use-macro="python:other.widget(otherfield.getName(), mode='view')"/>
+                                        <!-- if a renderable field, use the accessor and have scrollbars-->
+                                    </div>
+                                    
+                                    <div tal:condition="not: renderablefield">
+                                        <metal:fieldMacro use-macro="python:other.widget(otherfield.getName(), mode='view')"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td style="width:50%; vertical-align:top">                            
+                            <tal:notLangIndependent condition="not: field/languageIndependent">
+                                <metal:fieldMacro use-macro="python:here.widget(field.getName(), mode='edit')">
+                                Translatable widget
+                                </metal:fieldMacro>
+                            </tal:notLangIndependent>
+
+                            <tal:langIndependent condition="field/languageIndependent">
+
+                            <tal:comment replace="nothing">
+                                    XXX - How the f**k is this supposed to work?
+                                    
+                                    <label tal:content="python:here.widget.Label(here, target_language=target_language)">
+                                        Field
+                                    </label> (Language independent)
+                                    <div class="discreet"
+                                         tal:content="python:here.widget.Description(here, target_language=target_language)">
+                                        Description
+                                    </div>
+                            </tal:comment>
+                                <metal:fieldMacro use-macro="python:here.widget(field.getName(), mode='view')">
+                                Language-independent widget (not editable)
+                                </metal:fieldMacro>
+                            </tal:langIndependent>
+                        </td>
+
+                    </tr>
+                </tal:fields>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="hidden"
+                                   name="form.submitted"
+                                   value="1"
+                                   />
+
+                            <input type="hidden"
+                                   name="fieldset"
+                                   value="default"
+                                   tal:attributes="value fieldset"
+                                   />
+
+                            <div class="field"
+                                 i18n:domain="plone"
+                                 tal:define="fieldset_index python:fieldsets.index(fieldset);
+                                             n_fieldsets python:len(fieldsets)">
+
+                                <label>&nbsp;</label>
+
+                                <input tal:condition="python:fieldset_index &gt; 0"
+                                       class="context"
+                                       tabindex=""
+                                       type="submit"
+                                       name="form_previous"
+                                       value="Previous"
+                                       i18n:attributes="value"
+                                       tal:attributes="tabindex tabindex/next"
+                                       />
+
+                                <input tal:condition="python:fieldset_index &lt; n_fieldsets-1"
+                                       class="context"
+                                       tabindex=""
+                                       type="submit"
+                                       name="form_next"
+                                       value="Next"
+                                       i18n:attributes="value"
+                                       tal:attributes="tabindex tabindex/next"
+                                       />
+
+                                <input tal:condition="python:fieldset_index == n_fieldsets-1"
+                                       class="context"
+                                       tabindex=""
+                                       type="submit"
+                                       name="form_submit"
+                                       value="Save"
+                                       i18n:attributes="value"
+                                       tal:attributes="tabindex tabindex/next"
+                                       />
+                            </div>
+                        </td>
+                    </tr>
+            </table>
+            </form>
+        </metal:main>
+    </div>
+</body>
+</html>

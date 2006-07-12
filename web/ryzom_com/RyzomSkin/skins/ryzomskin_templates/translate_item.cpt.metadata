@@ -1,0 +1,8 @@
+[default]
+title = Edit
+
+[validators]
+validators = validate_translate
+
+[actions]
+action.success = traverse_to:string:translate_edit

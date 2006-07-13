@@ -38,8 +38,11 @@ UrlPatchNoteSchema = BaseSchema.copy() + Schema((
 
 
 class UrlPatchNote(BaseContent):
-	"""Add an Url Document"""
+	"""Add a Patch Note"""
+
 	schema = UrlPatchNoteSchema
+	meta_type = portal_type = 'UrlPatchNote'
+	global_allow = 0
 
 	actions = (
 		{ 'id': 'view',

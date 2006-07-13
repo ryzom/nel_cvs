@@ -18,7 +18,10 @@ RedirectSchema = BaseSchema.copy() + Schema((
 
 
 class Redirect(BaseContent):
-	schema=RedirectSchema
+	"""Direct Redirection"""
+
+	schema = RedirectSchema
+	meta_type = portal_type = 'Redirect'
 	actions = (
 		{ 'id': 'view',
 		'name': 'View',

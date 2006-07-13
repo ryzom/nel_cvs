@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.28.16.1.4.1 2006/07/07 08:38:14 boucher Exp $
+ * $Id: callback_net_base.h,v 1.28.16.1.4.2 2006/07/13 09:02:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,6 +118,9 @@ public:
 	/// Sets default callback for unknown message types
 	void	setDefaultCallback(TMsgCallback defaultCallback) { _DefaultCallback = defaultCallback; }
 
+	/// Set the pre dispatch callback. This callback is called before each message is dispatched
+	void	setPreDispatchCallback(TMsgCallback predispatchCallback) { _PreDispatchCallback = predispatchCallback;}
+
 	/// Sets callback for disconnections (or NULL to disable callback)
 	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId ();  _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
 
@@ -182,6 +185,9 @@ protected:
 	
 	// called if the received message is not found in the callback array
 	TMsgCallback				_DefaultCallback;
+
+	// If not null, called before each message is dispached to it's callback
+	TMsgCallback				_PreDispatchCallback;
 
 	bool _IsAServer;
 	bool _FirstUpdate;

@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.45.40.1.4.1 2006/07/07 08:38:14 boucher Exp $
+ * $Id: callback_net_base.cpp,v 1.45.40.1.4.2 2006/07/13 09:02:42 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,6 +208,12 @@ void CCallbackNetBase::processOneMessage ()
 	else
 	{
 		nldebug ("LNETL3NB_CB: Calling callback (%s)%s", msgin.getName().c_str(), (cb==_DefaultCallback)?" DEFAULT_CB":"");
+
+		if (_PreDispatchCallback != NULL)
+		{
+			// call the pre dispatch callback
+			_PreDispatchCallback(msgin, realid, *this);
+		}
 		cb(msgin, realid, *this);
 	}
 	

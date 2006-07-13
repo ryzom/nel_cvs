@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.2 2006/04/05 15:29:16 coutelas Exp $
+ * $Id: path.cpp,v 1.119.4.2.4.1 2006/07/13 09:02:42 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -905,14 +905,21 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative, c
 	// check empty directory
 	if (path.empty())
 	{
-		nlwarning ("PATH: CPath::addSearchPath(%s, %d, %d): can't add empty directory, skip it", path.c_str(), recurse, alternative);
+		nlwarning ("PATH: CPath::addSearchPath(%s, %s, %s): can't add empty directory, skip it", 
+			path.c_str(), 
+			recurse ? "recursive" : "not recursive", 
+			alternative ? "alternative" : "not alternative");
 		return;
 	}
 
 	// check if it s a directory
 	if (!CFile::isDirectory (path))
 	{
-		nlinfo ("PATH: CPath::addSearchPath(%s, %d, %d): '%s' is not a directory, I'll call addSearchFile()", path.c_str(), recurse, alternative, path.c_str());
+		nlinfo ("PATH: CPath::addSearchPath(%s, %s, %s): '%s' is not a directory, I'll call addSearchFile()", 
+			path.c_str(), 
+			recurse ? "recursive" : "not recursive", 
+			alternative ? "alternative" : "not alternative", 
+			path.c_str());
 		addSearchFile (path, false, "", progressCallBack);
 		return;
 	}
@@ -922,7 +929,11 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative, c
 	// check if it s a directory
 	if (!CFile::isExists (newPath))
 	{
-		nlwarning ("PATH: CPath::addSearchPath(%s, %d, %d): '%s' is not found, skip it", path.c_str(), recurse, alternative, newPath.c_str());
+		nlwarning ("PATH: CPath::addSearchPath(%s, %s, %s): '%s' is not found, skip it", 
+			path.c_str(), 
+			recurse ? "recursive" : "not recursive", 
+			alternative ? "alternative" : "not alternative", 
+			newPath.c_str());
 		return;
 	}
 
@@ -956,11 +967,19 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative, c
 			{
 				// add them in the alternative directory
 				inst->_AlternativePaths.push_back (pathsToProcess[p]);
-				NL_DISPLAY_PATH("PATH: CPath::addSearchPath(%s, %d, %d): path '%s' added", newPath.c_str(), recurse, alternative, pathsToProcess[p].c_str());
+				NL_DISPLAY_PATH("PATH: CPath::addSearchPath(%s, %s, %s): path '%s' added", 
+					newPath.c_str(), 
+					recurse ? "recursive" : "not recursive", 
+					alternative ? "alternative" : "not alternative", 
+					pathsToProcess[p].c_str());
 			}
 			else
 			{
-				nlwarning ("PATH: CPath::addSearchPath(%s, %d, %d): path '%s' already added", newPath.c_str(), recurse, alternative, pathsToProcess[p].c_str());
+				nlwarning ("PATH: CPath::addSearchPath(%s, %s, %s): path '%s' already added", 
+					newPath.c_str(), 
+					recurse ? "recursive" : "not recursive", 
+					alternative ? "alternative" : "not alternative", 
+					pathsToProcess[p].c_str());
 			}
 		}
 	}
@@ -1027,14 +1046,14 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	// check empty file
 	if (newFile.empty())
 	{
-		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): can't add empty file, skip it", file.c_str(), remap, virtual_ext.c_str());
+		nlwarning ("PATH: CPath::addSearchFile(%s, %d, '%s'): can't add empty file, skip it", file.c_str(), remap, virtual_ext.c_str());
 		return;
 	}
 
 	// check if the file exists
 	if (!CFile::isExists (newFile))
 	{
-		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is not found, skip it (current dir is '%s'", 
+		nlwarning ("PATH: CPath::addSearchFile(%s, %d, '%s'): '%s' is not found, skip it (current dir is '%s'", 
 			file.c_str(), 
 			remap, 
 			virtual_ext.c_str(), 
@@ -1046,14 +1065,18 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	// check if it s a file
 	if (CFile::isDirectory (newFile))
 	{
-		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is not a file, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
+		nlwarning ("PATH: CPath::addSearchFile(%s, %d, '%s'): '%s' is not a file, skip it", 
+			file.c_str(), 
+			remap, 
+			virtual_ext.c_str(), 
+			newFile.c_str());
 		return;
 	}
 
 	// check if it s a big file
 	if (CFile::getExtension(newFile) == "bnp")
 	{
-		NL_DISPLAY_PATH ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
+		NL_DISPLAY_PATH ("PATH: CPath::addSearchFile(%s, %d, '%s'): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		addSearchBigFile(file, false, false, progressCallBack);
 		return;
 	}

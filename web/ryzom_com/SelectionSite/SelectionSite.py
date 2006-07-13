@@ -113,7 +113,7 @@ class SelectionSite(BaseContent):
 		current_visit = self.VisitDico()
 		current_visit.update(dico)
 		listkey = current_visit.keys()
-		listkey.sort() #faire un trie par date !
+		listkey = self.sortByDate(listkeys)
 		updated_visit=[]
 		allsum = 0
 		for key in listkey:
@@ -128,7 +128,7 @@ class SelectionSite(BaseContent):
 		ThisMonth = []
 		monthsum = 0
 		keys = visit.keys()
-		keys.sort()
+		keys = self.sortByDate(keys)
 		for key in keys:			
 			if key.split('/',1)[1] == currentMonth:
 				ThisMonth.append(str(key)+':'+str(visit[key]))
@@ -136,20 +136,51 @@ class SelectionSite(BaseContent):
 		self.setMonthsum(monthsum)
 		self.setMonth(ThisMonth)
 
-		
+	def format(self,date):
+		monthDic = {'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6,
+		            'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10,'Nov':11, 'Dec':12 }
+		date = date.split('/')
+		#date = date.join(',')
+		month = date[1]
+		inter = date[0]
+		if month in monthDic.keys():
+			month = monthDic[month]
+		date[1] = month
+		date[0] = date[2]
+		date[2] = inter
+		return date
 
-	def sortVisit(self,dico):
-		listkey = dico.keys()
-		newlistkey=[]
-		for key in listkey:
-			date = key.split('/')
-			day = date[1]
-			month = date[2]
-			year = date[3]
-			newkey = ''.join([year,month,day],'/')
-			newlistkey.append(newkey)
-		newlistkey.sort()
-		return dico
+	def deformat(self,date):
+		monthDic = { 1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+		             7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
+		month = date[1]	
+		if month in monthDic.keys():
+			month = monthDic[month]
+		return str(date[2])+'/'+str(month)+'/'+str(date[0])
+
+	def sortByDate(self,date):
+		dateList = []
+		for date in date:
+			date = format(date)
+			dateList.append(date)
+		dateListSorted=[]
+		dateList.sort()
+		for date in dateList:
+			dateListSorted.append(deformat(date))
+		return dateListSorted
+
+#	def sortVisit(self,dico):
+#		listkey = dico.keys()
+#		newlistkey=[]
+#		for key in listkey:
+#			date = key.split('/')
+#			day = date[1]
+#			month = date[2]
+#			year = date[3]
+#			newkey = ''.join([year,month,day],'/')
+#			newlistkey.append(newkey)
+#		newlistkey.sort()
+#		return dico
 		
 
 

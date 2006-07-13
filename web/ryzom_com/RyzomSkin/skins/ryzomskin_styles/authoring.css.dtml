@@ -173,7 +173,7 @@ margin: 1em 0 0 0;
 .fieldRequired {
 background: url(&dtml-portal_url;/required.gif) center left no-repeat;
 padding: 0 0 0 8px;
-color: &dtml-backgroundColor;;
+color: #ccb97e;
 }
 
 .formHelp {
@@ -193,6 +193,7 @@ margin: 1em 0;
 
 .error {
 /* Class for error indication in forms */
+color: black;
 background-color: &dtml-notifyBackgroundColor;;
 border: &dtml-borderWidth; &dtml-borderStyle; &dtml-notifyBorderColor;;
 padding: 1em;
@@ -201,7 +202,7 @@ width: 95% !important;
 }
 
 .error .fieldRequired {
-color: &dtml-notifyBackgroundColor;;
+color: black;
 }
 
 .card {

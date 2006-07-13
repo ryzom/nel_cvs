@@ -142,7 +142,7 @@ legend {
 .state-private {color: Red;}
 .state-visible {color: #74AE0B;}
 .state-published {color: #33a6a9;}
-.state-pending {color: #FFA500;}
+.state-pending {color: lightblue;}
 .state-expired {color: Red;}
 .syndicated {color: #008000;}
 .portletItem{color:#ffc30e;}

@@ -171,7 +171,8 @@ class QnA(BaseContent):
 	def get_atys_forums2(self):
 		date1=self.parseTime(str(self.getDatestart()))       	 	
 		date2=self.parseTime(str(self.getDatearrivee()))
-		results=self.qna(username = self.getFiltrage().split(), start = date1, end = date2)
+		OfficialsNames = self.getFiltrage().split()
+		results=self.qna(username = OfficialsNames, start = date1, end = date2)
 		tab=[]
 		for row in results:                        
 			post_id  = str(row[0])

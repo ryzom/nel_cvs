@@ -112,11 +112,11 @@ class SelectionSite(BaseContent):
 	def addVisit(self,dico):
 		current_visit = self.VisitDico()
 		current_visit.update(dico)
-		listkey = current_visit.keys()
-		listkey = self.sortByDate(listkeys)
+		listkeys = current_visit.keys()
+		listkeys = self.sortByDate(listkeys)
 		updated_visit=[]
 		allsum = 0
-		for key in listkey:
+		for key in listkeys:
 			updated_visit.append(str(key)+':'+str(current_visit[key]))
 			allsum += int(current_visit[key])
 		self.setAllsum(allsum)
@@ -161,12 +161,12 @@ class SelectionSite(BaseContent):
 	def sortByDate(self,date):
 		dateList = []
 		for date in date:
-			date = format(date)
+			date = self.format(date)
 			dateList.append(date)
 		dateListSorted=[]
 		dateList.sort()
 		for date in dateList:
-			dateListSorted.append(deformat(date))
+			dateListSorted.append(self.deformat(date))
 		return dateListSorted
 
 #	def sortVisit(self,dico):

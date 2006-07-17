@@ -58,7 +58,7 @@ class UrlPatchNote(BaseContent):
 			try:
 				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
 			except:
-                                pass #try to do better than this
+				pass #try to do better than this
                                 
 
 	def setText(self, value, **kwargs):		

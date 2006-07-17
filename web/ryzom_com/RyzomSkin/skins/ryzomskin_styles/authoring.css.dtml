@@ -412,6 +412,7 @@ margin: 1em;
 }
 
 .contentViews {
+height:100%;
 background-color: transparent;
 padding-left: 0em;
 line-height: normal;

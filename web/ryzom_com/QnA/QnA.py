@@ -48,9 +48,9 @@ QnASchema=BaseSchema.copy()+ Schema((
 	),
 	TextField('text',
 		searchable=False,
-		default_output_type='text/restructured',
-		widget=RichWidget(description="edit the choice",visible={'edit':'hidden', 'view':'visible'}),
-        ),
+		default_output_type='text/html',
+		widget=TextAreaWidget(description="edit the choice",visible={'edit':'hidden', 'view':'visible'}),
+    ),
 ),)
  
  
@@ -109,7 +109,7 @@ class QnA(BaseContent):
 				post_text   = post_splitted[2]
 				post_id     = post_splitted[3]
 				text += post_text
-				text += '<p>-- %s <a href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post_author, post_id, post_id)
+				text += '<p>-- %s <a id="qna_author_link" href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post_author, post_id, post_id)
 			except IndexError:
 				text += "Error - " + str(post_splitted)
 		return text

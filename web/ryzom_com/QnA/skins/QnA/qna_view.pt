@@ -5,9 +5,8 @@
 <body>
     <div metal:fill-slot="main">      
         <div metal:use-macro="here/document_actions/macros/document_actions"></div>
-        <div tal:define="text here/auto_correction;                         
-                         id here/getId;
-                         choice here/toto;">           
+        <div tal:define="text here/getText;                         
+                         id here/getId;">           
            <p tal:content="structure text"></p>
            <br />
            <a href="" tal:attributes="href string:TransformQnaToDocument?qna=${id}">

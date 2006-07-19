@@ -44,12 +44,13 @@ QnASchema=BaseSchema.copy()+ Schema((
 		default_output_type='text/html',	
 		widget=MultiSelectionWidget(label='Categories',format='checkbox'),
 		vocabulary='get_atys_forums2',             
-		schemata='configuration'
+		schemata='configuration',
 	),
 	TextField('text',
 		searchable=False,
 		default_output_type='text/html',
-		widget=TextAreaWidget(description="edit the choice",visible={'edit':'hidden', 'view':'visible'}),
+		widget=TextAreaWidget(description="edit the choice",visible={'edit':'hidden', 'view':'visible'},),
+		schemata='configuration',
     ),
 ),)
  
@@ -109,17 +110,17 @@ class QnA(BaseContent):
 				post_text   = post_splitted[2]
 				post_id     = post_splitted[3]
 				text += post_text
-				text += '<p>-- %s <a id="qna_author_link" href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post_author, post_id, post_id)
+				text += '<p id="qna_author_link">-- %s <a href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post_author, post_id, post_id)
 			except IndexError:
 				text += "Error - " + str(post_splitted)
 		return text
 
 	#cette fonction est appelle lors de la visualisation du qna et corrige le champ text s'il n'est pas correct
-	def auto_correction(self):
-		text = self.getText()
-		if not text:
-			self.setText('truc')
-		return text
+#	def auto_correction(self):
+#		text = self.getText()
+#		if not text:
+#			self.setText('truc')
+#		return text
 
 	
 	#def getText(self):

@@ -1,0 +1,11 @@
+/*
+** Stylesheet for QnA
+*/
+
+/* <dtml-with base_properties> */
+
+#qna_author_link {
+text-align: right
+}
+
+/* </dtml-with> */

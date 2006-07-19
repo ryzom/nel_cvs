@@ -39,7 +39,9 @@
       <i>
          <span i18n:domain="RyzomSkin" i18n:translate="this_is_an"></span>
          <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:not lang in 'fr'"></b>
-         <a i18n:domain="RyzomSkin" i18n:translate="players_news" href="/player_news"></a>
+         <a tal:condition="python:lang in 'fr'" i18n:domain="RyzomSkin" i18n:translate="players_news" href="/documentation-fr/faq-fr/ajouter-votre-propre-contenu"></a>
+         <a tal:condition="python:lang in 'en'" i18n:domain="RyzomSkin" i18n:translate="players_news" href="/documentation/faq/submit_content"></a>
+         <a tal:condition="python:lang in 'de'" i18n:domain="RyzomSkin" i18n:translate="players_news" href="/dokumentation/faq/eigene-inhalte-einreichen"></a>
          <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:lang in 'fr'"></b>
       </i>
       </p>

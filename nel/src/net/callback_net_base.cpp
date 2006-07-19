@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.45.40.1.4.2 2006/07/13 09:02:42 boucher Exp $
+ * $Id: callback_net_base.cpp,v 1.45.40.1.4.3 2006/07/19 15:04:23 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,8 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 	:	_FirstUpdate (true), 
 		_UserData(NULL),
 		_DisconnectionCallback(NULL), 
-		_DisconnectionCbArg(NULL)
+		_DisconnectionCbArg(NULL),
+		_PreDispatchCallback(NULL)
 #ifdef USE_MESSAGE_RECORDER
 		, _MR_RecordingState(rec), _MR_UpdateCounter(0)
 #endif

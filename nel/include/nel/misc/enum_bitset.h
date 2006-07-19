@@ -2,7 +2,7 @@
  * utility class to build bit field from enum value vithout need
  * to do explicit cast by hands.
  *
- * $Id: enum_bitset.h,v 1.2.24.1 2006/07/07 08:38:14 boucher Exp $
+ * $Id: enum_bitset.h,v 1.2.24.2 2006/07/19 15:04:22 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ namespace NLMISC
 		CEnumBitset(EnumType value)
 			: Bitset(0)
 		{
-			addEnumValue(value);
+			setEnumValue(value);
 		}
 
 		// Constructor with a enumerated string

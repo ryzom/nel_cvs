@@ -1,7 +1,6 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       i18n:domain="plone">
-<metal:block use-macro="here/global_defines/macros/defines" />
 
   <body>
 

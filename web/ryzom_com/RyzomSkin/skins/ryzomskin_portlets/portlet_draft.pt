@@ -2,7 +2,7 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       i18n:domain="RyzomSkin">
 <body>
-<div metal:use-macro="here/global_defines/macros/defines" />
+
 <div class="holeContainer" style="text-align:right;" metal:define-macro="portlet"
      tal:define="author python:str(member);
                  results python:here.portal_catalog(Creator=author,

@@ -1,7 +1,7 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       i18n:domain="plone">
-<metal:block use-macro="here/global_defines/macros/defines" />
+
   <body>
 
     <div style="padding-top:2em;padding-right:5%;padding-left:5%;" metal:define-macro="portlet" class="portletItem">

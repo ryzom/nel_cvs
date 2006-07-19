@@ -2,7 +2,7 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       i18n:domain="plone">
 <body>
-<metal:block use-macro="here/global_defines/macros/defines" />
+
 <div class="holeContainer" style="text-align : right;" metal:define-macro="portlet">
 <img  class="fakeBorder" src="side_top.png" alt="" />
   <dl id="sign-up">	

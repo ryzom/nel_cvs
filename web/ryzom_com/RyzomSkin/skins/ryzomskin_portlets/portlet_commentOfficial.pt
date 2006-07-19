@@ -1,0 +1,39 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      i18n:domain="plone">
+
+<body>
+	<div  metal:define-macro="portlet" class="holeContainer"
+	tal:define="recent python:here.portal_catalog(meta_type='Discussion Item', 
+	sort_on='modified', sort_order='reverse')[:300]">
+
+<img src="side_top.png" />
+<div class="hole" >
+<dl class="portlet">
+
+    <dt class="portletHeader">
+        <a href="" tal:attributes="href string:comment_official"
+        i18n:translate="commentOfficialList">Derniers commentaires officiels</a>
+    </dt>
+   
+    	<tal:loop repeat="comment recent">
+	<tal:block define="obj comment/getObject" condition="python: obj and here.isOfficial(obj.Creator())">
+	<dd class="portletItem">
+		<a href="" tal:attributes="href obj/absolute_url" tal:content="comment/Title" />        
+	</dd>
+	</tal:block>
+	</tal:loop>
+    
+</dl>
+</div>
+
+<div class="imageHide">
+<img src="side_up.png" />
+</div>
+
+
+	</div>
+
+</body>
+
+</html>

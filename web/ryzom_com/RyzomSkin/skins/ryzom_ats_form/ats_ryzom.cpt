@@ -4,33 +4,23 @@
       i18n:domain="plone">
 
 <body>
-
-      <metal:block use-macro="here/global_defines/macros/defines" />
-
-      <metal:main fill-slot="main">
-
-      
-
- 
-     <form
-       tal:define ="errors options/state/getErrors"
+<metal:main fill-slot="main">
+<form  tal:define ="errors options/state/getErrors"
        tal:attributes="action string:${here/absolute_url}/${template/id};" method = "post">
 
-
-     
-     <input type="hidden" name="form.submitted" value="1" />
-      <p> The ATS (Advanced Test Server) is open in order to test the next features that will be available in the Saga of Ryzom. Access is restricted to selected players.<br>
+      <input type="hidden" name="form.submitted" value="1" />
+        <p> The ATS (Advanced Test Server) is open in order to test the next features that will be available in the Saga of Ryzom. Access is restricted to selected players.<br>
          Those who don t currently have access to the ATS but would like to participate should fill in the application form. The Customer Support staff will select new players based on criteria such as characters skill levels, motivation,<br>
          If you whish to be among the first to use these new features, and if you are committed in helping us by participating on the ATS board, please apply ! </p>
    
-    <p>
+        <p>
        How long have you been playing Ryzom? <select name = time size =1 >
                                               <option>Since the release
                                               <option>More than a month
                                               <option>Less than 2 weeks
                                              </select></p>
      
-     <p>
+        <p>
        On wich shard do you usually play? <select name = shard size =1 >
                                               <option>Aniro (French Community)
                                               <option>Leanon (German Community)
@@ -61,9 +51,6 @@
      </p>
     
      <input class="context" tabindex="10" name="form_submit" value="OK" type="submit">
-     
-
-    
 
 </form>
  </metal:main>

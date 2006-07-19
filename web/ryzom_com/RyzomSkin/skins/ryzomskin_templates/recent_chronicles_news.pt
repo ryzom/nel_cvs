@@ -3,8 +3,6 @@
   metal:use-macro="here/main_template/macros/master"
   i18n:domain="plone">
 
-<metal:block use-macro="here/global_defines/macros/defines" />
-
   <body>
     <div metal:fill-slot="main">
     <div class="content"

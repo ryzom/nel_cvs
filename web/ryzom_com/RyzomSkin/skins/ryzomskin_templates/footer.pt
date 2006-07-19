@@ -1,7 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
       i18n:domain="plone">
 <body>
-<metal:block use-macro="here/global_defines/macros/defines" />
 <div id="portal-footer" metal:define-macro="portal_footer" i18n:domain="plone">
   <table id="footer" cellspacing="0px" cellpadding="0px" height="110" width="100%" style="border: 0; margin:0; padding:0;">
   	<tr><td>

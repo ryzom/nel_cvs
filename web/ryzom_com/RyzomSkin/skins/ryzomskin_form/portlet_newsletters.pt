@@ -2,7 +2,6 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       i18n:domain="plone">
 <body> 
-<metal:block use-macro="here/global_defines/macros/defines" />
 
 <div class="holeContainer" metal:define-macro="portlet"
      tal:define="pageloc python: request.URL.split('/')[-1];"

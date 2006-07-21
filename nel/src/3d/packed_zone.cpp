@@ -1276,7 +1276,7 @@ void CPackedZone16::unpackTri(const CPackedTri16 &src, CVector dest[3]) const
 }
 
 // raytrace code, common to CPackedZone32 & CPackedZone16
-template <class T> bool raytrace(T &packedZone, const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<CTriangle> *testedTriangles = NULL)
+template <class T> bool raytrace(T &packedZone, const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<CTriangle> *testedTriangles = NULL, NLMISC::CVector *normal = NULL)
 {	
 	if (packedZone.Grid.empty()) return false;
 	CVector2f start2f((start.x - packedZone.Box.getMin().x) / packedZone.CellSize, (start.y - packedZone.Box.getMin().y) / packedZone.CellSize);	
@@ -1295,7 +1295,8 @@ template <class T> bool raytrace(T &packedZone, const NLMISC::CVector &start, co
 			CTriangle tri;
 			CPlane triPlane;			
 			float bestInterDist = FLT_MAX;
-			CVector currInter;
+			NLMISC::CVector bestNormal;
+			CVector currInter;			
 			do
 			{			
 				packedZone.unpackTri(packedZone.Tris[packedZone.TriLists[triListIndex]], &tri.V0);
@@ -1311,12 +1312,20 @@ template <class T> bool raytrace(T &packedZone, const NLMISC::CVector &start, co
 					{
 						bestInterDist = dist;
 						inter = currInter;						
+						bestNormal.set(triPlane.a, triPlane.b, triPlane.c);
 					}
 				}
 				++ triListIndex;
 			}
-			while (packedZone.TriLists[triListIndex] != (T::TIndexType) ~0);
-			if (bestInterDist != FLT_MAX) return true;
+			while (packedZone.TriLists[triListIndex] != (T::TIndexType) ~0);			
+			if (bestInterDist != FLT_MAX)
+			{
+				if (normal)
+				{
+					*normal = bestNormal.normed();
+				}
+				return true;
+			}			
 		}
 	}
 	while(CGridTraversal::traverse(start2f, dir2f, x, y));
@@ -1324,15 +1333,15 @@ template <class T> bool raytrace(T &packedZone, const NLMISC::CVector &start, co
 }
 
 //***************************************************************************************
-bool CPackedZone32::raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<CTriangle> *testedTriangles /*= NULL*/) const
+bool CPackedZone32::raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<CTriangle> *testedTriangles /*= NULL*/, NLMISC::CVector *normal /*= NULL*/) const
 {
-	return NL3D::raytrace(*this, start, end, inter, testedTriangles);	
+	return NL3D::raytrace(*this, start, end, inter, testedTriangles, normal);	
 }
 
 //***************************************************************************************
-bool CPackedZone16::raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<CTriangle> *testedTriangles /*= NULL*/) const
+bool CPackedZone16::raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<CTriangle> *testedTriangles /*= NULL*/, NLMISC::CVector *normal /*= NULL*/) const
 {	
-	return NL3D::raytrace(*this, start, end, inter, testedTriangles);
+	return NL3D::raytrace(*this, start, end, inter, testedTriangles, normal);
 }
 
 //***************************************************************************************

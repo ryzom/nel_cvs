@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.34.4.8 2006/07/10 16:23:56 miller Exp $
+ * $Id: sstring.h,v 1.34.4.9 2006/07/21 10:54:08 boucher Exp $
  */
 
 
@@ -424,6 +424,14 @@ public:
 	
 	// specialisation for C string
 	CSString &operator <<(const char *value)
+	{
+		static_cast<std::string*>(this)->operator +=(value);
+
+		return *this;
+	}
+
+	// specialisation for character
+	CSString &operator <<(char value)
 	{
 		static_cast<std::string*>(this)->operator +=(value);
 

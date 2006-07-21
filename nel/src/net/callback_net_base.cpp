@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.45.40.1 2006/02/28 14:50:57 cado Exp $
+ * $Id: callback_net_base.cpp,v 1.45.40.2 2006/07/21 10:54:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,10 +72,14 @@ void cbnbNewDisconnection (TSockId from, void *data)
 /*
  * Constructor
  */
-CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilename, bool recordall ) :
-	_FirstUpdate (true), _DisconnectionCallback(NULL), _DisconnectionCbArg(NULL)
+CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilename, bool recordall ) 
+	:	_FirstUpdate (true), 
+		_UserData(NULL),
+		_DisconnectionCallback(NULL), 
+		_DisconnectionCbArg(NULL),
+		_PreDispatchCallback(NULL)
 #ifdef USE_MESSAGE_RECORDER
-	, _MR_RecordingState(rec), _MR_UpdateCounter(0)
+		, _MR_RecordingState(rec), _MR_UpdateCounter(0)
 #endif
 {
 	_ThreadId = getThreadId ();
@@ -101,6 +105,17 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 #endif
 }
 
+/** Set the user data */
+void CCallbackNetBase::setUserData(void *userData)
+{
+	_UserData = userData;
+}
+
+/** Get the user data */
+void *CCallbackNetBase::getUserData()
+{
+	return _UserData;
+}
 
 /*
  *	Append callback array with the specified array
@@ -194,6 +209,12 @@ void CCallbackNetBase::processOneMessage ()
 	else
 	{
 		nldebug ("LNETL3NB_CB: Calling callback (%s)%s", msgin.getName().c_str(), (cb==_DefaultCallback)?" DEFAULT_CB":"");
+
+		if (_PreDispatchCallback != NULL)
+		{
+			// call the pre dispatch callback
+			_PreDispatchCallback(msgin, realid, *this);
+		}
 		cb(msgin, realid, *this);
 	}
 	

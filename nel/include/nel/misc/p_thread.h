@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * Posix implementation of CThread class (look at thread.h)
  *
- * $Id: p_thread.h,v 1.13 2005/08/30 17:08:53 boucher Exp $
+ * $Id: p_thread.h,v 1.13.4.1 2006/07/21 10:54:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ class CPThread : public IThread
 public:
 
 	/// Constructor
-	CPThread( IRunnable *runnable );
+	CPThread( IRunnable *runnable, uint32 stackSize);
 
 	virtual ~CPThread();
 	
@@ -69,6 +69,7 @@ public:
 
 private:
 	uint8		_State; // 0=not created, 1=started, 2=finished
+	uint32		_StackSize;	
 	pthread_t	_ThreadHandle;
 
 };

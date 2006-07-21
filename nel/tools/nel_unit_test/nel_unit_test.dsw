@@ -29,6 +29,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name misc
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -66,6 +69,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "memory"=..\..\src\memory.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "misc"=..\..\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -95,6 +110,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name dyn_lib_test
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -121,6 +139,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name ligo_unit_test
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
     End Project Dependency
 }}}
 
@@ -152,6 +173,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name net
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -169,6 +193,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name net
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
     End Project Dependency
 }}}
 
@@ -196,6 +223,33 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name net_service_lib_test
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "shard_unifier_test"=..\..\..\ryzom\src_v2\test_modules\shard_unifier_test\shard_unifier_test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name cpptest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
     End Project Dependency
 }}}
 

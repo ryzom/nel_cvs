@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.28 2005/02/22 10:14:12 besson Exp $
+ * $Id: mutex.h,v 1.28.16.1 2006/07/21 10:54:08 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -682,6 +682,41 @@ private:
 
 	/// The synchronized value.
 	volatile T			_Value;
+};
+
+
+/** Helper class that allow easy usage of mutex to protect
+ *	a local block of code with an existing mutex.
+ */
+template <class TMutex=CMutex>
+class CAutoMutex
+{
+	TMutex	&_Mutex;
+
+	// forbeden copy or assignent
+	CAutoMutex(const CAutoMutex &other)
+	{
+		nlassert(false);
+	}
+
+	CAutoMutex &operator = (const CAutoMutex &other)
+	{
+		nlassert(false);
+		return *this;
+	}
+
+public:
+	CAutoMutex(TMutex &mutex)
+		:	_Mutex(mutex)
+	{
+		_Mutex.enter();
+	}
+
+	~CAutoMutex()
+	{
+		_Mutex.leave();
+	}
+
 };
 
 } // NLMISC

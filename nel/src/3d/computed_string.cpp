@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.36.16.1 2006/02/10 15:59:21 legallo Exp $
+ * $Id: computed_string.cpp,v 1.36.16.2 2006/07/21 10:54:08 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -313,7 +313,7 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 		CUV *pClipUV3 = (CUV*)(((uint8*)pClipUV2) + dstSize);
 		float ratio;
 
-		int lastIndex = 0;
+		uint lastIndex = 0;
 
 		for (uint32 i = 0; i < numVerts; i+=4)
 		{

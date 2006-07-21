@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * Windows implementation of CThread class (look at thread.h)
  *
- * $Id: win_thread.h,v 1.12 2005/08/30 17:08:53 boucher Exp $
+ * $Id: win_thread.h,v 1.12.4.1 2006/07/21 10:54:08 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ class CWinThread : public IThread
 public:
 
 	/// Constructor
-	CWinThread(IRunnable *runnable);
+	CWinThread(IRunnable *runnable, uint32 stackSize);
 
 	/// Don't use this constructor, only used to initialise the main thread class
 	CWinThread (void* threadHandle, uint32 threadId);
@@ -70,6 +70,7 @@ public:
 
 private:
 
+	uint32		_StackSize;
 	void		*ThreadHandle;	// HANDLE	don't put it to avoid including windows.h
 	uint32		ThreadId;		// DWORD	don't put it to avoid including windows.h
 	bool		_MainThread;	// true if ths thread is the main thread, else false

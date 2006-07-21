@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.11 2005/10/05 12:36:40 boucher Exp $
+ * $Id: listen_sock.cpp,v 1.11.4.1 2006/07/21 10:54:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 #ifdef NL_OS_WINDOWS
 
-#include <winsock2.h>
+#include <windows.h>
 typedef sint socklen_t;
 
 #elif defined NL_OS_UNIX

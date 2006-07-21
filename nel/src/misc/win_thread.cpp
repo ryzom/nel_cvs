@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.14 2005/08/30 17:09:17 boucher Exp $
+ * $Id: win_thread.cpp,v 1.14.4.1 2006/07/21 10:54:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,9 +37,9 @@ CWinThread MainThread ((void*)GetCurrentThread (), GetCurrentThreadId());
 DWORD TLSThreadPointer = 0xFFFFFFFF;
 
 // the IThread static creator
-IThread *IThread::create (IRunnable *runnable)
+IThread *IThread::create (IRunnable *runnable, uint32 stackSize)
 {
-	return new CWinThread (runnable);
+	return new CWinThread (runnable, stackSize);
 }
 
 IThread *IThread::getCurrentThread ()
@@ -70,8 +70,9 @@ static unsigned long __stdcall ProxyFunc (void *arg)
 	return 0;
 }
 
-CWinThread::CWinThread (IRunnable *runnable)
+CWinThread::CWinThread (IRunnable *runnable, uint32 stackSize)
 {
+	_StackSize = stackSize;
 	this->Runnable = runnable;
 	ThreadHandle = NULL;
 	_MainThread = false;
@@ -110,7 +111,8 @@ CWinThread::~CWinThread ()
 
 void CWinThread::start ()
 {
-	ThreadHandle = (void *) CreateThread (NULL, 0, ProxyFunc, this, 0, (DWORD *)&ThreadId);
+//	ThreadHandle = (void *) ::CreateThread (NULL, _StackSize, ProxyFunc, this, 0, (DWORD *)&ThreadId);
+	ThreadHandle = (void *) ::CreateThread (NULL, 0, ProxyFunc, this, 0, (DWORD *)&ThreadId);
 //	nldebug("NLMISC: thread %x started for runnable '%x'", typeid( Runnable ).name());
 	OutputDebugString(toString("NLMISC: thread %x started for runnable '%s'\n", ThreadId, typeid( *Runnable ).name()).c_str());
 	SetThreadPriorityBoost (ThreadHandle, TRUE); // FALSE == Enable Priority Boost

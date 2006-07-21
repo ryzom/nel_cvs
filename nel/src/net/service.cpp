@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.18 2006/06/28 15:05:58 distrib Exp $
+ * $Id: service.cpp,v 1.238.4.19 2006/07/21 10:54:09 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -653,6 +653,20 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// setup variable with config file variable
 		IVariable::init (ConfigFile);
 
+		//
+		// Set the shard Id
+		//
+
+		if ((var = ConfigFile.getVarPtr("NoWSShardId")) != NULL)
+		{
+			_ShardId = var->asInt();
+		}
+		else
+		{
+			// something high enough as default
+			_ShardId = DEFAULT_SHARD_ID;
+		}
+
 		if (haveArg('Z'))
 		{
 			string s = IService::getInstance()->getArg('Z');
@@ -729,20 +743,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		if ((var = ConfigFile.getVarPtr("UpdateTimeout")) != NULL)
 		{
 			_UpdateTimeout = var->asInt();
-		}
-
-		//
-		// Set the shard Id
-		//
-
-		if ((var = ConfigFile.getVarPtr("NoWSShardId")) != NULL)
-		{
-			_ShardId = var->asInt();
-		}
-		else
-		{
-			// something high enough as default
-			_ShardId = DEFAULT_SHARD_ID;
 		}
 
 		//
@@ -1198,7 +1198,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		userInitCalled = true; // the bool must be put *before* the call to init()
+
+		setCurrentStatus("Initializing");
 		init ();
+		clearCurrentStatus("Initializing");
 
 
 		//
@@ -1262,7 +1265,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Activate the timeout assertion thread
 		//
 		
-		timeoutThread = IThread::create(&MyTAT);
+		timeoutThread = IThread::create(&MyTAT, 1024*4);
 		timeoutThread->start();
 		
 		//
@@ -1516,7 +1519,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		if (userInitCalled)
+		{
+			setCurrentStatus("Releasing");
 			release ();
+		}
 
 		//
 		// Delete all network connection (naming client also)

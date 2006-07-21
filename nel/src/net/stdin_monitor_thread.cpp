@@ -179,7 +179,7 @@ namespace NLNET
 	void CStdinMonitorSingleton::init()
 	{
 		_StdinMonitorThreadInstance= new CStdinMonitorThread;
-		_StdinMonitorThreadHandle = NLMISC::IThread::create (_StdinMonitorThreadInstance);
+		_StdinMonitorThreadHandle = NLMISC::IThread::create (_StdinMonitorThreadInstance, 1024*4*4);
 		_StdinMonitorThreadHandle->start();
 	}
 

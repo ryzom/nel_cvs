@@ -735,7 +735,31 @@ SOURCE=..\include\nel\misc\words_dictionary.h
 # Begin Source File
 
 SOURCE=.\misc\co_task.cpp
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
 # ADD CPP /D _WIN32_WINNT=0x0400
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
+
+# ADD CPP /D _WIN32_WINNT=0x0400
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
+
+# ADD CPP /D _WIN32_WINNT=0x0400
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugInstrument"
+
+# ADD CPP /D _WIN32_WINNT=0x0400
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Generate config file parser"
+
+# ADD CPP /D _WIN32_WINNT=0x0400
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

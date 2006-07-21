@@ -19,6 +19,7 @@ namespace WS
 {
 	
 
+
 	struct TUserRole
 	{
 		enum TValues
@@ -93,6 +94,8 @@ namespace WS
 		{
 			return _Value;
 		}
+
+		
 	};
 	
 	/////////////////////////////////////////////////////////////////

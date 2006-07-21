@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.28.16.1 2006/02/28 14:50:57 cado Exp $
+ * $Id: callback_net_base.h,v 1.28.16.2 2006/07/21 10:54:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,8 +75,14 @@ typedef struct
 class CCallbackNetBase
 {
 public:
+
 	virtual ~CCallbackNetBase() {}
 
+	/** Set the user data */
+	void setUserData(void *userData);
+
+	/** Get the user data */
+	void *getUserData();
 
 	/** Sends a message to special connection.
 	 * On a client, the hostid isn't used.
@@ -111,6 +117,9 @@ public:
 
 	/// Sets default callback for unknown message types
 	void	setDefaultCallback(TMsgCallback defaultCallback) { _DefaultCallback = defaultCallback; }
+
+	/// Set the pre dispatch callback. This callback is called before each message is dispatched
+	void	setPreDispatchCallback(TMsgCallback predispatchCallback) { _PreDispatchCallback = predispatchCallback;}
 
 	/// Sets callback for disconnections (or NULL to disable callback)
 	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId ();  _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
@@ -177,6 +186,9 @@ protected:
 	// called if the received message is not found in the callback array
 	TMsgCallback				_DefaultCallback;
 
+	// If not null, called before each message is dispached to it's callback
+	TMsgCallback				_PreDispatchCallback;
+
 	bool _IsAServer;
 	bool _FirstUpdate;
 
@@ -194,6 +206,8 @@ protected:
 	// ---------------------------------------
 
 private:
+
+	void				*_UserData;
 
 	NLMISC::TTime		_LastUpdateTime;
 	NLMISC::TTime		_LastMovedStringArray;

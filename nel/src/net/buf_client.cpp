@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.34.4.2 2006/01/11 15:02:11 boucher Exp $
+ * $Id: buf_client.cpp,v 1.34.4.3 2006/07/21 10:54:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/net/dummy_tcp_sock.h"
 
 #ifdef NL_OS_WINDOWS
-#include <winsock2.h>
+#include <windows.h>
 #elif defined NL_OS_UNIX
 #include <netinet/in.h>
 #endif
@@ -105,7 +105,7 @@ void CBufClient::connect( const CInetAddress& addr )
 		delete _RecvThread;
 	}
 
-	_RecvThread = IThread::create( _RecvTask );
+	_RecvThread = IThread::create( _RecvTask, 1024*4*4 );
 	_RecvThread->start();
 }
 

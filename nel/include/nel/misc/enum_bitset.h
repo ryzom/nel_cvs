@@ -2,7 +2,7 @@
  * utility class to build bit field from enum value vithout need
  * to do explicit cast by hands.
  *
- * $Id: enum_bitset.h,v 1.2.16.1 2006/07/21 10:54:08 boucher Exp $
+ * $Id: enum_bitset.h,v 1.2.16.2 2006/07/21 13:09:23 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #define NL_ENUM_BIYSET_H
 
 #include "types_nl.h"
+#include "sstring.h"
 
 namespace NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (POSIX threads)
  *
- * $Id: p_thread.cpp,v 1.15.4.3 2006/07/21 10:54:09 boucher Exp $
+ * $Id: p_thread.cpp,v 1.15.4.4 2006/07/21 13:09:23 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ IThread *IThread::create( IRunnable *runnable, uint32 stackSize)
 }
 
 
-CPThread CurrentThread(0);
+CPThread CurrentThread(NULL, 0);
 
 /*
  * Get the current thread

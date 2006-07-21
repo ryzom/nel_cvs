@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.28.16.1 2006/07/21 10:54:08 boucher Exp $
+ * $Id: mutex.h,v 1.28.16.2 2006/07/21 13:09:23 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -696,12 +696,10 @@ class CAutoMutex
 	// forbeden copy or assignent
 	CAutoMutex(const CAutoMutex &other)
 	{
-		nlassert(false);
 	}
 
 	CAutoMutex &operator = (const CAutoMutex &other)
 	{
-		nlassert(false);
 		return *this;
 	}
 

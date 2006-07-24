@@ -8,21 +8,14 @@
   <dl id="sign-up">	
     <dd class="portletItem">
       <div class="hole">  
-      <!--
-      <a href="#" tal:define="boundLanguages here/portal_languages/getLanguageBindings;
-                              lang python:boundLanguages[0];"
-                  tal:attributes="href python:'https://secure.nevrax.com/payment_subscribe/index.php?language='+lang">
-        <img align="center" src="dllfree.jpg" width="185" />
-      </a>
-      -->
       <div tal:define="p string:/ryzom/imgportlet;
                        results python:here.portal_catalog.searchResults(portal_type='Folder', path=p,sort_on='getObjPositionInParent');" >
-        <div tal:repeat="obj results">
+        <div tal:repeat="obj results" tal:omit-tag="">
           <div tal:define="o python:obj.getObject();t o/id;"
                tal:condition="python:t!=p">
             <div tal:define="ob string:/ryzom/imgportlet/${t};
                              results2 python:here.portal_catalog.searchResults(portal_type='Image', path=ob,)">
-              <div tal:repeat="obj2 results2">
+              <div tal:repeat="obj2 results2" tal:omit-tag="">
                 <div tal:define="res python:here.choice_img(results2);o2 python:res.getObject()"
                      tal:condition="repeat/obj2/end">
                   <a href="" tal:attributes="href o2/Description">

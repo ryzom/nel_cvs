@@ -3,11 +3,9 @@
       i18n:domain="plone">
 
   <body>
-
     <div style="padding-top:2em;" metal:define-macro="portlet" class="portletItem"
-        tal:condition="python:'Reviewer' in mtool.getCandidateLocalRoles(member)"
-        tal:define="recent python:here.portal_catalog(meta_type='Discussion Item',
-                                 sort_on='modified',sort_order='reverse')[:30]">
+        tal:condition="python:'Reviewer' in container.portal_membership.getCandidateLocalRoles(here)"
+        tal:define="recent python:here.portal_catalog(meta_type='Discussion Item', sort_on='modified',sort_order='reverse')[:30]">
       <a href="" tal:attributes="href string:recent_comments">Recent Comments</a>
       <div class="portletBody">
         <dl>

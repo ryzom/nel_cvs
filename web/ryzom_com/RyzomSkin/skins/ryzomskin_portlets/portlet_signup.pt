@@ -11,14 +11,14 @@
       <div tal:define="p string:/ryzom/imgportlet;
                        results python:here.portal_catalog.searchResults(portal_type='Folder', path=p,sort_on='getObjPositionInParent');" >
         <div tal:repeat="obj results" tal:omit-tag="">
-          <div tal:define="o python:obj.getObject();t o/id;"
+          <div tal:define="t obj/getId;"
                tal:condition="python:t!=p">
             <div tal:define="ob string:/ryzom/imgportlet/${t};
                              results2 python:here.portal_catalog.searchResults(portal_type='Image', path=ob,)">
               <div tal:repeat="obj2 results2" tal:omit-tag="">
-                <div tal:define="res python:here.choice_img(results2);o2 python:res.getObject()"
-                     tal:condition="repeat/obj2/end">
-                  <a href="" tal:attributes="href o2/Description">
+                <div tal:condition="repeat/obj2/end">
+                  <a href="" tal:define="res python:here.choice_img(results2);o2 python:res.getObject()" 
+                             tal:attributes="href o2/Description">
                     <img  src="" alt="" style="margin: 0; padding: 0;" align="center" tal:attributes="src python:o2.absolute_url()" width="185" />
                   </a>
                 </div>

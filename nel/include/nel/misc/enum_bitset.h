@@ -2,7 +2,7 @@
  * utility class to build bit field from enum value vithout need
  * to do explicit cast by hands.
  *
- * $Id: enum_bitset.h,v 1.2.16.2 2006/07/21 13:09:23 distrib Exp $
+ * $Id: enum_bitset.h,v 1.2.16.3 2006/07/26 06:59:07 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,11 +161,11 @@ namespace NLMISC
 			// count up to 64 bits
 			BitsetType value=1;
 			uint i=0;
-			for (; i<64; value << 1, ++i)
+			for (; i<64; value <<= 1, ++i)
 			{
 				if (Bitset & value)
 				{
-					if (i > 1)
+					if (!result.empty())
 						result << delim;
 					// this bit is set, add a string
 					result << EnumType::toString(SimpleEnumType(value));
@@ -197,7 +197,7 @@ namespace NLMISC
 
 		bool operator != (const CEnumBitset &other) const
 		{
-			return operator == (other);
+			return ! operator == (other);
 		}
 
 		void serial(NLMISC::IStream &s)

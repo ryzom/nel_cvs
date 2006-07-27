@@ -1,0 +1,6 @@
+<dtml-comment>
+arguments:lang
+connection_id: atys_web
+title:Session: Query for get last patch note
+</dtml-comment>
+select * from ig_releasenotes where rn_publish=1 and rn_application='ryzom_live' and rn_lang='<dtml-var lang>' order by id desc

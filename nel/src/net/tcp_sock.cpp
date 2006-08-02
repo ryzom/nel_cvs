@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.8.18.2 2006/07/21 10:54:09 boucher Exp $
+ * $Id: tcp_sock.cpp,v 1.8.18.3 2006/08/02 16:05:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,7 +146,7 @@ void CTcpSock::shutdownSending()
 
 void CTcpSock::setKeepAlive( bool keepAlive)
 {
-	nlassert(_Sock != INVALID_SOCKET)
+	nlassert(_Sock != INVALID_SOCKET);
 	int b = keepAlive?1:0;
 	if ( setsockopt( _Sock, SOL_SOCKET, SO_KEEPALIVE, (char*)&b, sizeof(b) ) != 0 )
 	{

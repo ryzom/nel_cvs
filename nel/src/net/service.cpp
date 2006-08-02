@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.19 2006/07/21 10:54:09 boucher Exp $
+ * $Id: service.cpp,v 1.238.4.20 2006/08/02 16:05:17 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1645,7 +1645,7 @@ std::string IService::getFullStatus() const
 	}
 
 	// add status tags to the result so far
-	set<string>::iterator first(_ServiveStatusTags.begin()), last(_ServiveStatusTags.end());
+	set<string>::const_iterator first(_ServiveStatusTags.begin()), last(_ServiveStatusTags.end());
 	for (; first != last; ++first)
 	{
 		if (first != _ServiveStatusTags.begin() || !result.empty())

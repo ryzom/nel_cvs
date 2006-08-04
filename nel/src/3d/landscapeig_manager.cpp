@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * TODO: File description
  *
- * $Id: landscapeig_manager.cpp,v 1.18.16.1 2006/08/03 15:08:29 legallo Exp $
+ * $Id: landscapeig_manager.cpp,v 1.18.16.2 2006/08/04 17:08:54 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,7 +105,8 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc, UDriv
 
 	// Shape to add should be empty !
 	//nlassert(_ShapeAdded.empty ());
-	nlwarning("Shape to add should be empty !");
+	if(!_ShapeAdded.empty ())
+		nlwarning("Shape to add should be empty !");
 	
 	// if loading ok.
 	//if(file.is_open())

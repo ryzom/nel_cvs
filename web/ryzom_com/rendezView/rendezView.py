@@ -49,8 +49,8 @@ class rendezView(BaseFolder):
 	security = ClassSecurityInfo()
 	archetype_name = "rendezView"
 	meta_type = 'rendezView'
-	default_view  = 'rendezView_view'
-	immediate_view = 'rendezView_view'
+#	default_view  = 'rendezView_view'
+#	immediate_view = 'rendezView_view'
 	allowed_content_types = ('participant',)
 	actions = (
 #		{
@@ -64,6 +64,12 @@ class rendezView(BaseFolder):
 #		'name': 'listing',
 #		'action': 'string:${object_url}/rendezView_listing',
 #		'permissions': (CMFCorePermissions.View,)
+#		},
+#		{
+#		'id': 'register',
+#		'name': 'register',
+#		'action': 'string:${object_url}/addParticipant',
+#		'permission': (CMFCorePermissions.View,)
 #		},
 	)
 
@@ -105,6 +111,7 @@ class rendezView(BaseFolder):
 		results = self.portal_catalog(meta_type=['participant',],path={'query':path, 'level': 0},)
 		return results
 
+	security.declarePublic('addParticipant')
 	def addParticipant(self,seat=1):
 		"""ajoute une inscription"""
 		path = '/'.join(self.getPhysicalPath())

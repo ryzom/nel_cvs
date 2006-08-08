@@ -6,9 +6,10 @@ from Products.CMFCore.CMFCorePermissions import setDefaultRoles,AddPortalContent
 from Products.CMFCore.DirectoryView import registerDirectory
 from config import *
 
-AddRendezView = 'Add new Event - rendezView'
+AddRendezView = 'rendezView : Add new Event - rendezView'
 setDefaultRoles( AddRendezView, ( 'Manager', 'Reviewer' ) )
-
+registerRendezView = 'rendezView : register to a event - rendezView'
+setDefaultRoles( registerRendezView, ( 'Member', ) )
 
 registerDirectory(SKINS_DIR, GLOBALS)
 
@@ -36,7 +37,7 @@ def initialize(context):
 			utils.ContentInit(
 			kind,
 			content_types      = (atype,),
- 			permission         = AddPortalContent,
+ 			permission         = registerRendezView,
  			extra_constructors = (constructor,),
  			fti                = ftis,
 			).initialize(context)

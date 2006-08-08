@@ -60,7 +60,7 @@ Schema archetype de participant :
 - prenoms TextField TextAreaWidget
 - email TextField TextAreaWidget
 - login TextField TextAreaWidget
-
+- Seat (nombre de place Ã  rÃ©server) IntegerField IntegerWidget
 
 Actions possible sur un objet participant : voir,suppression* 
 (en theoris on ne devrais pas rÃ©alisÃ© d'action autres que 'voir' sur ces objets)

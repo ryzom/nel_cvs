@@ -11,21 +11,21 @@ from config import *
 #dÃ©fini le schÃ©ma 
 participantSchema=BaseSchema.copy()+ Schema((
 	TextField('fullName',
-		widget=TextAreaWidget()
-		visible={'edit':'hidden', 'view':'hidden'},
+		widget=TextAreaWidget(visible={'edit':'hidden', 'view':'hidden'},)		
 	),
 	TextField('email',
-		widget=TextAreaWidget()
-		visible={'edit':'hidden', 'view':'hidden'},
+		widget=TextAreaWidget(visible={'edit':'hidden', 'view':'hidden'},)		
 	),
 	TextField('login',
-		widget=TextAreaWidget()
-		visible={'edit':'hidden', 'view':'hidden'},
+		widget=TextAreaWidget(visible={'edit':'hidden', 'view':'hidden'},)		
 	),
+#	IntegerField('seat',
+#		widget=IntegerWidget(default=1)		
+#	),
 ),)
-schema['id'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
-schema['title'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
-schema['description'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
+participantSchema['id'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
+participantSchema['title'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
+participantSchema['description'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
 
 class participant(BaseContent):
 	

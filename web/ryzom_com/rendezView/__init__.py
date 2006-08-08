@@ -6,7 +6,7 @@ from Products.CMFCore.CMFCorePermissions import setDefaultRoles,AddPortalContent
 from Products.CMFCore.DirectoryView import registerDirectory
 from config import *
 
-AddPatchNote = 'Add new Event - rendezView'
+AddRendezView = 'Add new Event - rendezView'
 setDefaultRoles( AddRendezView, ( 'Manager', 'Reviewer' ) )
 
 
@@ -21,13 +21,22 @@ def initialize(context):
 		PROJECTNAME)
 	
 	allTypes = zip(content_types, constructors)
-	for atype, constructor in allTypes:		
-		kind = "%s: %s" % (config.PROJECTNAME, atype.meta_type)
-		utils.ContentInit(
-		kind,
-		content_types      = (atype,),
- 		permission         = AddPatchNote,
- 		extra_constructors = (constructor,),
- 		fti                = ftis,
-		).initialize(context)
-
+	for atype, constructor in allTypes:
+		if atype.meta_type in ('rendezView'):
+			kind = "%s: %s" % (config.PROJECTNAME, atype.meta_type)
+			utils.ContentInit(
+			kind,
+			content_types      = (atype,),
+ 			permission         = AddRendezView,
+ 			extra_constructors = (constructor,),
+ 			fti                = ftis,
+			).initialize(context)
+		else:
+			kind = "%s: %s" % (config.PROJECTNAME, atype.meta_type)
+			utils.ContentInit(
+			kind,
+			content_types      = (atype,),
+ 			permission         = AddPortalContent,
+ 			extra_constructors = (constructor,),
+ 			fti                = ftis,
+			).initialize(context)

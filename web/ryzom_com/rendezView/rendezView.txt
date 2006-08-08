@@ -22,7 +22,7 @@ schema archetype de rendezView :
 - date : (date de l'evenement) DateTimeField CalendarWidget
 - date limite d'inscription 
 - nombre de places disponible : IntegerField IntegerWidget
-#- nombre de places maximum par personnes : IntegerField IntegerWidget
+- nombre de places maximum par personnes : IntegerField IntegerWidget
 #- listes des participants : LinesField LinesWidget
 
 
@@ -34,7 +34,7 @@ Fonctions de l'objets :
 - isAvailable : vÃ©rifie si l'utilisateur Ã  toujours le droit de s'inscrire (nombre de place, date d'inscriptions).
 - listingParticipants : renvoie la liste des participants.
 - nbParticipants : renvoie le nombre de participants.
-- sendConfirmation : envoie un email de confirmation Ã  chaque participants.
+#- sendConfirmation : envoie un email de confirmation Ã  chaque participants.
 - ...
 
 

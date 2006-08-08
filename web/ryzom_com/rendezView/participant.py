@@ -19,9 +19,10 @@ participantSchema=BaseSchema.copy()+ Schema((
 	TextField('login',
 		widget=TextAreaWidget(visible={'edit':'hidden', 'view':'hidden'},)		
 	),
-#	IntegerField('seat',
-#		widget=IntegerWidget(default=1)		
-#	),
+	IntegerField('seat',
+		default=1,
+		widget=IntegerWidget()		
+	),
 ),)
 participantSchema['id'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
 participantSchema['title'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
@@ -35,28 +36,28 @@ class participant(BaseContent):
 	meta_type = 'participant'
 	global_allow = 0
 
-	def setTitle(self):
-		value = self.getLogin()+'_'+self.getFirstName()+'_'+self.getLastName
-		self.getField('title').set(self, value, **kwargs)
+#	def setTitle(self):
+#		value = self.getLogin()+'_'+self.getFullName()
+#		self.getField('title').set(self, value, **kwargs)
 
-	def setFullName(self):
-		mtool = getToolByName(self, 'portal_membership')
-		member = mtool.getAuthenticatedMember()
-		value = member.getProperty('fullname')		
-		self.getField('fullName').set(self, value, **kwargs)
+#	def setFullName(self):
+#		mtool = getToolByName(self, 'portal_membership')
+#		member = mtool.getAuthenticatedMember()
+#		value = member.getProperty('fullname')
+#		self.getField('fullName').set(self, value, **kwargs)
 
-	def setEmail(self):
-		mtool = getToolByName(self, 'portal_membership')
-		member = mtool.getAuthenticatedMember()
-		value = member.getProperty('email')	
-		self.getField('email').set(self, value, **kwargs)
+#	def setEmail(self):
+#		mtool = getToolByName(self, 'portal_membership')
+#		member = mtool.getAuthenticatedMember()
+#		value = member.getProperty('email')
+#		self.getField('email').set(self, value, **kwargs)
 
-	def setLogin(self):
-		mtool = getToolByName(self, 'portal_membership')
-		member = mtool.getAuthenticatedMember()
-		value = mtool.getUserName()
-		self.getField('login').set(self, value, **kwargs)
-
+#	def setLogin(self):
+#		mtool = getToolByName(self, 'portal_membership')
+#		member = mtool.getAuthenticatedMember()
+#		value = member.getUserName()
+#		self.getField('login').set(self, value, **kwargs)
+	
 
 registerType(participant,PROJECTNAME)								
 								

@@ -92,7 +92,7 @@ class rendezView(BaseFolder):
 		inscriptId = self.getId()+'_'+mtool.getAuthenticatedMember().getUserName()
 		path = '/'.join(self.getPhysicalPath())
 		if self.portal_catalog(id=inscriptId,meta_type=['participant',],path={'query':path, 'level': 0},):
-			return False
+			return 'false -- deja existant'
 
 		#recuperer la liste des participants de l'event, et le nombre de place reserver
 		s = 0
@@ -100,7 +100,7 @@ class rendezView(BaseFolder):
 		for i in tab:
 			o = i.getObject()
 			s += o.getSeat()
-		return s < self.getNbSeat()
+		return str(s < self.getNbSeat())
 
 
 	def nbParticipant(self):

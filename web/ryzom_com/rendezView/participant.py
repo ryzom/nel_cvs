@@ -29,7 +29,7 @@ participantSchema['title'].widget.visible = { 'view': 'hidden', 'edit': 'hidden'
 participantSchema['description'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
 
 class participant(BaseContent):
-	
+	""" Register to event """
 	schema = participantSchema
 
 	archetype_name = "participant"

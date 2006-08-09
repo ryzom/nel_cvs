@@ -14,7 +14,7 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		searchable=True,
 		widget=RichWidget(description="Description de l'evenement",)
 	),
-	TextField('address',		
+	TextField('address',
 		widget=TextAreaWidget(description="lieu de l'evenement",)
 	),
 	ImageField('plan',
@@ -28,6 +28,7 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		widget=CalendarWidget(description="date limite d'inscription",label="Date",)
 	),
 	IntegerField('nbSeat',
+		default=1,
 		widget=IntegerWidget(description="Nombre de place disponible",)
 	),
 	IntegerField('maxSeat',
@@ -87,9 +88,12 @@ class rendezView(BaseFolder):
 	def isAvailable(self):
 		"""test si des places sont disponible"""
 		#on recupere le membre
-		#mtool = getToolByName(self, 'portal_membership')
-		#member = mtool.getAuthenticatedMember()
-		#id = member.getUserName()+'_'+member.getProperty('fullname')
+		mtool = getToolByName(self, 'portal_membership')
+		inscriptId = self.getId()+'_'+mtool.getAuthenticatedMember().getUserName()
+		path = '/'.join(self.getPhysicalPath())
+		if self.portal_catalog(id=inscriptId,meta_type=['participant',],path={'query':path, 'level': 0},):
+			return False
+
 		#recuperer la liste des participants de l'event, et le nombre de place reserver
 		s = 0
 		tab = self.getParticipant()		
@@ -114,6 +118,8 @@ class rendezView(BaseFolder):
 	security.declarePublic('addParticipant')
 	def addParticipant(self,seat=1):
 		"""ajoute une inscription"""
+		if not (self.isAvailable()):
+			return "[Plus d'inscription disponible]"
 		path = '/'.join(self.getPhysicalPath())
 		mtool = getToolByName(self, 'portal_membership')
 		member = mtool.getAuthenticatedMember()
@@ -122,21 +128,21 @@ class rendezView(BaseFolder):
 		email = member.getProperty('email')
 		seat = seat
 
-		newid = self.getId()+'_'+login+'_'+fullname
-		title = login+'_'+fullname		
-		self.invokeFactory(type_name='participant', id=newid, title=title, description='', fullName=fullname, email=email, seat=seat)
-		new_obj = getattr(self, newid)
-		new_obj.setFullName(fullname)
-		new_obj.setLogin(login)
-		new_obj.setEmail(email)
-		new_obj.setSeat(seat)
-
-		return "[inscription success]"
+		newid = self.getId()+'_'+login
+		title = login
+		try:
+			self.invokeFactory(type_name='participant', id=newid, title=title, description='', fullName=fullname, email=email, seat=seat)
+			new_obj = getattr(self, newid)
+			new_obj.setFullName(fullname)
+			new_obj.setLogin(login)
+			new_obj.setEmail(email)
+			new_obj.setSeat(seat)
+			return "[inscription success]"
+		except:
+			return "[inscription deja faite]"
 
 	def nbSeatsRestant(self):
 		"""retourne le nombre de places restantes"""
 		return self.getMaxSeat()-self.getNbSeat()
 
-
-registerType(rendezView,PROJECTNAME)								
-								
+registerType(rendezView,PROJECTNAME)

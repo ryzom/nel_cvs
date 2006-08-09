@@ -14,7 +14,7 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		searchable=True,
 		widget=RichWidget(description="Description de l'evenement",)
 	),
-	TextField('adress',		
+	TextField('address',		
 		widget=TextAreaWidget(description="lieu de l'evenement",)
 	),
 	ImageField('plan',
@@ -132,8 +132,10 @@ class rendezView(BaseFolder):
 		new_obj.setSeat(seat)
 
 		return "[inscription success]"
-	
-		
+
+	def nbSeatsRestant(self):
+		"""retourne le nombre de places restantes"""
+		return self.getMaxSeat()-self.getNbSeat()
 
 
 registerType(rendezView,PROJECTNAME)								

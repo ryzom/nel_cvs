@@ -74,6 +74,7 @@ class rendezView(BaseFolder):
 #		},
 	)
 
+
 	def setTitle(self, value, **kwargs):
 		"""remplace l'id par un identificateur plus conviviale"""
 		self.getField('title').set(self, value, **kwargs)
@@ -82,6 +83,7 @@ class rendezView(BaseFolder):
 				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
 			except:
 				pass #try to do better than this
+
 
 	#test si un membres peut s'inscrire, (s'il reste de la place et s'il n'est pas dÃ©ja inscrit)
 	#dÃ©ja inscrit ? on testera dans la vue
@@ -94,13 +96,15 @@ class rendezView(BaseFolder):
 		if self.portal_catalog(id=inscriptId,meta_type=['participant',],path={'query':path, 'level': 0},):
 			return False
 
-		#recuperer la liste des participants de l'event, et le nombre de place reserver
+		return str(self.nbSeatsTake() < self.getNbSeat())
+
+	def nbSeatsTake(self):
 		s = 0
 		tab = self.getParticipant()		
 		for i in tab:
 			o = i.getObject()
 			s += o.getSeat()
-		return str(s < self.getNbSeat())
+		return s
 
 
 	def nbParticipant(self):
@@ -114,6 +118,7 @@ class rendezView(BaseFolder):
 		path = '/'.join(self.getPhysicalPath())
 		results = self.portal_catalog(meta_type=['participant',],path={'query':path, 'level': 0},)
 		return results
+
 
 	security.declarePublic('addParticipant')
 	def addParticipant(self,seat=1):
@@ -141,8 +146,10 @@ class rendezView(BaseFolder):
 		except:
 			return "[inscription deja faite]"
 
+
 	def nbSeatsRestant(self):
 		"""retourne le nombre de places restantes"""
-		return self.getMaxSeat()-self.getNbSeat()
+		return self.getNbSeat()-self.nbSeatsTake()
+
 
 registerType(rendezView,PROJECTNAME)

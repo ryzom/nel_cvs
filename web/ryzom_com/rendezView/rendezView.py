@@ -92,8 +92,8 @@ class rendezView(BaseFolder):
 	security = ClassSecurityInfo()
 	archetype_name = "rendezView"
 	meta_type = 'rendezView'
-#	default_view  = 'rendezView_view'
-#	immediate_view = 'rendezView_view'
+	default_view  = 'rendezView_view'
+	immediate_view = 'rendezView_view'
 	allowed_content_types = ('participant',)
 	actions = (
 #		{

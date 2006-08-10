@@ -25,7 +25,7 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		widget=CalendarWidget(description="date de l'evenement",label="Date",)
 	),
 	DateTimeField('dateLimit',
-		widget=CalendarWidget(description="date limite d'inscription",label="Date",)
+		widget=CalendarWidget(description="date limite d'inscription",label="Date Limite",)
 	),
 	IntegerField('nbSeat',
 		default=1,
@@ -99,6 +99,7 @@ class rendezView(BaseFolder):
 		return str(self.nbSeatsTake() < self.getNbSeat())
 
 	def nbSeatsTake(self):
+		"""renvoie les place prises"""
 		s = 0
 		tab = self.getParticipant()		
 		for i in tab:
@@ -150,6 +151,10 @@ class rendezView(BaseFolder):
 	def nbSeatsRestant(self):
 		"""retourne le nombre de places restantes"""
 		return self.getNbSeat()-self.nbSeatsTake()
+
+	def seats(self):
+		"""retourne place prise / place totale"""
+		return str(self.nbSeatsTake())+'/'+str(self.getNbSeat())
 
 
 registerType(rendezView,PROJECTNAME)

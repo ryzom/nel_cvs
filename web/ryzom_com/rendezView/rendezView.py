@@ -12,28 +12,70 @@ from config import *
 rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 	TextField('text',
 		searchable=True,
-		widget=RichWidget(description="Description de l'evenement",)
+		widget=RichWidget(
+			label="",
+			label_msgid="rendezView_label_text",		
+			description="Description de l'Ã©venement",
+			description_msgid="rendezView_text",
+			i18n_domain="rendezView",
+		)
 	),
 	TextField('address',
-		widget=TextAreaWidget(description="lieu de l'evenement",)
+		widget=TextAreaWidget(
+			label="",
+			label_msgid="rendezView_label_address",
+			description="lieu de l'evenement",
+			description_msgid="rendezView_address",
+			i18n_domain="rendezView",
+		)
 	),
 	ImageField('plan',
-		widget=ImageWidget(description="Inserer un plan",)
+		widget=ImageWidget(
+			label="",
+			label_msgid="rendezView_label_plan",
+			description="Inserer un plan",			
+			description_msgid="rendezView_plan",
+			i18n_domain="rendezView",
+		)
 	),
 	DateTimeField('date',
 		required=True,
-		widget=CalendarWidget(description="date de l'evenement",label="Date",)
+		widget=CalendarWidget(
+			label="",
+			label_msgid="rendezView_label_date",
+			description="date de l'evenement",			
+			description_msgid="rendezView_date",
+			i18n_domain="rendezView",			
+		)
 	),
 	DateTimeField('dateLimit',
-		widget=CalendarWidget(description="date limite d'inscription",label="Date Limite",)
+		widget=CalendarWidget(
+			label="",
+			label_msgid="rendezView_label_datelimit",
+			description="date limite d'inscription",
+			description_msgid="rendezView_datelimit",
+			i18n_domain="rendezView",
+		)
 	),
 	IntegerField('nbSeat',
 		default=1,
-		widget=IntegerWidget(description="Nombre de place disponible",)
+		widget=IntegerWidget(
+			label="",
+			label_msgid="rendezView_label_nbSeat",
+			description="Nombre de place disponible",
+			description_msgid="rendezView_nbseat",
+			i18n_domain="rendezView",
+		)
 	),
 	IntegerField('maxSeat',
 		default=1,
-		widget=IntegerWidget(description="Nombre de place rÃ©servable au maximum par personne",)
+		widget=IntegerWidget(
+			label="",
+			label_msgid="rendezView_label_maxseat",
+			description="Nombre de place rÃ©servable au maximum par personne",
+			description_msgid="rendezView_maxseat",
+			i18n_domain="rendezView",
+		)
 	),
 #	LinesField('participant',		
 #		widget=LinesWidget(),

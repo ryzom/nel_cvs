@@ -11,8 +11,8 @@ request = container.REQUEST
 RESPONSE =  request.RESPONSE
 
 nbPlaces= context.REQUEST.get('nbPlaces')
-commentaires = context.REQUEST.get('commentaires')+'tttt'
+commentaire = context.REQUEST.get('commentaire')
 
-#context.addParticipant(int(nbPlaces),commentaires)
-print commentaires
-return printed
+context.addParticipant(int(nbPlaces),commentaire)
+
+RESPONSE.redirect(context.absolute_url())

@@ -9,7 +9,7 @@
 ##title=
 ##
 nbPlaces= context.REQUEST.get('nbPlaces')
-commentaires = context.REQUEST.get('commentaires')
+commentaire = context.REQUEST.get('commentaire')
 
 if int(nbPlaces)>context.nbSeatsRestant():
    state.setError('nbPlaces', 'error')

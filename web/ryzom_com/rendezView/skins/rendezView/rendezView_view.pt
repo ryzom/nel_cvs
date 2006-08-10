@@ -27,27 +27,29 @@
                          id here/getId;">
 
            <h1 tal:content="title" />
-           <div id="rendezView_seats" style="color: green;position:relative;border: 1 dark solid;top:-20px;text-align:right">
+           <div id="rendezView_seats" style="text-align:right">
+              <span i18n:translate="rendezView_plusque">Plus que</span>
               <span tal:content="seats" />
+              <span i18n:translate="rendezView_places">places</span>
            </div>
-
+           <br />
            <div id="rendezViews_date">
               <span i18n:translate="rendezView_date">Nous vous attendons le </span>
               <span tal:content="python:here.toLocalizedTime(date,long_format=1)" />
            </div>
-
+           <br />
            <div id="rendezViews_text" tal:content="structure text" />
-
+           <br />
            <div id="rendezView_location">
               <div tal:content="address" />
               <div tal:content="plan" />
            </div>
-
+           <br />
            <div id="rendezView_datelimit">
               <span i18n:translate="rendezView_datelimit">Date limite d'inscription le </span>
               <span tal:content="python:here.toLocalizedTime(datelimit,long_format=1)" />
            </div>
-
+           <br />
            <div>
               <a href="" tal:attributes="href string:rendezView_register_form">
                  <span i18n:translate="rendezView_register">formulaire d'inscription</span>

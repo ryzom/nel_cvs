@@ -1,8 +1,9 @@
-<h1 tal:content="here/get">titre de l'evenement</h1>
+<h1 tal:content="here/getTitle">titre de l'evenement</h1>
 <p tal:content="here/getDate">date de l'evenement</p>
 <p tal:content="here/getAddress">lieu de l'evenement</p>
 <p tal:content="here/getDescription">description de l'evenement</p>
 <p tal:define="restant here/nbSeatsRestant;">
+	< tal:condition="here/isAvalaible">
 	<a href="lienVersLInscription" tal:attribute="href here/addParticipant">
 		Inscrivez-vous!
 	</a>

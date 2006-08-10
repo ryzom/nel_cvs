@@ -14,27 +14,27 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		searchable=True,
 		widget=RichWidget(
 			label="",
-			label_msgid="rendezView_label_text",		
+			label_msgid="rendezView_schema_label_text",		
 			description="Description de l'Ã©venement",
-			description_msgid="rendezView_text",
+			description_msgid="rendezView_schema_text",
 			i18n_domain="rendezView",
 		)
 	),
 	TextField('address',
 		widget=TextAreaWidget(
 			label="",
-			label_msgid="rendezView_label_address",
+			label_msgid="rendezView_schema_label_address",
 			description="lieu de l'evenement",
-			description_msgid="rendezView_address",
+			description_msgid="rendezView_schema_address",
 			i18n_domain="rendezView",
 		)
 	),
 	ImageField('plan',
 		widget=ImageWidget(
 			label="",
-			label_msgid="rendezView_label_plan",
+			label_msgid="rendezView_schema_label_plan",
 			description="Inserer un plan",			
-			description_msgid="rendezView_plan",
+			description_msgid="rendezView_schema_plan",
 			i18n_domain="rendezView",
 		)
 	),
@@ -42,18 +42,18 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		required=True,
 		widget=CalendarWidget(
 			label="",
-			label_msgid="rendezView_label_date",
+			label_msgid="rendezView_schema_label_date",
 			description="date de l'evenement",			
-			description_msgid="rendezView_date",
+			description_msgid="rendezView_schema_date",
 			i18n_domain="rendezView",			
 		)
 	),
 	DateTimeField('dateLimit',
 		widget=CalendarWidget(
 			label="",
-			label_msgid="rendezView_label_datelimit",
+			label_msgid="rendezView_schema_label_datelimit",
 			description="date limite d'inscription",
-			description_msgid="rendezView_datelimit",
+			description_msgid="rendezView_schema_datelimit",
 			i18n_domain="rendezView",
 		)
 	),
@@ -61,9 +61,9 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		default=1,
 		widget=IntegerWidget(
 			label="",
-			label_msgid="rendezView_label_nbSeat",
+			label_msgid="rendezView_schema_label_nbSeat",
 			description="Nombre de place disponible",
-			description_msgid="rendezView_nbseat",
+			description_msgid="rendezView_schema_nbseat",
 			i18n_domain="rendezView",
 		)
 	),
@@ -71,9 +71,9 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		default=1,
 		widget=IntegerWidget(
 			label="",
-			label_msgid="rendezView_label_maxseat",
+			label_msgid="rendezView_schema_label_maxseat",
 			description="Nombre de place rÃ©servable au maximum par personne",
-			description_msgid="rendezView_maxseat",
+			description_msgid="rendezView_schema_maxseat",
 			i18n_domain="rendezView",
 		)
 	),
@@ -164,7 +164,7 @@ class rendezView(BaseFolder):
 
 
 	security.declarePublic('addParticipant')
-	def addParticipant(self,seat=1):
+	def addParticipant(self,seat=1,comment=''):
 		"""ajoute une inscription"""
 		if not (self.isAvailable()):
 			return "[Plus d'inscription disponible]"
@@ -185,6 +185,7 @@ class rendezView(BaseFolder):
 			new_obj.setLogin(login)
 			new_obj.setEmail(email)
 			new_obj.setSeat(seat)
+			new_obj.setComment(comment)
 			return "[inscription success]"
 		except:
 			return "[inscription deja faite]"

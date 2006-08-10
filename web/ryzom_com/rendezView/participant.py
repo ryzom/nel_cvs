@@ -23,6 +23,9 @@ participantSchema=BaseSchema.copy()+ Schema((
 		default=1,
 		widget=IntegerWidget()		
 	),
+	TextField('comment',
+		widget=TextAreaWidget()		
+	),
 ),)
 participantSchema['id'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
 participantSchema['title'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}

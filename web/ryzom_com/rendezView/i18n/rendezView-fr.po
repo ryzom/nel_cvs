@@ -16,59 +16,72 @@ msgstr ""
 "Domain: rendezView\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
+#: defined in rendezView_view
+msgid "rendezView_date"
+msgstr "Nous vous attendons le "
+
+#: defined in rendezView_view
+msgid "rendezView_datelimit"
+msgstr "Date limite d'inscription le "
+
+#: defined in rendezView_view
+msgid "rendezView_register"
+msgstr "Formulaire d'inscriptions"
+
+
 
 #: action defined in schema rendezView
-msgid "rendezView_text"
+msgid "rendezView_schema_text"
 msgstr "Description de l'évenement"
 
 #: action defined in schema rendezView
-msgid "rendezView_label_text"
-msgstr "Descriptions:"
+msgid "rendezView_schema_label_text"
+msgstr "Descriptions"
 
 #: action defined in schema rendezView
-msgid "rendezView_address"
+msgid "rendezView_schema_address"
 msgstr "Lieu de l'événement"
 
 #: action defined in schema rendezView
-msgid "rendezView_label_address"
-msgstr "Adresse:"
+msgid "rendezView_schema_label_address"
+msgstr "Adresse"
 
 #: action defined in schema rendezView
-msgid "rendezView_plan"
+msgid "rendezView_schema_plan"
 msgstr "Insérer un plan pour acceder au lieu de l'événement"
 
 #: action defined in schema rendezView
-msgid "rendezView_label_plan"
-msgstr "Plan:"
+msgid "rendezView_schema_label_plan"
+msgstr "Plan"
 
 #: action defined in schema rendezView
-msgid "rendezView_date"
+msgid "rendezView_schema_date"
 msgstr "Date de l'événement"
 
 #: action defined in schema rendezView
-msgid "rendezView_label_date"
-msgstr "Date:"
+msgid "rendezView_schema_label_date"
+msgstr "Date"
 
 #: action defined in schema rendezView
-msgid "rendezView_datelimit"
+msgid "rendezView_schema_datelimit"
 msgstr "Date limite d'inscription pour l'événement"
 
 #: action defined in schema rendezView
-msgid "rendezView_label_datelimit"
-msgstr "Date limite d'inscriptions:"
+msgid "rendezView_schema_label_datelimit"
+msgstr "Date limite d'inscriptions"
 
 #: action defined in schema rendezView
-msgid "rendezView_nbseat"
+msgid "rendezView_schema_nbseat"
 msgstr "Nombres de places disponibles"
 
 #: action defined in schema rendezView
-msgid "rendezView_label_nbseat"
-msgstr "Places:"
+msgid "rendezView_schema_label_nbseat"
+msgstr "Places"
 
 #: action defined in schema rendezView
-msgid "rendezView_maxseat"
+msgid "rendezView_schema_maxseat"
 msgstr "Nombres de Places réservables au maximum par personnes"
 
 #: action defined in schema rendezView
-msgid "rendezView_label_maxseat"
+msgid "rendezView_schema_label_maxseat"
 msgstr "Places"

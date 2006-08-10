@@ -1,0 +1,8 @@
+[default]
+title=Rendez View Register
+
+[validators]
+validators = rendezView_validation
+
+[actions]
+action.success = traverse_to:string:rendezView_addParticipant

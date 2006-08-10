@@ -175,7 +175,7 @@ class rendezView(BaseFolder):
 		login = member.getUserName()
 		email = member.getProperty('email')
 		seat = seat
-
+		comment = comment
 		newid = self.getId()+'_'+login
 		title = login
 		try:

@@ -2,59 +2,42 @@
       lang="en-US"
       metal:use-macro="here/main_template/macros/master"
       i18n:domain="rendezView">
-
-<!--
-  <metal:block fill-slot="css_slot">
-    <style type="text/css" media="all"
-      tal:content="string:@import url(${portal_url}/rendezView.css);">
-    </style>
-  </metal:block>
--->
-
 <body>
-    <div metal:fill-slot="main">
-        <div metal:use-macro="here/document_actions/macros/document_actions"></div>
-        <div tal:define="text here/getText;
-                         nbseat here/getNbSeat;
-                         nbtake here/nbSeatsTake;
-                         seats here/seats;
-                         title here/Title;
-                         nbmax here/getMaxSeat;
-                         address here/getAddress;
-                         date here/getDate;
-                         datelimit here/getDateLimit | nothing;
-                         plan here/getPlan | nothing;
-                         id here/getId;">
+<div metal:fill-slot="main"
+     tal:define="auth nocall:here/cookie_authentication|nothing;
+                 errors options/state/getErrors|nothing;">
 
-           <h1 tal:content="title" />
-           <div id="rendezView_seats" style="color: green;position:relative;border: 1 dark solid;top:-20px;text-align:right">
-              <span tal:content="seats" />
-           </div>
+	<form tal:define="errors options/state/getErrors|nothing;"
+	      tal:attributes="action string:${here/absolute_url}/${template/id};"
+	      method="post">        
 
-           <div id="rendezViews_date">
-              <span i18n:translate="rendezView_date">Nous vous attendons le </span>
-              <span tal:content="python:here.toLocalizedTime(date,long_format=1)" />
-           </div>
+           <fieldset>
+              <legend i18n:translate="rendezView_inscription">inscription</legend>
 
-           <div id="rendezViews_text" tal:content="structure text" />
+              <span i18n:translate="rendezView_nbplace">Nombre de place(s):</span>
 
-           <div id="rendezView_location">
-              <div tal:content="address" />
-              <div tal:content="plan" />
-           </div>
+	      <select id="nbPlaces" name="nbPlaces"
+			tal:define="nbInvite python:range(1,here.getMaxSeat()+1);"
+                        tal:attributes="tabindex tabindex/next;">
+                 <option tal:repeat="x nbInvite" tal:content="x"></option>
+	      </select>
+              <br />
+	      <span i18n:translate="rendezView_comment">Commentaire:</span>
 
-           <div id="rendezView_datelimit">
-              <span i18n:translate="rendezView_datelimit">Date limite d'inscription le </span>
-              <span tal:content="python:here.toLocalizedTime(datelimit,long_format=1)" />
-           </div>
+	      <textarea cols="30" rows="10"
+                        id="commentaires"
+                        name="commentaire"
+                        tal:attributes="tabindex tabindex/next;">
+              </textarea>	
+           </fieldset>
 
-           <div>
-              <a href="" tal:attributes="href string:rendezView_register_form">
-                 <span i18n:translate="rendezView_register">formulaire d'inscription</span>
-              </a>
-           </div>
+           <input type="submit"
+		name="submit"
+		value="text"
+		i18n:domain="rendezViews"/>
 
-        </div>
+	   <input type="hidden" name="form.submitted" value="1" />
+        </form>        
     </div>
 </body>
 </html>

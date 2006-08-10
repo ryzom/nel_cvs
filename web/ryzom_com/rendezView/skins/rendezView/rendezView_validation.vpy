@@ -8,9 +8,6 @@
 ##parameters=
 ##title=
 ##
-request = container.REQUEST
-RESPONSE =  request.RESPONSE
-
 nbPlaces= context.REQUEST.get('nbPlaces')
 commentaires = context.REQUEST.get('commentaires')
 

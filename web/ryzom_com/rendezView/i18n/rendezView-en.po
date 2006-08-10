@@ -17,6 +17,14 @@ msgstr ""
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
 #: defined in rendezView_view
+msgid "rendezView_plusque"
+msgstr "Il ne reste plus que "
+
+#: defined in rendezView_view
+msgid "rendezView_places"
+msgstr " places."
+
+#: defined in rendezView_view
 msgid "rendezView_date"
 msgstr ""
 

@@ -96,12 +96,12 @@ class rendezView(BaseFolder):
 	immediate_view = 'rendezView_view'
 	allowed_content_types = ('participant',)
 	actions = (
-#		{
-#		'id': 'view',
-#		'name': 'view',
-#		'action': 'string:${object_url}/rendezView_view',
-#		'permissions': (CMFCorePermissions.View,)
-#		},
+		{
+		'id': 'view',
+		'name': 'view',
+		'action': 'string:${object_url}/rendezView_view',
+		'permissions': (CMFCorePermissions.View,)
+		},
 #		{
 #		'id': 'listing',
 #		'name': 'listing',

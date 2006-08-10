@@ -16,6 +16,16 @@ msgstr ""
 "Domain: rendezView\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
+
+
+#: defined in rendezView_view
+msgid "rendezView_plusque"
+msgstr "Il ne reste plus que "
+
+#: defined in rendezView_view
+msgid "rendezView_places"
+msgstr " places."
+
 #: defined in rendezView_view
 msgid "rendezView_date"
 msgstr "Nous vous attendons le "

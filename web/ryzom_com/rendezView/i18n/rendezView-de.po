@@ -18,6 +18,14 @@ msgstr ""
 
 
 #: defined in rendezView_view
+msgid "rendezView_plusque"
+msgstr "Il ne reste plus que "
+
+#: defined in rendezView_view
+msgid "rendezView_places"
+msgstr " places."
+
+#: defined in rendezView_view
 msgid "rendezView_date"
 msgstr ""
 

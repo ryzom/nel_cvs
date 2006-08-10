@@ -50,7 +50,7 @@
               <span tal:content="python:here.toLocalizedTime(datelimit,long_format=1)" />
            </div>
            <br />
-           <div>
+           <div tal:condition="here/isAvailable">
               <a href="" tal:attributes="href string:rendezView_register_form">
                  <span i18n:translate="rendezView_register">formulaire d'inscription</span>
               </a>

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rendezView\n"
 "POT-Creation-Date: 2006-08-10 11:22+0000\n"
-"PO-Revision-Date: 2006-08-11 15:08+0100\n"
+"PO-Revision-Date: 2006-08-11 17:42+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -34,7 +34,7 @@ msgstr "Date limite d'inscription le "
 
 #: defined in rendezView_view
 msgid "rendezView_register"
-msgstr "Formulaire d'inscription"
+msgstr "Inscrivez-vous ici !"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_text"
@@ -52,10 +52,9 @@ msgstr "Lieu de l'événement"
 msgid "rendezView_schema_label_address"
 msgstr "Adresse"
 
-
 #: action defined in schema rendezView
 msgid "rendezView_schema_visibleseat"
-msgstr "Nombres de places visibles ?"
+msgstr "Afficher le nombre de places ?"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_label_visibleseat"
@@ -63,12 +62,11 @@ msgstr "Visible"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_desc"
-msgstr "Description de l'evenement"
+msgstr "Description de l'événement"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_label_desc"
 msgstr "Description"
-
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_plan"

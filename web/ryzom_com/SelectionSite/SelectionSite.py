@@ -89,12 +89,15 @@ class SelectionSite(BaseContent):
 	)
 
 	def setTitle(self, value, **kwargs):
-		self.getField('title').set(self, value, **kwargs)
-		if value:
+		if not value and self.id:
+			value = self.id
+		else:
+			value = re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower()
 			try:
-				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+				self.setId(value)
 			except:
-				pass #try to do better than this
+				pass
+		self.getField('title').set(self, value, **kwargs)
 
 
 	#create dictionnary with Visit

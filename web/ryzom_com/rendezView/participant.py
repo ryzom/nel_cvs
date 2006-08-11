@@ -11,13 +11,16 @@ from config import *
 #dÃ©fini le schÃ©ma 
 participantSchema=BaseSchema.copy()+ Schema((
 	TextField('fullName',
-		widget=TextAreaWidget(visible={'edit':'hidden', 'view':'hidden'},)		
+		widget=TextAreaWidget()
 	),
 	TextField('email',
-		widget=TextAreaWidget(visible={'edit':'hidden', 'view':'hidden'},)		
+		widget=TextAreaWidget()
 	),
 	TextField('login',
-		widget=TextAreaWidget(visible={'edit':'hidden', 'view':'hidden'},)		
+		widget=TextAreaWidget()
+	),
+	TextField('pseudo',
+		widget=TextAreaWidget()
 	),
 	IntegerField('seat',
 		default=1,

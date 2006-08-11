@@ -27,7 +27,7 @@
                          id here/getId;">
 
            <h1 tal:content="title" />
-           <div id="rendezView_seats" style="text-align:right">
+           <div id="rendezView_seats" style="text-align:right" tal:condition="here/getVisibleSeat">
               <span i18n:translate="rendezView_plusque">Plus que</span>
               <span tal:content="seats" />
               <span i18n:translate="rendezView_places">places</span>

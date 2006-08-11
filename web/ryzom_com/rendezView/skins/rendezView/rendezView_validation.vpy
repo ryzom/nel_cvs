@@ -10,6 +10,7 @@
 ##
 nbPlaces= context.REQUEST.get('nbPlaces')
 commentaire = context.REQUEST.get('commentaire')
+pseudo = context.REQUEST.get('pseudo')
 
 if int(nbPlaces)>context.nbSeatsRestant():
    state.setError('nbPlaces', 'error')

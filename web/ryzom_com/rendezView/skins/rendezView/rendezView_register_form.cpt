@@ -10,7 +10,7 @@
 	<form tal:condition="here/isAvailable"
               tal:define="errors options/state/getErrors|nothing;"
 	      tal:attributes="action string:${here/absolute_url}/${template/id};"
-	      method="post">        
+	      method="post">
 
            <fieldset>
               <legend i18n:translate="rendezView_inscription">inscription</legend>
@@ -23,14 +23,18 @@
                  <option tal:repeat="x nbInvite" tal:content="x"></option>
 	      </select>
               <br />
+              <span i18n:translate="rendezView_pseudo">Entrer votre pseudo</span>
+	      <input type="text" name="pseudo" id="pseudo" size="15"
+	         tal:attributes="tabindex tabindex/next;"
+	      />
+              <br />
 	      <span i18n:translate="rendezView_comment">Commentaire:</span>
-
 	      <textarea cols="30" rows="10"
                         id="commentaire"
                         name="commentaire"
                         tal:attributes="tabindex tabindex/next;">
-              </textarea>	
-           </fieldset>
+          </textarea>
+          </fieldset>
 
            <input type="submit"
 		name="submit"

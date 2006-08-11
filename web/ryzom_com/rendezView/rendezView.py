@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import re
+
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore import CMFCorePermissions
 from AccessControl import ClassSecurityInfo
@@ -10,6 +12,15 @@ except ImportError:
 from config import *
 
 rendezViewSchema=BaseFolderSchema.copy()+ Schema((
+	TextField('description',
+		widget=TextAreaWidget(
+			label='Summary Description',
+			label_msgid="rendezView_schema_label_desc",
+			description='description of the event',
+			description_msgid="rendezView_schema_desc",
+			i18n_domain="rendezView",
+		),
+	),
 	TextField('text',
 		searchable=True,
 		widget=RichWidget(
@@ -21,7 +32,7 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		)
 	),
 	TextField('address',
-		widget=TextAreaWidget(
+		widget=RichWidget(
 			label="",
 			label_msgid="rendezView_schema_label_address",
 			description="lieu de l'evenement",
@@ -77,6 +88,16 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 			i18n_domain="rendezView",
 		)
 	),
+	BooleanField('visibleSeat',
+		default=1,
+		widget=BooleanWidget(
+			label="",
+			label_msgid="rendezView_schema_label_visibleseat",
+			description="Nombres de places visibles ?",
+			description_msgid="rendezView_schema_visibleseat",
+			i18n_domain="rendezView",
+		)
+	),
 #	LinesField('participant',		
 #		widget=LinesWidget(),
 #		visible={'edit':'hidden', 'view':'visible'},
@@ -118,13 +139,15 @@ class rendezView(BaseFolder):
 
 
 	def setTitle(self, value, **kwargs):
-		"""remplace l'id par un identificateur plus conviviale"""
-		self.getField('title').set(self, value, **kwargs)
-		if value:
+		if not value and self.id:
+			value = self.id
+		else:
+			value = re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower()
 			try:
-				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+				self.setId(value)
 			except:
-				pass #try to do better than this
+				pass
+		self.getField('title').set(self, value, **kwargs)
 
 
 	#test si un membres peut s'inscrire, (s'il reste de la place et s'il n'est pas dÃ©ja inscrit)
@@ -164,7 +187,7 @@ class rendezView(BaseFolder):
 
 
 	security.declarePublic('addParticipant')
-	def addParticipant(self,seat=1,comment=''):
+	def addParticipant(self,seat=1,comment='',pseudo=''):
 		"""ajoute une inscription"""
 		if not (self.isAvailable()):
 			return "[Plus d'inscription disponible]"
@@ -176,6 +199,7 @@ class rendezView(BaseFolder):
 		email = member.getProperty('email')
 		seat = seat
 		comment = comment
+		pseudo = pseudo
 		newid = self.getId()+'_'+login
 		title = login
 		try:
@@ -183,6 +207,7 @@ class rendezView(BaseFolder):
 			new_obj = getattr(self, newid)
 			new_obj.setFullName(fullname)
 			new_obj.setLogin(login)
+			new_obj.setPseudo(pseudo)
 			new_obj.setEmail(email)
 			new_obj.setSeat(seat)
 			new_obj.setComment(comment)

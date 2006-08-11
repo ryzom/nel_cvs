@@ -12,7 +12,9 @@ RESPONSE =  request.RESPONSE
 
 nbPlaces= context.REQUEST.get('nbPlaces')
 commentaire = context.REQUEST.get('commentaire')
+pseudo = context.REQUEST.get('pseudo')
 
-context.addParticipant(int(nbPlaces),commentaire)
+context.addParticipant(int(nbPlaces),commentaire,pseudo)
 
 RESPONSE.redirect(context.absolute_url())
+

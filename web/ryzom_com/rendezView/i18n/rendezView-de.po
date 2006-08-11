@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rendezView\n"
 "POT-Creation-Date: 2006-08-10 11:22+0000\n"
-"PO-Revision-Date: 2006-08-11 17:42+0100\n"
+"PO-Revision-Date: 2006-08-11 18:10+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #: defined in rendezView_view
 msgid "rendezView_plusque"
-msgstr "Verbleibende freie Plätze: "
+msgstr "<b>Verbleibende freie Plätze: </b>"
 
 #: defined in rendezView_view
 msgid "rendezView_places"
@@ -26,11 +26,11 @@ msgstr "."
 
 #: defined in rendezView_view
 msgid "rendezView_date"
-msgstr "Veranstaltungstermin: "
+msgstr "<b>Veranstaltungstermin: </b>"
 
 #: defined in rendezView_view
 msgid "rendezView_datelimit"
-msgstr "Anmeldeschluss: "
+msgstr "<b>Anmeldeschluss: </b>"
 
 #: defined in rendezView_view
 msgid "rendezView_register"

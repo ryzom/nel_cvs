@@ -14,12 +14,23 @@ class ContainerPatchNote(BaseFolder):
 	meta_type = portal_type = 'ContainerPatchNote'
 	allowed_content_types = ('UrlPatchNote',)
 
-	#actions = (
-	#	{ 'id': 'view',
-	#	'name': 'View',
-	#	'action': 'string:${object_url}/ContainerPatchNote_view',
-	#	'permissions': (CMFCorePermissions.View,)
-	#	},
-	#)
+	actions = (
+		{ 'id': 'view',
+		'name': 'View',
+		'action': 'string:${object_url}/ContainerPatchNote_view',
+		'permissions': (CMFCorePermissions.View,)
+		},
+	)
+
+	def setTitle(self, value, **kwargs):
+		if not value and self.id:
+			value = self.id
+		else:
+			value = re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower()
+			try:
+				self.setId(value)
+			except:
+				pass
+		self.getField('title').set(self, value, **kwargs)
 
 registerType(ContainerPatchNote, PROJECTNAME)

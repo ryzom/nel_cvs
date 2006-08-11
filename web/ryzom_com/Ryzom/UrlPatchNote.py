@@ -52,6 +52,17 @@ class UrlPatchNote(BaseContent):
 		},
 	)
 
+	def setTitle(self, value, **kwargs):
+		if not value and self.id:
+			value = self.id
+		else:
+			value = re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower()
+			try:
+				self.setId(value)
+			except:
+				pass
+		self.getField('title').set(self, value, **kwargs)
+
 #	def setTitle(self, value, **kwargs):
 #		self.getField('title').set(self, value, **kwargs)
 #		if value:

@@ -7,13 +7,16 @@
 ##parameters=
 ##title=
 ##
+#on recupere les donnees de la base
+
 lang = "en"
+
 patch_en = context.patchNoteQuery(lang='en')
-if context.portal_catalog(id=patch_en[0][7], meta_type='UrlPatchNote'):
+if context.portal_catalog(id='patch'+patch_en[0][7], meta_type='UrlPatchNote'):
    return "already exist"
 
-context.invokeFactory(id=patch_en[0][7], type_name='UrlPatchNote', description='', text=patch_en[0][4])
-new_obj = getattr(context, patch_en[0][7])
+context.invokeFactory(id='patch'+patch_en[0][7], type_name='UrlPatchNote', title=patch_en[0][7], description='', text=patch_en[0][4])
+new_obj = getattr(context, 'patch'+patch_en[0][7])
 new_obj.setTitle(patch_en[0][7])
 new_obj.setText(patch_en[0][4],mimetype='text/html')
 
@@ -28,3 +31,7 @@ new_obj.createTranslation(set_language="de", current="en")
 new_obj_de = new_obj.getTranslation("de")
 new_obj_de.setTitle(patch_de[0][7])
 new_obj_de.setText(patch_de[0][4],mimetype='text/html')
+
+request = container.REQUEST
+RESPONSE =  request.RESPONSE
+RESPONSE.redirect(context.absolute_url())

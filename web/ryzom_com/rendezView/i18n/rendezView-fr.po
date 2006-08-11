@@ -52,6 +52,24 @@ msgstr "Lieu de l'événement"
 msgid "rendezView_schema_label_address"
 msgstr "Adresse"
 
+
+#: action defined in schema rendezView
+msgid "rendezView_schema_visibleseat"
+msgstr "Nombres de places visibles ?"
+
+#: action defined in schema rendezView
+msgid "rendezView_schema_label_visibleseat"
+msgstr "Visible"
+
+#: action defined in schema rendezView
+msgid "rendezView_schema_desc"
+msgstr "Description de l'evenement"
+
+#: action defined in schema rendezView
+msgid "rendezView_schema_label_desc"
+msgstr "Description"
+
+
 #: action defined in schema rendezView
 msgid "rendezView_schema_plan"
 msgstr "Insérer un plan pour accéder au lieu de l'événement"

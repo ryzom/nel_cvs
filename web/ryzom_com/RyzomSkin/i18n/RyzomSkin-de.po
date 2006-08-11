@@ -121,7 +121,7 @@ msgid "label_submit"
 msgstr "Bestätigen"
 
 msgid "unsubcribed_newsletter"
-msgstr "Solltest du dein Abonnement via E-Mail beenden oder ändern wollen, kannst du dies hier tun."
+msgstr "Solltest du dein Abonnement via E-Mail beenden oder ändern wollen, kannst du dies "
 
 msgid "receive_confirmed1"
 msgstr "Du solltest in Kürze eine Bestätigungsmail erhalten, welche an folgende E-Mailadresse geschickt wird:"

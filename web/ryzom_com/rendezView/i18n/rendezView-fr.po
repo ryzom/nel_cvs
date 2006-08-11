@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rendezView\n"
 "POT-Creation-Date: 2006-08-10 11:22+0000\n"
-"PO-Revision-Date: 2006-08-10 11:22+0100\n"
-"Last-Translator: bernard\n"
+"PO-Revision-Date: 2006-08-11 15:08+0100\n"
+"Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -15,8 +15,6 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: rendezView\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
-
-
 
 #: defined in rendezView_view
 msgid "rendezView_plusque"
@@ -36,13 +34,11 @@ msgstr "Date limite d'inscription le "
 
 #: defined in rendezView_view
 msgid "rendezView_register"
-msgstr "Formulaire d'inscriptions"
-
-
+msgstr "Formulaire d'inscription"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_text"
-msgstr "Description de l'évenement"
+msgstr "Description de l'événement"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_label_text"
@@ -58,7 +54,7 @@ msgstr "Adresse"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_plan"
-msgstr "Insérer un plan pour acceder au lieu de l'événement"
+msgstr "Insérer un plan pour accéder au lieu de l'événement"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_label_plan"
@@ -90,8 +86,9 @@ msgstr "Places"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_maxseat"
-msgstr "Nombres de Places réservables au maximum par personnes"
+msgstr "Nombres de places réservables au maximum par personne"
 
 #: action defined in schema rendezView
 msgid "rendezView_schema_label_maxseat"
 msgstr "Places"
+

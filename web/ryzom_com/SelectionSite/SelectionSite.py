@@ -4,7 +4,7 @@ except ImportError:
     from Products.Archetypes.public import *
 from Products.CMFCore import CMFCorePermissions
 from config import PROJECTNAME
-
+import re
 import time
 
 SelectionSchema = BaseSchema.copy() + Schema((   

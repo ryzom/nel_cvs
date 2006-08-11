@@ -6,6 +6,8 @@ except ImportError:
 from Products.CMFCore import CMFCorePermissions
 from config import PROJECTNAME
 
+import re
+
 ContainerPatchNoteSchema = BaseFolderSchema.copy() + Schema((),)
 
 class ContainerPatchNote(BaseFolder):

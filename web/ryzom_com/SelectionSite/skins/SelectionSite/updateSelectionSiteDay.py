@@ -18,7 +18,7 @@ print dico
 
 for brains in result:
 	site = brains.getObject()
-	site.addVisit(dico[site.Title()])        
+	site.addVisit(dico[site.Title()])
 	site.VisitThisMonth()
 	print site.Title()+'\n - Visite : '+str(site.getVisit())+'\n - Visite ce moi-ci'+str(site.getMonth())
 return printed

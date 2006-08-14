@@ -30,12 +30,14 @@ class Redirect(BaseContent):
 		},
 	)
 	def setTitle(self, value, **kwargs):
-		self.getField('title').set(self, value, **kwargs)
-		if value:
+		if not value and self.id:
+			value = self.id
+		else:			
 			try:
 				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
 			except:
-                                pass #try to do better than this			
+				pass
+		self.getField('title').set(self, value, **kwargs)			
 
 
 registerType(Redirect,PROJECTNAME)

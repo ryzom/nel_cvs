@@ -3,13 +3,13 @@
       metal:use-macro="here/main_template/macros/master"
       i18n:domain="rendezView">
 
-<!--
+
   <metal:block fill-slot="css_slot">
     <style type="text/css" media="all"
       tal:content="string:@import url(${portal_url}/rendezView.css);">
     </style>
   </metal:block>
--->
+
 
 <body>
     <div metal:fill-slot="main">
@@ -27,30 +27,32 @@
                          id here/getId;">
 
            <h1 tal:content="title" />
-           <div id="rendezView_seats" style="text-align:right" tal:condition="here/getVisibleSeat">
+           <div id="rendezView_seats" tal:condition="here/getVisibleSeat">
               <span i18n:translate="rendezView_plusque">Plus que</span>
               <span tal:content="seats" />
               <span i18n:translate="rendezView_places">places</span>
            </div>
            <br />
-           <div id="rendezViews_date">
+           <div id="rendezView_date">
               <span i18n:translate="rendezView_date">Nous vous attendons le </span>
-              <span tal:content="python:here.toLocalizedTime(date,long_format=1)" />
+              <i tal:content="python:here.toLocalizedTime(date,long_format=1)" />
            </div>
            <br />
-           <div id="rendezViews_text" tal:content="structure text" />
+           <div id="rendezView_text" tal:content="structure text" />
            <br />
            <div id="rendezView_location">
               <div tal:content="address" />
-              <div tal:content="plan" />
+              <div tal:replace="structure plan" />
            </div>
            <br />
            <div id="rendezView_datelimit">
               <span i18n:translate="rendezView_datelimit">Date limite d'inscription le </span>
-              <span tal:content="python:here.toLocalizedTime(datelimit,long_format=1)" />
+              <i tal:content="python:here.toLocalizedTime(datelimit,long_format=1)" />
            </div>
            <br />
-           <div tal:condition="here/isAvailable">
+           <div tal:define="current python: int(here.getDateLimit()) > int(DateTime());
+                            available python: here.isAvailable and current;"
+                tal:condition="available">
               <a href="" tal:attributes="href string:rendezView_register_form">
                  <span i18n:translate="rendezView_register">formulaire d'inscription</span>
               </a>

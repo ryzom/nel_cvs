@@ -159,8 +159,7 @@ class rendezView(BaseFolder):
 		path = '/'.join(self.getPhysicalPath())
 		if self.portal_catalog(id=inscriptId,meta_type=['participant',],path={'query':path, 'level': 0},):
 			return False
-
-		return str(self.nbSeatsTake() < self.getNbSeat())
+		return self.nbSeatsTake() < self.getNbSeat()
 
 	def nbSeatsTake(self):
 		"""renvoie les place prises"""

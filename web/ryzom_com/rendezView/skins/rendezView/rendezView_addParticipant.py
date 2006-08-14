@@ -18,3 +18,4 @@ context.addParticipant(int(nbPlaces),commentaire,pseudo)
 
 RESPONSE.redirect(context.absolute_url())
 
+

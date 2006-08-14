@@ -38,8 +38,8 @@
 
            <input type="submit"
 		name="submit"
-		value="text"
-		i18n:domain="rendezViews"/>
+		value="rendezView_value"		
+		i18n:attributes="value rendezView_value"/>
 
 	   <input type="hidden" name="form.submitted" value="1" />
         </form>

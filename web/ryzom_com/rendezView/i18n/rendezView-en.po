@@ -16,6 +16,27 @@ msgstr ""
 "Domain: rendezView\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
+#: defined in rendezView_register_form
+msgid "rendezView_value"
+msgstr "Valider"
+
+#: defined in rendezView_register_form
+msgid "rendezView_comment"
+msgstr "Commentaires "
+
+#: defined in rendezView_register_form
+msgid "rendezView_pseudo"
+msgstr "Entrez le nom de votre Personnages "
+
+#: defined in rendezView_register_form
+msgid "rendezView_inscription"
+msgstr "Inscriptions "
+
+#: defined in rendezView_register_form
+msgid "rendezView_nbplace"
+msgstr "Nombres de place "
+
+
 #: defined in rendezView_view
 msgid "rendezView_plusque"
 msgstr "Only "

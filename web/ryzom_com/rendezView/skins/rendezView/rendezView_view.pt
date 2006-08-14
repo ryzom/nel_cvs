@@ -41,7 +41,7 @@
            <div id="rendezView_text" tal:content="structure text" />
            <br />
            <div id="rendezView_location">
-              <div tal:content="address" />
+              <div tal:content="structure address" />
               <div tal:replace="structure plan" />
            </div>
            <br />

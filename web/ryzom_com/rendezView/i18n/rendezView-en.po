@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rendezView\n"
 "POT-Creation-Date: 2006-08-10 11:22+0000\n"
-"PO-Revision-Date: 2006-08-11 18:10+0100\n"
+"PO-Revision-Date: 2006-08-14 18:17+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -18,24 +18,23 @@ msgstr ""
 
 #: defined in rendezView_register_form
 msgid "rendezView_value"
-msgstr "Valider"
+msgstr "OK"
 
 #: defined in rendezView_register_form
 msgid "rendezView_comment"
-msgstr "Commentaires "
+msgstr "Comments "
 
 #: defined in rendezView_register_form
 msgid "rendezView_pseudo"
-msgstr "Entrez le nom de votre Personnages "
+msgstr "Enter your nickname: "
 
 #: defined in rendezView_register_form
 msgid "rendezView_inscription"
-msgstr "Inscriptions "
+msgstr "Registration "
 
 #: defined in rendezView_register_form
 msgid "rendezView_nbplace"
-msgstr "Nombres de place "
-
+msgstr "Number of seats "
 
 #: defined in rendezView_view
 msgid "rendezView_plusque"

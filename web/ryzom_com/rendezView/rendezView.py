@@ -123,12 +123,12 @@ class rendezView(BaseFolder):
 		'action': 'string:${object_url}/rendezView_view',
 		'permissions': (CMFCorePermissions.View,)
 		},
-#		{
-#		'id': 'listing',
-#		'name': 'listing',
-#		'action': 'string:${object_url}/rendezView_listing',
-#		'permissions': (CMFCorePermissions.View,)
-#		},
+		{
+		'id': 'folderlisting',
+		'name': 'Folder Listing',
+		'action': 'string:${folder_url}/folder_contents',
+		'permissions': (CMFCorePermissions.ModifyPortalContent,)
+		},
 #		{
 #		'id': 'register',
 #		'name': 'register',
@@ -152,19 +152,23 @@ class rendezView(BaseFolder):
 	#test si un membres peut s'inscrire, (s'il reste de la place et s'il n'est pas dÃ©ja inscrit)
 	#dÃ©ja inscrit ? on testera dans la vue
 	def isAvailable(self):
-		"""test si des places sont disponible"""
+		"""test si l'utilisateur peut s'inscrire"""
+		return (self.nbSeatsTake() < self.getNbSeat()) and (not self.isRegister())
+
+	def isRegister(self):
+		"""test si l'utilisateur est dÃ©ja inscrit"""
 		#on recupere le membre
 		mtool = getToolByName(self, 'portal_membership')
 		inscriptId = self.getId()+'_'+mtool.getAuthenticatedMember().getUserName()
 		path = '/'.join(self.getPhysicalPath())
 		if self.portal_catalog(id=inscriptId,meta_type=['participant',],path={'query':path, 'level': 0},):
-			return False
-		return self.nbSeatsTake() < self.getNbSeat()
+			return True
+		return False
 
 	def nbSeatsTake(self):
 		"""renvoie les place prises"""
 		s = 0
-		tab = self.getParticipant()		
+		tab = self.getParticipant()
 		for i in tab:
 			o = i.getObject()
 			s += o.getSeat()

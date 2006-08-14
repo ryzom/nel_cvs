@@ -10,7 +10,6 @@
     </style>
   </metal:block>
 
-
 <body>
     <div metal:fill-slot="main">
         <div metal:use-macro="here/document_actions/macros/document_actions"></div>
@@ -42,6 +41,7 @@
            <br />
            <div id="rendezView_location">
               <div tal:content="structure address" />
+              <br />
               <div tal:replace="structure plan" />
            </div>
            <br />
@@ -51,13 +51,22 @@
            </div>
            <br />
            <div tal:define="current python: int(here.getDateLimit()) > int(DateTime());
-                            available python: here.isAvailable and current;"
+                            available python: here.isAvailable() and current;"
                 tal:condition="available">
-              <a href="" tal:attributes="href string:rendezView_register_form">
+              <a id="rendezView_button" href="" tal:attributes="href string:rendezView_register_form">
                  <span i18n:translate="rendezView_register">formulaire d'inscription</span>
               </a>
            </div>
-
+           <div tal:condition="here/isRegister"
+                tal:define="url python:here.getId()+'_'+member.getUserName()">
+              <a id="rendezView_button" href="" tal:attributes="href string:${url}/base_edit">
+                 <span i18n:translate="rendezView_register_edit">editer son inscription</span>
+              </a>
+              <br />
+              <a id="rendezView_button" href="" tal:attributes="href string:${url}/object_delete">
+                 <span i18n:translate="rendezView_register_delete">supprimer son inscription</span>
+              </a>
+           </div>
         </div>
     </div>
 </body>

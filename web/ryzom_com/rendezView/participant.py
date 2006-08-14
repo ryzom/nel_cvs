@@ -33,6 +33,9 @@ participantSchema=BaseSchema.copy()+ Schema((
 participantSchema['id'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
 participantSchema['title'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
 participantSchema['description'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
+participantSchema['fullName'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
+participantSchema['email'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
+participantSchema['login'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
 
 class participant(BaseContent):
 	""" Register to event """

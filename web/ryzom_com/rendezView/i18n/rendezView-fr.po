@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rendezView\n"
 "POT-Creation-Date: 2006-08-10 11:22+0000\n"
-"PO-Revision-Date: 2006-08-14 18:07+0100\n"
+"PO-Revision-Date: 2006-08-14 18:56+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -26,7 +26,7 @@ msgstr "Commentaires "
 
 #: defined in rendezView_register_form
 msgid "rendezView_pseudo"
-msgstr "Entrez votre nom (ou pseudo)"
+msgstr "Entrez votre pseudonyme : "
 
 #: defined in rendezView_register_form
 msgid "rendezView_inscription"

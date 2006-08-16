@@ -1,0 +1,30 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"  
+  metal:use-macro="here/main_template/macros/master"
+  i18n:domain="plone">
+
+  <body>
+    <div metal:fill-slot="main" tal:define="boundLanguages here/portal_languages/getLanguageBindings;
+                                            lang python:boundLanguages[0];">
+    <div metal:use-macro="here/document_actions/macros/document_actions"></div>
+
+    <div class="content"
+         tal:define="results python:here.portal_catalog(meta_type='UrlPatchNote',
+                                                        sort_on='id',sort_order='reverse',
+                                                        language=lang,
+                                                        path={'query':here.absolute_url(), 'level': 0})">
+      <h1>Patchs Notes</h1>
+      <div repeat="patch results">
+        
+        <div tal:content="structure patch/getObject/getText"
+             tal:condition="repeat/patch/start" />
+        <div tal:condition="not:repeat/patch/start">
+            <a href=""
+                tal:attributes="href patch/getURL;"
+                tal:content="patch/Title" />
+        </div>
+      </div>
+    </div>
+    </div>
+  </body>
+
+</html>

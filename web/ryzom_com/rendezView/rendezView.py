@@ -124,8 +124,8 @@ class rendezView(BaseFolder):
 		'permissions': (CMFCorePermissions.View,)
 		},
 		{
-		'id': 'folderlisting',
-		'name': 'Folder Listing',
+		'id': 'listing',
+		'name': 'Listing',
 		'action': 'string:${folder_url}/folder_contents',
 		'permissions': (CMFCorePermissions.ModifyPortalContent,)
 		},

@@ -45,28 +45,5 @@ class participant(BaseContent):
 	meta_type = 'participant'
 	global_allow = 0
 
-#	def setTitle(self):
-#		value = self.getLogin()+'_'+self.getFullName()
-#		self.getField('title').set(self, value, **kwargs)
-
-#	def setFullName(self):
-#		mtool = getToolByName(self, 'portal_membership')
-#		member = mtool.getAuthenticatedMember()
-#		value = member.getProperty('fullname')
-#		self.getField('fullName').set(self, value, **kwargs)
-
-#	def setEmail(self):
-#		mtool = getToolByName(self, 'portal_membership')
-#		member = mtool.getAuthenticatedMember()
-#		value = member.getProperty('email')
-#		self.getField('email').set(self, value, **kwargs)
-
-#	def setLogin(self):
-#		mtool = getToolByName(self, 'portal_membership')
-#		member = mtool.getAuthenticatedMember()
-#		value = member.getUserName()
-#		self.getField('login').set(self, value, **kwargs)
-	
-
-registerType(participant,PROJECTNAME)								
+registerType(participant,PROJECTNAME)
 								

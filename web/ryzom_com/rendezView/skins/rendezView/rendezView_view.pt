@@ -3,12 +3,11 @@
       metal:use-macro="here/main_template/macros/master"
       i18n:domain="rendezView">
 
-
-  <metal:block fill-slot="css_slot">
+<metal:block fill-slot="css_slot">
     <style type="text/css" media="all"
       tal:content="string:@import url(${portal_url}/rendezView.css);">
     </style>
-  </metal:block>
+</metal:block>
 
 <body>
     <div metal:fill-slot="main">
@@ -51,15 +50,16 @@
            </div>
            <br />
            <div tal:define="current python: int(here.getDateLimit()) > int(DateTime());
-                            available python: here.isAvailable() and current;"
+                            available python: here.isAvailable() and current and (not isAnon);"
                 tal:condition="available">
               <a id="rendezView_button" href="" tal:attributes="href string:rendezView_register_form">
                  <span i18n:translate="rendezView_register">formulaire d'inscription</span>
               </a>
            </div>
+<!--
            <div tal:condition="here/isRegister"
                 tal:define="url python:here.getId()+'_'+member.getUserName()">
-              <a id="rendezView_button" href="" tal:attributes="href string:${url}/base_edit">
+              <a id="rendezView_button" href="" tal:attributes="href string:${url}/rendezView_register_edit">
                  <span i18n:translate="rendezView_register_edit">editer son inscription</span>
               </a>
               <br />
@@ -67,6 +67,7 @@
                  <span i18n:translate="rendezView_register_delete">supprimer son inscription</span>
               </a>
            </div>
+-->
         </div>
     </div>
 </body>

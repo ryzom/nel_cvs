@@ -16,6 +16,7 @@ registerDirectory(SKINS_DIR, GLOBALS)
 def initialize(context):
 	import rendezView
 	import participant
+	import participantworkflow
 
 	content_types, constructors, ftis = process_types(
 		listTypes(PROJECTNAME),

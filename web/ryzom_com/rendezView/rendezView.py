@@ -149,8 +149,6 @@ class rendezView(BaseFolder):
 		self.getField('title').set(self, value, **kwargs)
 
 
-	#test si un membres peut s'inscrire, (s'il reste de la place et s'il n'est pas dÃ©ja inscrit)
-	#dÃ©ja inscrit ? on testera dans la vue
 	def isAvailable(self):
 		"""test si l'utilisateur peut s'inscrire"""
 		return (self.nbSeatsTake() < self.getNbSeat()) and (not self.isRegister())
@@ -165,6 +163,7 @@ class rendezView(BaseFolder):
 			return True
 		return False
 
+	security.declarePublic('nbSeatsTake')
 	def nbSeatsTake(self):
 		"""renvoie les place prises"""
 		s = 0
@@ -180,7 +179,7 @@ class rendezView(BaseFolder):
 		tab = self.getParticipant()
 		return len(tab)
 			
-		
+	security.declarePublic('getParticipant')
 	def getParticipant(self):
 		"""renvoie la listes des participants"""
 		path = '/'.join(self.getPhysicalPath())
@@ -217,11 +216,23 @@ class rendezView(BaseFolder):
 		except:
 			return "[inscription deja faite]"
 
+	security.declarePublic('removeParticipant')
+	def removeParticipant(self):
+		"""Permet Ã  un inscrit de se dÃ©sinscrire"""
+		#on rÃ©cupÃ¨re l'objet participant correspondant
+		mtool = getToolByName(self, 'portal_membership')
+		inscriptId = self.getId()+'_'+mtool.getAuthenticatedMember().getUserName()			
+
+		#on supprime l'objet
+		self.manage_delObjects(inscriptId)
+		return "rien Ã  dire"
+
 
 	def nbSeatsRestant(self):
 		"""retourne le nombre de places restantes"""
 		return self.getNbSeat()-self.nbSeatsTake()
 
+	security.declarePublic('seats')
 	def seats(self):
 		"""retourne place prise / place totale"""
 		return str(self.nbSeatsTake())+'/'+str(self.getNbSeat())

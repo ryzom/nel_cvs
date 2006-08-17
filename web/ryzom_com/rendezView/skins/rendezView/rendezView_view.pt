@@ -30,25 +30,24 @@
               <span tal:content="seats" />
               <span i18n:translate="rendezView_places">places</span>
            </div>
-           <br />
-           <div id="rendezView_date">
+
+           <p id="rendezView_date">
               <span i18n:translate="rendezView_date">Nous vous attendons le </span>
               <i tal:content="python:here.toLocalizedTime(date,long_format=1)" />
-           </div>
-           <br />
-           <div id="rendezView_text" tal:content="structure text" />
-           <br />
+           </p>
+
+           <p id="rendezView_text" tal:content="structure text" />
+
            <div id="rendezView_location">
               <div tal:content="structure address" />
-              <br />
               <div tal:replace="structure plan" />
            </div>
-           <br />
-           <div id="rendezView_datelimit">
+
+           <p id="rendezView_datelimit">
               <span i18n:translate="rendezView_datelimit">Date limite d'inscription le </span>
               <i tal:content="python:here.toLocalizedTime(datelimit,long_format=1)" />
-           </div>
-           <br />
+           </p>
+
            <div tal:define="current python: int(here.getDateLimit()) > int(DateTime());
                             available python: here.isAvailable() and current and (not isAnon);"
                 tal:condition="available">
@@ -56,16 +55,18 @@
                  <span i18n:translate="rendezView_register">formulaire d'inscription</span>
               </a>
            </div>
+
            <div tal:condition="here/isRegister"
                 tal:define="url python:here.getId()+'_'+member.getUserName()">
               <a id="rendezView_button" href="" tal:attributes="href string:${url}/rendezView_register_edit">
                  <span i18n:translate="rendezView_register_edit">editer son inscription</span>
               </a>
               <br />
-              <a id="rendezView_button" href="" tal:attributes="href string:${url}/object_delete">
+              <a id="rendezView_button" href="" tal:attributes="href string:removeParticipant">
                  <span i18n:translate="rendezView_register_delete">supprimer son inscription</span>
               </a>
            </div>
+
         </div>
     </div>
 </body>

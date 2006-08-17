@@ -15,7 +15,8 @@
 
       <a href="" i18n:translate="PatchNote_AddNewPatch"
                  tal:condition="python:here.isOfficial(member.getUserName())"
-                 tal:attributes="href string:newPatchNote" />
+                 tal:attributes="href string:newPatchNote" >Add New Patch
+      </a>
 
       <h1>Patchs Notes</h1>
       <div tal:condition="results">

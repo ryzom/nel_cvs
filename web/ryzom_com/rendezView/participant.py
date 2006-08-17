@@ -45,26 +45,14 @@ class participant(BaseContent):
 	meta_type = 'participant'
 	global_allow = 0
 
-#	actions = (
-#		{
-#		'id': 'view',
-#		'name': 'view',
-#		'action': 'string:${object_url}/base_view',
-#		'permissions': (CMFCorePermissions.View,)
-#		},
-#		{
-#		'id': 'edit',
-#		'name': 'Edit',
-#		'action': 'string:${folder_url}/rendezView_register_edit',
-#		'permissions': (CMFCorePermissions.ModifyPortalContent,)
-#		},
-#		{
-#		'id': 'register',
-#		'name': 'register',
-#		'action': 'string:${object_url}/addParticipant',
-#		'permission': (CMFCorePermissions.View,)
-#		},
-#	)
+	actions = (
+		{
+		'id': 'edit',
+		'name': 'Edit',
+		'action': 'string:${object_url}/rendezView_register_edit',
+		'permissions': (CMFCorePermissions.ModifyPortalContent,)
+		},
+	)
 
 registerType(participant,PROJECTNAME)
 								

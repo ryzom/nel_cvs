@@ -7,9 +7,9 @@ from Products.CMFCore.DirectoryView import registerDirectory
 from config import *
 
 AddRendezView = 'rendezView : Add new Event - rendezView'
-setDefaultRoles( AddRendezView, ( 'Manager', 'Reviewer' ) )
+setDefaultRoles( AddRendezView, ( 'Manager', 'Reviewer','Owner', ) )
 registerRendezView = 'rendezView : register to a event - rendezView'
-setDefaultRoles( registerRendezView, ( 'Member', ) )
+setDefaultRoles( registerRendezView, ( 'Member','Owner', ) )
 
 registerDirectory(SKINS_DIR, GLOBALS)
 

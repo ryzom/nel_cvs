@@ -10,13 +10,13 @@
 #on recupere les donnees de la base
 
 lang = "en"
-
+path = '/'.join(context.getPhysicalPath())
 patch_en = context.patchNoteQuery(lang='en')
-if context.portal_catalog(id='patch'+patch_en[0][7], meta_type='UrlPatchNote'):
+if context.portal_catalog(id='patch-'+patch_en[0][7], meta_type='UrlPatchNote', path={'query':path, 'level': 0}):
    return "already exist"
 
-context.invokeFactory(id='patch'+patch_en[0][7], type_name='UrlPatchNote', title=patch_en[0][7], description='', text=patch_en[0][4])
-new_obj = getattr(context, 'patch'+patch_en[0][7])
+context.invokeFactory(id='patch-'+patch_en[0][7], type_name='UrlPatchNote', title=patch_en[0][7], description='', text=patch_en[0][4])
+new_obj = getattr(context, 'patch-'+patch_en[0][7])
 new_obj.setTitle(patch_en[0][7])
 new_obj.setText(patch_en[0][4],mimetype='text/html')
 

@@ -8,20 +8,32 @@
     <div metal:use-macro="here/document_actions/macros/document_actions"></div>
 
     <div class="content"
+         i18n:domain="PatchNote"
          tal:define="results python:here.portal_catalog(meta_type='UrlPatchNote',
-                                                        sort_on='id',sort_order='reverse',
-                                                        language=lang,
-                                                        path={'query':here.absolute_url(), 'level': 0})">
+                                                        sort_on='id',sort_order='reverse',language=lang,
+                                                        path={'query':'/'.join(here.getPhysicalPath()), 'level': 0},)">    
+
+      <a href="" i18n:translate="PatchNote_AddNewPatch"
+                 tal:condition="python:here.isOfficial(member.getUserName())"
+                 tal:attributes="href string:newPatchNote" />
+
       <h1>Patchs Notes</h1>
-      <div repeat="patch results">
-        
-        <div tal:content="structure patch/getObject/getText"
-             tal:condition="repeat/patch/start" />
-        <div tal:condition="not:repeat/patch/start">
-            <a href=""
-                tal:attributes="href patch/getURL;"
-                tal:content="patch/Title" />
-        </div>
+      <div tal:condition="results">
+      <div tal:repeat="patch results" tal:omit-tag="">
+         <tal:block define="obj patch/getObject">
+
+            <div tal:condition="repeat/patch/start" >
+               <h2 i18n:translate="PatchNote_last" ></h2>
+               <p tal:content="structure obj/getText" /> 
+               <h2 i18n:translate="PatchNote_other" ></h2> 
+            </div>
+            
+            <div tal:condition="not: repeat/patch/start">
+               <a href="" tal:attributes="href obj/absolute_url;"
+                          tal:content="patch/Title" />
+            </div>
+         </tal:block>
+      </div>
       </div>
     </div>
     </div>

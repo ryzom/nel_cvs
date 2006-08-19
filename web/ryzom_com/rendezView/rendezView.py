@@ -48,6 +48,7 @@ rendezViewSchema=BaseFolderSchema.copy()+ Schema((
 		)
 	),
 	DateTimeField('dateLimit',
+		required=True,
 		widget=CalendarWidget(
 			label="",
 			label_msgid="rendezView_schema_label_datelimit",
@@ -231,7 +232,7 @@ class rendezView(BaseFolder):
 			return "[inscription deja faite]"
 
 	security.declarePublic('removeParticipant')
-	def removeParticipant(self):
+	def removeParticipant(self,REQUEST):
 		"""Permet Ã  un inscrit de se dÃ©sinscrire"""
 		#on rÃ©cupÃ¨re l'objet participant correspondant
 		mtool = getToolByName(self, 'portal_membership')
@@ -239,7 +240,8 @@ class rendezView(BaseFolder):
 
 		#on supprime l'objet
 		self.manage_delObjects(inscriptId)
-		return "rien Ã  dire"
+		REQUEST['RESPONSE'].redirect(self.absolute_url())
+
 
 
 	def nbSeatsRestant(self):

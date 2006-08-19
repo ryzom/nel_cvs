@@ -20,7 +20,8 @@
                          nbmax here/getMaxSeat;
                          address here/getAddress;
                          date here/getDate;
-                         datelimit here/getDateLimit | nothing;
+                         intlimit string:2222/12/30;
+                         datelimit here/getDateLimit | intlimit;
                          plan here/getPlan | nothing;
                          id here/getId;">
 
@@ -30,6 +31,8 @@
               <span tal:content="seats" />
               <span i18n:translate="rendezView_places">places</span>
            </div>
+
+           <p><b id="rendezView_desc" tal:content="here/Description"></b></p>
 
            <p id="rendezView_date">
               <span i18n:translate="rendezView_date">Nous vous attendons le </span>

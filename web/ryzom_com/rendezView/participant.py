@@ -27,6 +27,12 @@ participantSchema=BaseSchema.copy()+ Schema((
 		widget=IntegerWidget()		
 	),
 	TextField('comment',
+		default_output_type='text/plain',
+		allowable_content_types=(
+			'text/restructured',
+			'text/plain',
+			'text/html',
+		),
 		widget=TextAreaWidget()		
 	),
 ),)

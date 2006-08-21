@@ -11,12 +11,11 @@
          i18n:domain="PatchNote"
          tal:define="results python:here.portal_catalog(meta_type='UrlPatchNote',
                                                         sort_on='id',sort_order='reverse',language=lang,
-                                                        path={'query':'/'.join(here.getPhysicalPath()), 'level': 0},)">    
+                                                        path={'query':'/'.join(here.getPhysicalPath()), 'level': 0},)">
 
-      <a href="" i18n:translate="PatchNote_AddNewPatch"
+      <a href="" tal:content="string:Add a New Patch"
                  tal:condition="python:here.isOfficial(member.getUserName())"
-                 tal:attributes="href string:newPatchNote" >Add New Patch
-      </a>
+                 tal:attributes="href string:newPatchNote" />
 
       <h1>Patchs Notes</h1>
       <div tal:condition="results">
@@ -25,8 +24,8 @@
 
             <div tal:condition="repeat/patch/start" >
                <h2 i18n:translate="PatchNote_last" ></h2>
-               <p tal:content="structure obj/getText" /> 
-               <h2 i18n:translate="PatchNote_other" ></h2> 
+               <p tal:content="structure obj/getText" />
+               <h2 i18n:translate="PatchNote_other" ></h2>
             </div>
             
             <div tal:condition="not: repeat/patch/start">

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rendezView\n"
 "POT-Creation-Date: 2006-08-10 11:22+0000\n"
-"PO-Revision-Date: 2006-08-21 14:01+0100\n"
+"PO-Revision-Date: 2006-08-22 15:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -15,9 +15,6 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: rendezView\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
-
-
-
 
 #: defined in rendezView_register_form
 msgid "rendezView_value"
@@ -37,7 +34,7 @@ msgstr "Inscriptions "
 
 #: defined in rendezView_register_form
 msgid "rendezView_nbplace"
-msgstr "Nombres de place "
+msgstr "Nombre de places "
 
 #: defined in rendezView_view
 msgid "rendezView_plusque"
@@ -45,11 +42,11 @@ msgstr "Nombre de places réservées : "
 
 #: defined in rendezView_view
 msgid "rendezView_register_edit"
-msgstr "Editer"
+msgstr "Editer votre inscription"
 
 #: defined in rendezView_view
 msgid "rendezView_register_delete"
-msgstr "Supprimer"
+msgstr "Annuler votre inscription"
 
 #: defined in rendezView_view
 msgid "rendezView_places"

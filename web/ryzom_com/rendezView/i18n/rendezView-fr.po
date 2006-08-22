@@ -44,6 +44,10 @@ msgid "rendezView_plusque"
 msgstr "Nombre de places réservées : "
 
 #: defined in rendezView_view
+msgid "rendezView_register_edit"
+msgstr "Editer"
+
+#: defined in rendezView_view
 msgid "rendezView_register_delete"
 msgstr "Supprimer"
 

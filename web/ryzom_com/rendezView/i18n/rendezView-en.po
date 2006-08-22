@@ -37,6 +37,10 @@ msgid "rendezView_nbplace"
 msgstr "Number of seats "
 
 #: defined in rendezView_view
+msgid "rendezView_register_edit"
+msgstr "Edit"
+
+#: defined in rendezView_view
 msgid "rendezView_register_delete"
 msgstr "Delete"
 

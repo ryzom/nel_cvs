@@ -16,6 +16,9 @@ msgstr ""
 "Domain: rendezView\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
+
+
+
 #: defined in rendezView_register_form
 msgid "rendezView_value"
 msgstr "Valider"
@@ -39,6 +42,10 @@ msgstr "Nombres de place "
 #: defined in rendezView_view
 msgid "rendezView_plusque"
 msgstr "Nombre de places réservées : "
+
+#: defined in rendezView_view
+msgid "rendezView_register_delete"
+msgstr "Supprimer"
 
 #: defined in rendezView_view
 msgid "rendezView_places"

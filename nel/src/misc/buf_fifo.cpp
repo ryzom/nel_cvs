@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.29.22.2 2006/08/09 10:56:05 cado Exp $
+ * $Id: buf_fifo.cpp,v 1.29.22.3 2006/08/23 11:56:02 blanchard Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

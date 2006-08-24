@@ -73,7 +73,7 @@
          <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:lang in 'fr'"></b>
       </i>
       </p>
-      <h3 class="weblog-day-title" tal:content="python:localized_time(entry.EffectiveDate(),long_format=1,context=here)" />
+      <h3 class="weblog-day-title" tal:content="python:localized_time(entry.EffectiveDate(),long_format=1,hour=1,context=here)" />
 
       <div class="weblog-heading">
           <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
@@ -145,7 +145,7 @@
          <b i18n:domain="RyzomSkin" i18n:translate="unofficial" tal:condition="python:lang in 'fr'"></b>
       </i>
       </p>
-      <h3 class="weblog-day-title" tal:content="python:here.toLocalizedTime(entry.EffectiveDate(),long_format=1)" />
+      <h3 class="weblog-day-title" tal:content="python:here.toLocalizedTime(entry.EffectiveDate(),long_format=1,hour=1)" />
 
       <div class="weblog-heading">
           <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>

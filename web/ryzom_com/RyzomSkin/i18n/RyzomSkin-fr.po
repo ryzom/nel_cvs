@@ -20,7 +20,7 @@ msgid "box_last_modified"
 msgstr "Dernière modification : "
 
 msgid "box_effective"
-msgstr "Creation Date : "
+msgstr "Date de Création :"
 
 msgid "box_created"
 msgstr "Date de Création : "

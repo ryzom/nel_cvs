@@ -4,7 +4,7 @@
 ##bind namespace=
 ##bind script=script
 ##bind subpath=traverse_subpath
-##parameters=time=None, long_format=None
+##parameters=time=None, long_format=None, hour=None
 ##title=
 ##
 # The time parameter must be either a string that is suitable for
@@ -13,6 +13,12 @@
 
 tool = context.translation_service
 time = tool.ulocalized_time(time, long_format, context, domain='RyzomSkin')
-if long_format and time:
+
+if long_format and time and hour:
    time += ' UTC'
+
+if long_format and time and not hour:
+   time = ' '.join(time.split()[0:3])
+   time = time[0:-1]+'.'
+
 return time

@@ -9,8 +9,10 @@
                  portal_discussion portal/portal_discussion;
                  isDiscussionAllowed python:portal_discussion.isDiscussionAllowedFor(here);
                  ">
+                 
     <tal:allowed condition="isViewTemplate">
         <tal:comments>
+        
             <form name="reply"
                   action=""
                   method="post"
@@ -24,6 +26,7 @@
                          i18n:attributes="value label_add_comment;"
                          />
             </form>
+            
             <form tal:condition="python:isAnon and not userHasReplyPermission and isDiscussionAllowed"
                   tal:define="pss modules/Products/PythonScripts/standard"
                   tal:attributes="action python:'%s/login_form?came_from=%s' %
@@ -54,18 +57,28 @@
                     <div class="documentByLine"
                          tal:define="anonymous_creator python:reply.Creator()=='Anonymous User'">
                         <span i18n:translate="label_comment_by">Posted by</span>
-                        <span tal:content="python:here.get_fullname(reply.Creator())"
+                        <span tal:content="reply/Creator"
                               tal:condition="not:anonymous_creator">Poster Name</span>
                         <span i18n:translate="label_anonymous_user"
                               tal:condition="anonymous_creator">Anonymous User</span>
                         <span i18n:translate="label_commented_at">at</span> 
                         <span tal:replace="python:portal.toLocalizedTime(reply.ModificationDate(),
-                                           long_format=1)">8/23/2001 12:40:44 PM</span>
+                                           long_format=1,hour=1)">8/23/2001 12:40:44 PM</span>
                     </div>
                     <div class="commentBody"
                          tal:content="structure reply/CookedBody">
                          This is the body text of the comment.
                     </div>
+
+                    <form name="edit"
+                    	  action="editComment" method="post" 
+                          style="display: inline;"
+                    	  tal:attributes="action string:${reply/absolute_url}/editComment"
+                    	  tal:condition="python: str(member) == reply.Creator()" >
+                          <input type="hidden" name="ident" id="ident" value="" tal:attributes="value reply/getId" />
+                    	  <input type="submit" class="standalone destructive" value="editer"/>
+                    </form>
+
                     <form name="reply"
                           action="discussion_reply_form"
                           method="post"

@@ -46,7 +46,7 @@
       </i>
       </p>
 
-      <h3 class="weblog-day-title" tal:content="python:localized_time(here.EffectiveDate(),long_format=1,context=here)" />      
+      <h3 class="weblog-day-title" tal:content="python:localized_time(here.EffectiveDate(),long_format=1,hour=1,context=here)" />      
       <span class="weblog-heading-entry">
         <span class="weblog-topics">
           <tal:loop repeat="topic python:here.getEntryCategories()">

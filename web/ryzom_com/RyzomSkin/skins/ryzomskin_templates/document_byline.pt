@@ -28,10 +28,14 @@
           &mdash;
         </tal:name>
 
-        <span i18n:domain="RyzomSkin" i18n:translate="box_effective"></span>
-        <span tal:replace="python:here.toLocalizedTime(here.EffectiveDate(),long_format=1)">
-        August 16, 2001 at 23:35:59
-        </span>
+<tal:created_or_effective define="item_created here/CreationDate;
+                                  item_effective here/EffectiveDate;
+                                  date python:test(item_effective != '',item_effective,item_created)">                            
+   <span i18n:domain="RyzomSkin" i18n:translate="box_created"></span>
+   <span tal:replace="python:here.toLocalizedTime(date,long_format=1)">
+      August 16, 2001 at 23:35:59
+   </span>
+</tal:created_or_effective>
 
         <span tal:define="locked portal_object/lock_icon.gif"
               tal:condition="isLocked">

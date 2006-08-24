@@ -18,7 +18,6 @@ if long_format and time and hour:
    time += ' UTC'
 
 if long_format and time and not hour:
-   time = ' '.join(time.split()[0:3])
-   time = time[0:-1]+'.'
+   time = ' '.join(time.split()[0:4])
 
 return time

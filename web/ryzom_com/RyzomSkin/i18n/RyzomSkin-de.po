@@ -16,8 +16,14 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
+msgid "box_effective"
+msgstr "Schaffungsdatum :
+
+msgid "box_last_modified"
+msgstr "Zuletzt verändert :"
+
 msgid "box_created"
-msgstr "Schaffungsdatum"
+msgstr "Schaffungsdatum :"
 
 msgid "bug_report"
 msgstr "fehlerbericht"

@@ -24,7 +24,7 @@ msgid "box_last_modified"
 msgstr "Zuletzt verändert :"
 
 msgid "box_effective"
-msgstr "Schaffungsdatum :
+msgstr "Schaffungsdatum :"
 
 msgid "box_created"
 msgstr "Schaffungsdatum :"

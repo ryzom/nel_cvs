@@ -18,21 +18,27 @@
          tal:define="parent python:here.quills_tool.getParentWeblog(here)">
 
 <!-- la ligne pour mettre les icone print,envoyer,...langage... -->
-<div metal:use-macro="here/document_actions/macros/document_actions"></div>
 
       <h1 tal:content="here/title_or_id"></h1>
 
-      <tal:define define="results here/getLazyEntries;
-                          Batch python:modules['Products.CMFPlone'].Batch;
-                          b_size python:parent.entriesPerPage;
-                          b_start python:0;
-                          b_start request/b_start | b_start;">
+  <form style="float:right; ">
+    <select onChange="document.location=this.options[this.selectedIndex].value" tal:define="parent python:here.quills_tool.getParentWeblog(here)">
+      <option value="#" selected="selected" tal:attributes="value string:${parent/absolute_url}" i18n:domain="RyzomSkin" i18n:translate="trier_par_rubrique">Trier par rubrique</option>
+      <tal:loop repeat="topic here/getAvailableTopics">
+        <option value="lien" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
+        tal:content="topic/title_or_id">topic</option>
+      </tal:loop>
+      <option value="tous" tal:attributes="value string:${parent/absolute_url}">Toutes les rubriques</option>
+    </select>
+  </form>
+
+<div metal:use-macro="here/document_actions/macros/document_actions"></div>
+
+      <tal:define define="results here/getLazyEntries;">
 
         <div id="topic-history"
-             tal:condition="results"
-             tal:define="entry_map python:Batch(results, b_size,
-                                            int(b_start), orphan=1);">
-          <tal:loop repeat="entries entry_map">
+             tal:condition="results">
+          <tal:loop repeat="entries results">
             <tal:define define="entry entries/getObject">
               <metal:use use-macro="here/weblog_macros/macros/entry-brief"/>
             </tal:define>

@@ -57,6 +57,16 @@
           name="folder_factories:method" i18n:domain="RyzomSkin" i18n:attributes="value" />
       </form>
 
+  <form style="float:right; margin-top:-23px;">
+    <select onChange="document.location=this.options[this.selectedIndex].value" tal:define="parent python:here.quills_tool.getParentWeblog(here)">
+      <option value="#" selected="selected">Trier par rubrique</option>
+      <tal:loop repeat="topic here/getAvailableTopics">
+        <option value="lien" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
+        tal:content="topic/title_or_id">topic</option>
+      </tal:loop>
+    </select>
+  </form>
+
 <!-- la ligne pour mettre les icone print,envoyer,...langage... -->
 <div metal:use-macro="here/document_actions/macros/document_actions"></div>
 
@@ -89,5 +99,3 @@
 
   </body>
 </html>
-
-<!-- vim: set ft=xml sw=2 ts=2: -->

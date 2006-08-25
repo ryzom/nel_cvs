@@ -21,14 +21,26 @@
 
       <h1 tal:content="here/title_or_id"></h1>
 
-  <form style="float:right; ">
+
+
+  <form style="text-align:right; ">
+
     <select onChange="document.location=this.options[this.selectedIndex].value" tal:define="parent python:here.quills_tool.getParentWeblog(here)">
-      <option value="#" selected="selected" tal:attributes="value string:${parent/absolute_url}" i18n:domain="RyzomSkin" i18n:translate="trier_par_rubrique">Trier par rubrique</option>
+<option value="parent" tal:attributes="value string:${parent/absolute_url}">Toutes les rubriques</option>
       <tal:loop repeat="topic here/getAvailableTopics">
-        <option value="lien" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
+
+<span tal:condition="python:(parent.absolute_url()+'/'+topic.id)!=here.absolute_url()" >
+<option value="lien" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
         tal:content="topic/title_or_id">topic</option>
+</span>
+
+<span tal:condition="python:(parent.absolute_url()+'/'+topic.id)==here.absolute_url()" >
+<option value="lien" selected="selected" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
+        tal:content="topic/title_or_id">topic</option>
+</span>
+
       </tal:loop>
-      <option value="tous" tal:attributes="value string:${parent/absolute_url}">Toutes les rubriques</option>
+      
     </select>
   </form>
 

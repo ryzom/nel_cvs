@@ -51,13 +51,13 @@
       </div>
 
       <form method="post" action=""
-        tal:attributes="action here_url">
+        tal:attributes="action here_url" style="float:left;">
         <input type="hidden" name="type_name" value="WeblogEntry"/>
         <input class="submit_news_button" type="submit" value="Submit Your News"
           name="folder_factories:method" i18n:domain="RyzomSkin" i18n:attributes="value" />
       </form>
 
-  <form style="float:right; margin-top:-23px;">
+  <form style="text-align:right;">
     <select onChange="document.location=this.options[this.selectedIndex].value" tal:define="parent python:here.quills_tool.getParentWeblog(here)">
       <option value="#" selected="selected" i18n:domain="RyzomSkin" i18n:translate="trier_par_rubrique">Trier par rubrique</option>
       <tal:loop repeat="topic here/getAvailableTopics">

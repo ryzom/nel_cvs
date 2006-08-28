@@ -16,6 +16,9 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
+msgid "all_news_topic"
+msgstr "All topics"
+
 msgid "trier_par_rubrique"
 msgstr "Choose a topic"
 

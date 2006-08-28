@@ -16,6 +16,8 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
+msgid "all_news_topic"
+msgstr "All topics"
 
 msgid "trier_par_rubrique"
 msgstr "Nach rubriken geordnet"

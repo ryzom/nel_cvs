@@ -58,11 +58,12 @@
       </form>
 
   <form style="text-align:right;">
+   <strong i18n:domain="RyzomSkin" i18n:translate="trier_par_rubrique">Trier par rubrique</strong>
     <select onChange="document.location=this.options[this.selectedIndex].value" tal:define="parent python:here.quills_tool.getParentWeblog(here)">
-      <option value="#" selected="selected" i18n:domain="RyzomSkin" i18n:translate="trier_par_rubrique">Trier par rubrique</option>
-      <tal:loop repeat="topic here/getAvailableTopics">
-        <option value="lien" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
-        tal:content="topic/title_or_id">topic</option>
+      <option value="#" i18n:domain="RyzomSkin" i18n:translate="all_news_topic">All</option>
+        <tal:loop repeat="topic here/getAvailableTopics">
+          <option value="lien" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
+                               tal:content="topic/title_or_id">topic</option>
       </tal:loop>
     </select>
   </form>

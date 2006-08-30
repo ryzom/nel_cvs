@@ -1,3 +1,12 @@
+*{
+   background-color: #000000;
+   color: #FFFFFF;
+   text-align: left;
+   margin: auto;
+}
+img,
+#serverstatus,
+#navbar,
 div.top,
 #portal-logo,
 #portal-siteactions,
@@ -20,7 +29,7 @@ div.documentActions,
 #portal-colophon,
 input,
 .skipnav,
-.visualNoPrint {
+.visualNoPrint{
     /* Hides all the elements irrelevant for presentations */
     display: none;
 }

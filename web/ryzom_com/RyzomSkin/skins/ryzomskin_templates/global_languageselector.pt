@@ -1,0 +1,55 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en"
+      lang="en"
+      i18n:domain="linguaplone">
+
+<body>
+
+<!-- LANGUAGE SWITCHER DEFINITION -->
+
+<metal:language define-macro="language"
+                tal:condition="context/isTranslatable"
+                tal:define="data context/languageSelectorData;
+                            changeLanguageOrder python:data.append(data[0]);
+                            changeLanguageOrder python:data.pop(0);
+                            flags context/portal_languages/showFlags">
+
+    <ul tal:condition="python:len(data) &gt; 1">
+
+        <li tal:repeat="lang data"
+            tal:condition="flags">
+
+            <a href=""
+               tal:attributes="href lang/change_url;
+                               title lang/alt">
+
+                <span tal:define="current lang/current"
+                      tal:attributes="class python:test(current, 'currentItem', None)"
+                    ><img alt=""
+                          tal:define="available lang/available"
+                          tal:attributes="src string:${portal_url}/flag-${lang/Language}.gif;
+                                          alt lang/Title;
+                                          class python:test(not available, 'visualGhosted', None)"
+                    /></span>
+            </a>
+
+        </li>
+
+        <li tal:condition="not:flags">
+
+            <select onchange=""
+                    tal:attributes="onchange string:window.location=this.options[this.selectedIndex].value">
+                <option tal:repeat="lang data"
+                        tal:content="lang/Title"
+                        tal:attributes="selected lang/current;
+                                        value lang/change_url">Language</option>
+            </select>
+
+        </li>
+
+    </ul>
+
+</metal:language>
+
+</body>
+</html>

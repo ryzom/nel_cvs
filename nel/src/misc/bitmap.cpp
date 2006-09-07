@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must work in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.61.4.6 2006/09/07 15:29:31 cado Exp $
+ * $Id: bitmap.cpp,v 1.61.4.7 2006/09/07 16:34:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1826,7 +1826,7 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 					vColor+=((float)(fNext-fX))*NLMISC::CRGBAF (pSrcLine[(sint32)floor(fX)]);
 					fX=fNext;
 				}
-				nlassert (fX==fFinal);
+				fX = fFinal; // ensure fX == fFinal
 				vColor/=(float)fXdelta;
 				*(pItermPtr++)=vColor;
 			}

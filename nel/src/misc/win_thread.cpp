@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.14.4.1 2006/07/21 10:54:09 boucher Exp $
+ * $Id: win_thread.cpp,v 1.14.4.2 2006/09/07 13:05:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,7 @@ void CWinThread::start ()
 //	ThreadHandle = (void *) ::CreateThread (NULL, _StackSize, ProxyFunc, this, 0, (DWORD *)&ThreadId);
 	ThreadHandle = (void *) ::CreateThread (NULL, 0, ProxyFunc, this, 0, (DWORD *)&ThreadId);
 //	nldebug("NLMISC: thread %x started for runnable '%x'", typeid( Runnable ).name());
-	OutputDebugString(toString("NLMISC: thread %x started for runnable '%s'\n", ThreadId, typeid( *Runnable ).name()).c_str());
+	OutputDebugString(toString(NL_LOC_MSG " NLMISC: thread %x started for runnable '%s'\n", ThreadId, typeid( *Runnable ).name()).c_str());
 	SetThreadPriorityBoost (ThreadHandle, TRUE); // FALSE == Enable Priority Boost
 	if (ThreadHandle == NULL)
 	{

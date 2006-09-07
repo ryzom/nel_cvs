@@ -5,7 +5,7 @@
 <div metal:define-macro="portlet"
        i18n:domain="plone"
        tal:omit-tag=""
-       tal:define="data python:here.plone_utils.createNavTree(here, sitemap=1);">
+       tal:define="data python:here.plone_utils.createNavTree(here, sitemap=0);">
        
 <dl class="portlet" id="portlet-navigation-tree">
     <dt class="portletHeader">
@@ -17,7 +17,7 @@
 
             <li class="navTreeItem"
                 tal:condition="portal_properties/navtree_properties/includeTop">
-                <div class="contenttype-plone-site">
+                <div class="menulevel0">
                     <a class="visualIconPadding"
                        tal:attributes="href string:$portal_url;
                                        title portal/Description;

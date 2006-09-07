@@ -69,7 +69,7 @@
                          tal:content="structure reply/CookedBody">
                          This is the body text of the comment.
                     </div>
-
+<!--
                     <form name="edit"
                     	  action="editComment" method="post" 
                           style="display: inline;"
@@ -78,7 +78,7 @@
                           <input type="hidden" name="ident" id="ident" value="" tal:attributes="value reply/getId" />
                     	  <input type="submit" class="standalone destructive" value="editer"/>
                     </form>
-
+-->
                     <form name="reply"
                           action="discussion_reply_form"
                           method="post"

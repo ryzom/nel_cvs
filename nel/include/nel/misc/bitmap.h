@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.31.4.2 2006/05/31 14:06:26 vizerie Exp $
+ * $Id: bitmap.h,v 1.31.4.3 2006/09/07 15:28:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,8 @@ protected :
 	bool	_LoadGrayscaleAsAlpha;
 	uint32	_Width;
 	uint32	_Height;
+
+	// don't forget to update operator=() and swap() if adding a data member
 
 private :
 	
@@ -280,6 +282,8 @@ public:
 	static const uint32 DXTC1HEADER;
 	static const uint32 DXTC3HEADER;
 	static const uint32 DXTC5HEADER;
+
+	// don't forget to update operator=() and swap() if adding a data member
 
 	CBitmap()
 	{
@@ -609,6 +613,22 @@ public:
 	void getData(uint8*& extractData);
 	
 	void getDibData(uint8*& extractData);
+
+	CBitmap& operator= (const CBitmap& from)
+	{
+		if (&from == this)
+			return *this;
+		for (uint i=0; i!=MAX_MIPMAP; ++i)
+		{
+			_Data[i] = from._Data[i]; // requires more than a surface copy
+		}
+		_MipMapCount = from._MipMapCount;
+		_LoadGrayscaleAsAlpha = from._LoadGrayscaleAsAlpha;
+		_Width = from._Width;
+		_Height = from._Height;
+		PixelFormat = from.PixelFormat;
+		return *this;
+	}
 };
 
 

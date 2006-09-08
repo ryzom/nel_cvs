@@ -3,17 +3,17 @@
       i18n:domain="plone">
 
   <body>
-
-    <div style="padding-top:2em;padding-right:5%;padding-left:5%;" metal:define-macro="portlet" class="portletItem">
+  <tal:macro metal:define-macro="portlet">
+    <div style="padding-top:2em;padding-right:5%;padding-left:5%;" class="portletItem">
       <a href="http://www.mmorpg.com/showFeature.cfm/loadFeature/388/page/6/">
         <img src="/images/home/ryzom_award2005_mmorpg_s.gif" border="0" alt="MMORPG.com award 'best story' 2005 for Ryzom"/>
       </a>
     </div>
-    <div style="padding-top:2em;padding-right:5%;padding-left:5%;" metal:define-macro="portlet" class="portletItem">
+    <div style="padding-top:2em;padding-right:5%;padding-left:5%;" class="portletItem">
       <a href="http://gamelist.mmosite.com/voting/vote.php?gid=128">
-        <img src="/images/home/ryzom_award2006_mmosite.jpg" border="0" alt="MMOSITE.com award 2006 for Ryzom"/>
+        <img src="/images/home/ryzom_award2006_mmosite.gif" border="0" alt="MMOSITE.com award 2006 for Ryzom"/>
       </a>
     </div>
-
+  </tal:macro>
   </body>
 </html>

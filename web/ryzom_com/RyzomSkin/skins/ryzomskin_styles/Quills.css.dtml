@@ -17,7 +17,7 @@
 
 .unofficial-box {
    height:100%;
-   /*min-height:170px; !important;*/
+   min-height:170px; !important;
    background-color: #2C3437;
    border: &dtml-borderWidth; solid #555F5F;
    padding:3px 5px 4px 3px;
@@ -50,10 +50,8 @@ ul.weblog-footer a {
 ul.weblog-footer a:hover {
    background-color: &dtml-globalBackgroundColor;;
    color: &dtml-globalFontColor;;
-   border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;; 
    border: none;
 }
-
 
 .caption {
    color:#4bffff; !important;
@@ -62,7 +60,7 @@ ul.weblog-footer a:hover {
    margin-top:3px;
 }
 
-.topic-image, .weblog-topic-images {
+.weblog-topic-images {
    float:left;
    padding: 3px;
 }

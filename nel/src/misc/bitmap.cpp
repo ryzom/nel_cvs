@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must work in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.61.4.4 2006/05/31 14:06:05 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.61.4.4.4.1 2006/09/10 10:32:26 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1596,6 +1596,8 @@ void CBitmap::releaseMipMaps()
 	}
 }
 
+bool TempMaxVerboseResample = false;
+#define logResample if (TempMaxVerboseResample) nldebug
 
 /*-------------------------------------------------------------------*\
 							resample
@@ -1606,31 +1608,45 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 	bool needRebuild = false;
 
 	// Deleting mipmaps
+	logResample("Resample: 10");
 	if(_MipMapCount>1)
 		needRebuild = true;
 	releaseMipMaps();
+	logResample("Resample: 20");
 
 	if(nNewWidth==0 || nNewHeight==0)
 	{
 		_Width = _Height = 0;
+		logResample("Resample: 25");
 		return;
 	}
 	
+	logResample("Resample: 30");
 	CObjectVector<uint8> pDestui;
 	pDestui.resize(nNewWidth*nNewHeight*4);
+	logResample("Resample: 40");
 	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
+	logResample("Resample: 50");
 
 	resamplePicture32 ((NLMISC::CRGBA*)&_Data[0][0], pDestRgba, _Width, _Height, nNewWidth, nNewHeight);
+	logResample("Resample: 60");
+
 	NLMISC::contReset(_Data[0]); // free memory
+	logResample("Resample: 70");
+
 	_Data[0] =  pDestui;
+	logResample("Resample: 80");
 	_Width= nNewWidth;
 	_Height= nNewHeight;
 
 	// Rebuilding mipmaps
+	logResample("Resample: 90");
 	if(needRebuild)
 	{
 		buildMipMaps();
+		logResample("Resample: 95");
 	}
+	logResample("Resample: 100");
 }
 
 
@@ -1714,35 +1730,45 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 								 sint32 nSrcWidth, sint32 nSrcHeight, 
 								 sint32 nDestWidth, sint32 nDestHeight)
 {
+	logResample("RP32: 0 pSrc=%p pDest=%p", pSrc, pDest);
 	if ((nSrcWidth<=0)||(nSrcHeight<=0)||(nDestHeight<=0)||(nDestHeight<=0))
 		return;
 
 	// If we're reducing it by 2, call the fast resample
+	logResample("RP32: 10");
 	if (((nSrcHeight / 2) == nDestHeight) && ((nSrcHeight % 2) == 0) && 
 		((nSrcWidth  / 2) == nDestWidth)  && ((nSrcWidth  % 2) == 0))
 	{
 		resamplePicture32Fast(pSrc, pDest, nSrcWidth, nSrcHeight, nDestWidth, nDestHeight);
+		logResample("RP32: 15");
 		return;
 	}
 
+	logResample("RP32: 20");
 	bool bXMag=(nDestWidth>=nSrcWidth);
 	bool bYMag=(nDestHeight>=nSrcHeight);
 	bool bXEq=(nDestWidth==nSrcWidth);
 	bool bYEq=(nDestHeight==nSrcHeight);
 	std::vector<NLMISC::CRGBAF> pIterm (nDestWidth*nSrcHeight);
+	logResample("RP32: 30");
 	
 	if (bXMag)
 	{
+		logResample("RP32: 40");
 		float fXdelta=(float)(nSrcWidth)/(float)(nDestWidth);
 		NLMISC::CRGBAF *pItermPtr=&*pIterm.begin();
+		logResample("RP32: 50");
 		sint32 nY;
 		for (nY=0; nY<nSrcHeight; nY++)
 		{
+			logResample("RP32: 60");
 			const NLMISC::CRGBA *pSrcLine=pSrc;
 			float fX=0.f;
 			sint32 nX;
 			for (nX=0; nX<nDestWidth; nX++)
 			{
+				if (nX % 8 == 0)
+					logResample("RP32: 70 [MOD 8]");
 				float fVirgule=fX-(float)floor(fX);
 				nlassert (fVirgule>=0.f);
 				NLMISC::CRGBAF vColor;
@@ -1776,9 +1802,11 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 	}
 	else if (bXEq)
 	{
+		logResample("RP32: 80");
 		NLMISC::CRGBAF *pItermPtr=&*pIterm.begin();
 		for (sint32 nY=0; nY<nSrcHeight; nY++)
 		{
+			logResample("RP32: 90");
 			const NLMISC::CRGBA *pSrcLine=pSrc;
 			sint32 nX;
 			for (nX=0; nX<nDestWidth; nX++)
@@ -1788,17 +1816,22 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 	}
 	else
 	{
+		logResample("RP32: 100");
 		double fXdelta=(double)(nSrcWidth)/(double)(nDestWidth);
 		nlassert (fXdelta>1.f);
 		NLMISC::CRGBAF *pItermPtr=&*pIterm.begin();
 		sint32 nY;
+		logResample("RP32: 110");
 		for (nY=0; nY<nSrcHeight; nY++)
 		{
+			logResample("RP32: 120");
 			const NLMISC::CRGBA *pSrcLine=pSrc;
 			double fX=0.f;
 			sint32 nX;
 			for (nX=0; nX<nDestWidth; nX++)
 			{
+				if (nX % 8 == 0)
+					logResample("RP32: 130 [MOD 8]");
 				NLMISC::CRGBAF vColor (0.f, 0.f, 0.f, 0.f);
 				double fFinal=fX+fXdelta;
 				while (fX<fFinal)
@@ -1819,14 +1852,18 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 				
 	if (bYMag)
 	{
+		logResample("RP32: 140");
 		double fYdelta=(double)(nSrcHeight)/(double)(nDestHeight);
 		sint32 nX;
 		for (nX=0; nX<nDestWidth; nX++)
 		{
+			logResample("RP32: 150");
 			double fY=0.f;
 			sint32 nY;
 			for (nY=0; nY<nDestHeight; nY++)
 			{
+				if (nY % 8 == 0)
+					logResample("RP32: 160 [MOD 8]");
 				double fVirgule=fY-(double)floor(fY);
 				nlassert (fVirgule>=0.f);
 				NLMISC::CRGBAF vColor;
@@ -1859,8 +1896,10 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 	}
 	else if (bYEq)
 	{
+		logResample("RP32: 170");
 		for (sint32 nX=0; nX<nDestWidth; nX++)
 		{
+			logResample("RP32: 180");
 			sint32 nY;
 			for (nY=0; nY<nDestHeight; nY++)
 			{
@@ -1870,15 +1909,19 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 	}
 	else
 	{
+		logResample("RP32: 190");
 		double fYdelta=(double)(nSrcHeight)/(double)(nDestHeight);
 		nlassert (fYdelta>1.f);
 		sint32 nX;
 		for (nX=0; nX<nDestWidth; nX++)
 		{
+			logResample("RP32: 200");
 			double fY=0.f;
 			sint32 nY;
 			for (nY=0; nY<nDestHeight; nY++)
 			{
+				if (nY % 8 == 0)
+					logResample("RP32: 210 [MOD 8]");
 				NLMISC::CRGBAF vColor (0.f, 0.f, 0.f, 0.f);
 				double fFinal=fY+fYdelta;
 				while ((fY<fFinal)&&((sint32)fY!=nSrcHeight))
@@ -1894,6 +1937,7 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 			}
 		}
 	}
+	logResample("RP32: 220");
 }
 
 /*-------------------------------------------------------------------*\

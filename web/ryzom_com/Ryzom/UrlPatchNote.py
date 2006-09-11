@@ -30,8 +30,8 @@ UrlPatchNoteSchema = BaseSchema.copy() + Schema((
 		searchable=1,
 		default_output_type='text/restructured',
 		widget=TextAreaWidget(		
-		description="not visible in the final version" ,
-		visible={'edit':'hidden', 'view':'visible'},
+#		description="not visible in the final version" ,
+#		visible={'edit':'hidden', 'view':'visible'},
 		)
 	),
 ),)	
@@ -43,6 +43,7 @@ class UrlPatchNote(BaseContent):
 	schema = UrlPatchNoteSchema
 	meta_type = portal_type = 'UrlPatchNote'
 	global_allow = 0
+	_at_rename_after_creation = True
 
 	actions = (
 		{ 'id': 'view',
@@ -52,15 +53,15 @@ class UrlPatchNote(BaseContent):
 		},
 	)
 
-	def setTitle(self, value, **kwargs):
-		if not value and self.id:
-			value = self.id
-		else:			
-			try:
-				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
-			except:
-				pass
-		self.getField('title').set(self, value, **kwargs)
+#	def setTitle(self, value, **kwargs):
+#		if not value and self.id:
+#			value = self.id
+#		else:			
+#			try:
+#				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+#			except:
+#				pass
+#		self.getField('title').set(self, value, **kwargs)
 
 #	def setTitle(self, value, **kwargs):
 #		self.getField('title').set(self, value, **kwargs)

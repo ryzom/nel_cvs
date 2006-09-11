@@ -24,7 +24,9 @@
 
             <div tal:condition="repeat/patch/start" >
                <h2 i18n:translate="PatchNote_last" ></h2>
-               <p tal:content="structure obj/getText" />
+               <p tal:define="text obj/getText;
+                              text python:here.peekaboo(text);"
+                  tal:content="structure text" />
                <h2 i18n:translate="PatchNote_other" ></h2>
             </div>
             

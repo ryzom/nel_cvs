@@ -19,14 +19,14 @@ except ImportError:
 #import de fonction du produit
 from config import *
 
-#dÃ©fini le shÃ©ma 
+
 QnASchema=BaseSchema.copy()+ Schema((
-	DateTimeField('datestart',
+	DateTimeField('dateStart',
 		required=True,
 		searchable=False,
-		widget=CalendarWidget(description="date de dÃ©part ",label="Date",)
+		widget=CalendarWidget(description="date de dÃ©part",label="Date",)
 	),
-	DateTimeField('datearrivee',
+	DateTimeField('dateEnd',
 		required=True,
 		searchable=False,
 		widget=CalendarWidget(description="date d'arrivÃ©e",label="Date",)
@@ -35,7 +35,7 @@ QnASchema=BaseSchema.copy()+ Schema((
 		searchable=False,
 		widget=TextAreaWidget(description="Enter a little description of the content link",)
 	),
-	TextField('filtrage',
+	TextField('filter',
 		searchable=False,
 		widget=TextAreaWidget(description="Enter a les noms des auteurs Ã  chercher",)
 	),
@@ -65,6 +65,7 @@ class QnA(BaseContent):
 	meta_type = 'QnA'
 	default_view  = 'qna_view'
 	immediate_view = 'qna_view'
+	_at_rename_after_creation = True
 
 	actions = (
 		{ 'id': 'view',
@@ -72,90 +73,52 @@ class QnA(BaseContent):
 		'action': 'string:${object_url}/qna_view',
 		'permissions': (CMFCorePermissions.View,)
 		},
-	#	{ 'id': 'edit',
-	#	'name': 'edit',
-	#	'action': 'string:${object_url}/qna_edit',
-	#	'permissions': (CMFCorePermissions.ModifyPortalContent,)
-	#	},
+		{ 'id': 'edit',
+		'name': 'edit',
+		'action': 'string:${object_url}/qna_edit_request_form',
+		'permissions': (CMFCorePermissions.ModifyPortalContent,)
+		},
 	)
 
-	#si le champ "filtrage" est vide il est remplie par le nom des utilisateurs du groupe official
-	def setFiltrage(self, value, **kwargs):
+
+	#PostList and accessor & mutator
+	PostList={}
+	def getPostList(self):
+		"""return the postlist"""
+		return self.PostList
+	def setPostList(self,dico):
+		"""set the PostList"""
+		self.PostList=dico
+
+	
+	def setFilter(self, value, **kwargs):
+		"""set filter fields"""
 		if not value:
-			self.getField('filtrage').set(self, str(self.getUsersOfficials()), **kwargs)
+			self.getField('filter').set(self, str(self.getUsersOfficials()), **kwargs)
 		else:
-			self.getField('filtrage').set(self, value, **kwargs)
-
-	def setTitle(self, value, **kwargs):
-		if not value and self.id:
-			value = self.id
-		else:			
-			try:
-				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
-			except:
-				pass
-		self.getField('title').set(self, value, **kwargs)
+			self.getField('filter').set(self, value, **kwargs)
 
 
-	def setText(self,value,**kwargs):
-		self.getField('text').set(self,self.generate_text(),**kwargs)		
-
-
-
-	def generate_text(self):
-		tab=self.getChoice()
-		text=''		
-		for post_joined in tab:
-			post_splitted = post_joined.split('|-|')
-			try:
-				post_author = post_splitted[1]
-				post_text   = post_splitted[2]
-				post_id     = post_splitted[3]
-				text += post_text
-				text += '<p id="qna_author_link">-- %s <a href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post_author, post_id, post_id)
-			except IndexError:
-				text += "Error - " + str(post_splitted)
-		return text
-
-	#cette fonction est appelle lors de la visualisation du qna et corrige le champ text s'il n'est pas correct
-#	def auto_correction(self):
-#		text = self.getText()
-#		if not text:
-#			self.setText('truc')
-#		return text
-
-	
-	#def getText(self):
-	#	text = self.getField('text').get(self,value,**kwargs)
-	#	if not text or text=='':
-	#		self.setText('truc')
-	#	return text
-			
+	def generate_text(self,post):
+		"""write text from post"""
+		newtext=''
+		newtext+=self.filtertext(post[2])
+		newtext+='<p id="qna_author_link">-- %s <a href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post[1], post[3], post[3])
+		return newtext
 		
-	
-	#script de validation 	
-	#def validation_date(self,date):
-	#	 return self.parseTime(date) <= self.parseTime(DateTime())   
-   
 
-	#convertit une date en timestamp
-	#TODO: gerer les heures du type 00:00
-	def parseTime(self,date):		
+	def parseTime(self,date):
+		"""convert date to timestamp"""		
 		try:
 			result = timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))
+		#if the date is xx/xx/xxxx 00:00:00
    		except:
 			result = timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d 00:00:00 %Z"))
 		return result
 
-	def parseName(self,name):
-		n=name.split()
-		tab=[]
-		for i in n:
-			tab.append("'"+i+"'")
-		return join(tab,',')
 
-	#renvoie la liste des utilisateurs d'un groupe
-	def getGroupUsers(self,groupid):   
+	def getGroupUsers(self,groupid):
+		"""return users in group"""
 		acl_users = getToolByName(self,'acl_users')
     		users=acl_users.getUsers()
    		prefix=acl_users.getGroupPrefix()
@@ -166,23 +129,36 @@ class QnA(BaseContent):
               				 avail.append(str(user))
    		return avail
 
-	#renvoie la liste du groupe officials
+	
 	def getUsersOfficials(self):
+		"""return Official's users"""
 		return join(self.getGroupUsers('Officials'),' ')
 
 
-	def get_atys_forums2(self):
-		date1=self.parseTime(str(self.getDatestart()))       	 	
-		date2=self.parseTime(str(self.getDatearrivee()))
-		OfficialsNames = self.getFiltrage().split()
+	def getSQLPostList(self):
+		"""return a the results of the sql request"""
+		#on convertie les dates en timestamp
+		date1=self.parseTime(str(self.getDateStart()))       	 	
+		date2=self.parseTime(str(self.getDateEnd()))
+		#la liste des utilisateur a rechercher par defaut
+		OfficialsNames = self.getFilter().split()
+		#execute la requete sql
 		results=self.qna(username = OfficialsNames, start = date1, end = date2)
-		tab=[]
-		for row in results:                        
+		return results
+
+
+	def createPostList(self):
+		"""return the PostList in a dictionnary"""
+		SQLPostList=self.getSQLPostList()
+		PostList={}
+		i=0
+		for row in SQLPostList:
+			i+=1
 			post_id  = str(row[0])
 			post_date = str(row[1])
 			post_author = str(row[2])
 			post_text   = str(row[3])
-
+			#conversion du texte
 			try:
 				post_text=post_text.replace('\xc2','').decode('cp1252').encode('utf')
 			except:
@@ -190,25 +166,15 @@ class QnA(BaseContent):
 					post_text=post_text.decode('utf').encode('latin')
 				except:
 					post_text=post_text.decode('latin')
-			post_text=self.filtertext(post_text)
-			#tab.append((post_date,post_author,post_text,post_id))
-			tab.append('|-|'.join((post_date,post_author,post_text,post_id)))
-		return tab
-
-	#def get_atys_forums2(self):
-	#	result=[]
-	#	tab = self.get_atys_forums()
-	#	for i in tab:
-	#		post_id  = str(i[3])
-	#		post_date = str(i[0])
-	#		post_author = str(i[1])
-	#		post_text   = str(i[2])
-	#		result.append(str((post_date,post_author,post_text,post_id))
-	#	return result
+			#ajout des donnÃ©es dans le dictionnaire
+			newtext = self.generate_text([post_date,post_author,post_text,post_id])
+			PostList.update({i:[post_date,post_author,newtext,post_id]})
+		#return PostList
+		self.setPostList(PostList)
 
 
 	def filtertext(self,text):		
-		# Replace string
+		"""(poorly) translate bbcode to html code"""
 		newstr=text
 
 		quoteindex=newstr.find('[QUOTE=')+7
@@ -278,34 +244,23 @@ class QnA(BaseContent):
 		newstr = re.sub('\[img\]','<img>',newstr)
 		newstr = re.sub('\[/img\]','</img>',newstr)
 		newstr = re.sub('\[center\]','<center>',newstr)
-		newstr = re.sub('\[/center\]','</center>',newstr)
- 
+		newstr = re.sub('\[/center\]','</center>',newstr) 
 		newstr = re.sub('\[url\]','<a>',newstr)
 		newstr = re.sub('\[URL\]','<a>',newstr)
-
 		newstr = re.sub('\[u\]','<h1>',newstr)
 		newstr = re.sub('\[/u\]','</h1>',newstr)
 		newstr = re.sub('\[U\]','<h1>',newstr)
 		newstr = re.sub('\[/U\]','</h1>',newstr)
  		newstr = re.sub('\[email\]','<email>',newstr)
 		newstr = re.sub('\[/email\]','</email>',newstr)
-
 		newstr = re.sub('\[list\]','<li>',newstr)
 		newstr = re.sub('\[/list\]','</li>',newstr)
 		newstr = re.sub('\[QUOTE\]','<div class="news_quote">',newstr)
 		newstr = re.sub('\[quote\]','<div class="news_quote">',newstr)
 		newstr = re.sub('\[edit\]','<edit>',newstr)
 		newstr = re.sub('\[/edit\]','</edit>',newstr)
-
-
 		newstr = re.sub('\n','<br />',newstr)
-
 		return newstr
-		
-        	
-        	
 
-
-#enregisitrements de la classe de Archetypes -cf_init_
 registerType(QnA,PROJECTNAME)								
 								

@@ -1,0 +1,29 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+      lang="en-US"      
+      metal:use-macro="here/main_template/macros/master">
+
+<body>
+
+<div metal:fill-slot="main" 
+     tal:define="errors python:request.get('errors', {});
+                 Iterator python:modules['Products.CMFPlone'].IndexIterator;
+                 tabindex python:Iterator();">
+
+   <h1>QnA Request Edit</h1>
+   <form class="QnA_choice"
+         name="edit_form"
+         method="post"
+         tal:attributes="action string:${here/absolute_url}/qna_edit_request">
+
+        <div metal:use-macro="python: here.widget('title', mode='edit')" />
+        <div metal:use-macro="python: here.widget('description', mode='edit')" />
+        <div metal:use-macro="python: here.widget('dateStart', mode='edit')" />
+        <div metal:use-macro="python: here.widget('dateEnd', mode='edit')" />
+        <div metal:use-macro="python: here.widget('filter', mode='edit')" />
+
+        <input class="context" tabindex="" name="form_submit" value="OK" type="submit">
+   </form>
+</div>
+</body>
+
+</html>

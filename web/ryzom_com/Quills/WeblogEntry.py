@@ -102,7 +102,7 @@ class WeblogEntry(BaseContent):
     meta_type = 'WeblogEntry'
     content_icon = 'weblogentry_icon.gif'
     global_allow = False
-
+    _at_rename_after_creation = True
     default_view  = 'weblogentry_view'
     immediate_view = 'weblogentry_view'
 
@@ -115,7 +115,7 @@ class WeblogEntry(BaseContent):
 
     def __init__(self, oid, **kwargs):
         self.schema['allowDiscussion'].default = True
-        self.schema['id'].widget.visible = {'edit': 'invisible'}
+#        self.schema['id'].widget.visible = {'edit': 'invisible'}
         BaseContent.__init__(self, oid, **kwargs)
 
     # Set start/end to effective to use portal_calendar for a blog archive
@@ -138,12 +138,12 @@ class WeblogEntry(BaseContent):
 
         return result
 
-    def setTitle(self, value, **kwargs):
-        self.getField('title').set(self, value, **kwargs)
-        if value:
-            weblog = self.quills_tool.getParentWeblog(self)
-            self.setId(self.quills_tool.idFromTitle(value, 'WeblogEntry',
-                weblog))
+#    def setTitle(self, value, **kwargs):
+#        self.getField('title').set(self, value, **kwargs)
+#        if value:
+#            weblog = self.quills_tool.getParentWeblog(self)
+#            self.setId(self.quills_tool.idFromTitle(value, 'WeblogEntry',
+#                weblog))
 
     def getArchiveUrl(self):
         """Build a /YYYY/MM/DD/entry path for referencing posts"""

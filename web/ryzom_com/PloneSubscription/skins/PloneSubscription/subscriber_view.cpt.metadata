@@ -1,9 +1,0 @@
-[default]
-title=Manage user subscriptions
-
-[validators]
-validators=
-
-[actions]
-action.success=traverse_to:string:subscriber_edit
-action.failure=traverse_to:string:subscriber_view

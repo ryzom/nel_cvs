@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.33 2006/05/31 12:03:17 boucher Exp $
+ * $Id: callback_client.cpp,v 1.34 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,7 +237,7 @@ bool CCallbackClient::dataAvailable ()
 void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 {
 	checkThreadId ();
-	nlassert (connected ());
+//	nlassert (connected ());
 	*hostid = InvalidSockId;
 
 #ifdef USE_MESSAGE_RECORDER

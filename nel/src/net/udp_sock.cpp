@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.15 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.16 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/net/udp_sock.h"
 
 #ifdef NL_OS_WINDOWS
-#include <winsock2.h>
+#include <windows.h>
 #define socklen_t int
 #define ERROR_NUM WSAGetLastError()
 

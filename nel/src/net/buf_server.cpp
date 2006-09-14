@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.52 2006/05/31 12:03:17 boucher Exp $
+ * $Id: buf_server.cpp,v 1.53 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/net/buf_server.h"
 
 #ifdef NL_OS_WINDOWS
-#include <winsock2.h>
+#include <windows.h>
 //typedef sint socklen_t;
 
 #elif defined NL_OS_UNIX
@@ -82,7 +82,7 @@ CBufServer::CBufServer( TThreadStategy strategy,
 	if ( ! _ReplayMode )
 	{
 		_ListenTask = new CListenTask( this );
-		_ListenThread = IThread::create( _ListenTask );
+		_ListenThread = IThread::create( _ListenTask, 1024*4*4 );
 	}
 	/*{
 		CSynchronized<uint32>::CAccessor syncbpi ( &_BytesPushedIn );
@@ -427,45 +427,45 @@ bool CBufServer::dataAvailable()
 
 			// Process disconnection event
 			case CBufNetBase::Disconnection:
-			{
-				TSockId sockid = *((TSockId*)(&*buffer.begin()));
-				nldebug( "LNETL1: Disconnection event for %p %s", sockid, sockid->asString().c_str());
-
-				sockid->setConnectedState( false );
-
-				// Call callback if needed
-				if ( disconnectionCallback() != NULL )
 				{
-					disconnectionCallback()( sockid, argOfDisconnectionCallback() );
+					TSockId sockid = *((TSockId*)(&*buffer.begin()));
+					nldebug( "LNETL1: Disconnection event for %p %s", sockid, sockid->asString().c_str());
+
+					sockid->setConnectedState( false );
+
+					// Call callback if needed
+					if ( disconnectionCallback() != NULL )
+					{
+						disconnectionCallback()( sockid, argOfDisconnectionCallback() );
+					}
+
+					// remove from the list of valid client
+					nlverify(_ConnectedClients.erase(sockid) == 1);
+
+					// Add socket object into the synchronized remove list
+					nldebug( "LNETL1: Adding the connection to the remove list" );
+					nlassert( ((CServerBufSock*)sockid)->ownerTask() != NULL );
+					((CServerBufSock*)sockid)->ownerTask()->addToRemoveSet( sockid );
+					break;
 				}
-
-				// remove from the list of valid client
-				nlverify(_ConnectedClients.erase(sockid) == 1);
-
-				// Add socket object into the synchronized remove list
-				nldebug( "LNETL1: Adding the connection to the remove list" );
-				nlassert( ((CServerBufSock*)sockid)->ownerTask() != NULL );
-				((CServerBufSock*)sockid)->ownerTask()->addToRemoveSet( sockid );
-				break;
-			}
 			// Process connection event
 			case CBufNetBase::Connection:
-			{
-				TSockId sockid = *((TSockId*)(&*buffer.begin()));
-				nldebug( "LNETL1: Connection event for %p %s", sockid, sockid->asString().c_str());
-
-				// add this socket in the list of client
-				nlverify(_ConnectedClients.insert(sockid).second);
-
-				sockid->setConnectedState( true );
-				
-				// Call callback if needed
-				if ( connectionCallback() != NULL )
 				{
-					connectionCallback()( sockid, argOfConnectionCallback() );
+					TSockId sockid = *((TSockId*)(&*buffer.begin()));
+					nldebug( "LNETL1: Connection event for %p %s", sockid, sockid->asString().c_str());
+
+					// add this socket in the list of client
+					nlverify(_ConnectedClients.insert(sockid).second);
+
+					sockid->setConnectedState( true );
+					
+					// Call callback if needed
+					if ( connectionCallback() != NULL )
+					{
+						connectionCallback()( sockid, argOfConnectionCallback() );
+					}
+					break;
 				}
-				break;
-			}
 			default: // should not occur
 				nlinfo( "LNETL1: Invalid block type: %hu (should be = to %hu", (uint16)(buffer[buffer.size()-1]), (uint16)(val) );
 				nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
@@ -991,7 +991,7 @@ void CBufServer::addNewThread( CThreadPool& threadpool, CServerBufSock *bufsock 
 	task->addNewSocket( bufsock );
 
 	// Add a new thread to the pool, with this task
-	IThread *thr = IThread::create( task );
+	IThread *thr = IThread::create( task, 1024*4*4 );
 	{
 		threadpool.push_back( thr );
 		thr->start();

@@ -1,7 +1,7 @@
 /** \file login_cookie.cpp
  * TODO: File description
  *
- * $Id: login_cookie.cpp,v 1.6 2005/07/20 18:04:22 cado Exp $
+ * $Id: login_cookie.cpp,v 1.7 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,14 @@ bool operator== (const CLoginCookie &c1, const CLoginCookie &c2)
 	nlassert (c1._Valid && c2._Valid);
 
 	return c1._UserAddr==c2._UserAddr && c1._UserKey==c2._UserKey && c1._UserId==c2._UserId;
+}
+
+/*
+ * Comparison != operator
+ */
+bool operator!= (const CLoginCookie &c1, const CLoginCookie &c2)
+{
+	return !(c1 == c2);
 }
 
 CLoginCookie::CLoginCookie (uint32 addr, uint32 id) : _Valid(true), _UserAddr(addr), _UserId(id)

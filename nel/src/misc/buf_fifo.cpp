@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.30 2006/07/12 14:37:22 boucher Exp $
+ * $Id: buf_fifo.cpp,v 1.31 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,12 +37,16 @@ using namespace std;
 
 namespace NLMISC {
 
+#ifdef BUFFIFO_TRACK_ALL_BUFFERS
 CBufFIFO::TAllBuffers		CBufFIFO::_AllBuffers;
+#endif
 
 
 CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Empty(true), _Head(NULL), _Tail(NULL), _Rewinder(NULL)
 {
+#ifdef BUFFIFO_TRACK_ALL_BUFFERS
 	_AllBuffers.insert(this);
+#endif
 
 	// reset statistic
 	_BiggestBlock = 0;
@@ -59,7 +63,10 @@ CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Empty(true), _Head(NULL),
 
 CBufFIFO::~CBufFIFO()
 {
+#ifdef BUFFIFO_TRACK_ALL_BUFFERS
 	_AllBuffers.erase(this);
+#endif
+	
 	if (_Buffer != NULL)
 	{
 		delete []_Buffer;
@@ -693,6 +700,7 @@ bool CBufFIFO::canFit (uint32 s)
 	nlstop;
 }
 
+#ifdef BUFFIFO_TRACK_ALL_BUFFERS
 NLMISC_CATEGORISED_COMMAND(misc, dumpAllBuffers, "Dump all the fifo buffer", "no args")
 {
 	log.displayNL("Dumping %u FIFO buffers :", CBufFIFO::_AllBuffers.size());
@@ -709,6 +717,7 @@ NLMISC_CATEGORISED_COMMAND(misc, dumpAllBuffers, "Dump all the fifo buffer", "no
 
 	return true;
 }
+#endif
 
 
 } // NLMISC

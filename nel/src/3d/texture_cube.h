@@ -1,7 +1,7 @@
 /** \file texture_cube.h
  * Cube mapping (6 maps around the object)
  *
- * $Id: texture_cube.h,v 1.8 2005/02/22 10:19:12 besson Exp $
+ * $Id: texture_cube.h,v 1.9 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,7 @@ public:
 	 * Set the name of the file containing the texture
 	 * \param name of the file
 	 */	
-	void setFileName(std::string s);
+	//void setFileName(std::string s);
 
 
 	/** 

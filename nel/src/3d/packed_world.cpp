@@ -88,11 +88,12 @@ void CPackedWorld::build(std::vector<TPackedZoneBaseSPtr> &packedZones)
 }
 
 //*************************************************************************************************
-bool CPackedWorld::raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, CVector &inter, std::vector<NLMISC::CTriangle> *testedTriangles /*= NULL*/)
+bool CPackedWorld::raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, CVector &inter, std::vector<NLMISC::CTriangle> *testedTriangles /*= NULL*/, NLMISC::CVector *normal)
 {
 	if (_ZoneGrid.empty()) return false;
 	++_RaytraceCounter;
 	float bestDist = FLT_MAX;	
+	NLMISC::CVector bestNormal;
 	CVector currEnd = end;
 	CVector currInter;
 	if (_RaytraceCounter == (uint32) ~0)
@@ -119,11 +120,13 @@ bool CPackedWorld::raytrace(const NLMISC::CVector &start, const NLMISC::CVector 
 		{
 			if (_Zones[currZoneList[k]].RaytraceCounter != _RaytraceCounter) // already visited
 			{
-				if (_Zones[currZoneList[k]].Zone->raytrace(start, currEnd, currInter, testedTriangles))
+				NLMISC::CVector normalTmp;
+				if (_Zones[currZoneList[k]].Zone->raytrace(start, currEnd, currInter, testedTriangles, &normalTmp))
 				{
 					float dist = (currInter - start).norm();
 					if (dist < bestDist)
 					{
+						bestNormal = normalTmp;
 						bestDist = dist;
 						inter = currInter;
 						currEnd = currInter; // during search, just seek hit that are nearest						
@@ -132,7 +135,14 @@ bool CPackedWorld::raytrace(const NLMISC::CVector &start, const NLMISC::CVector 
 				_Zones[currZoneList[k]].RaytraceCounter = _RaytraceCounter;
 			}
 		}
-		if (bestDist != FLT_MAX) return true;
+		if (bestDist != FLT_MAX)
+		{
+			if (normal)
+			{
+				*normal = bestNormal;
+			}
+			return true;
+		}
 	}
 	while (CGridTraversal::traverse(start2f, dir2f, currX, currY));	
 	return false;

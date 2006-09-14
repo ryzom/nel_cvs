@@ -1,7 +1,7 @@
 /** \file co_task.h
  * Coroutine based task.
  *
- * $Id: co_task.h,v 1.2 2005/10/19 16:58:52 boucher Exp $
+ * $Id: co_task.h,v 1.3 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_CO_TASK_H
 
 #include "types_nl.h"
-#include <vector>
+//#include <vector>
 
 namespace NLMISC
 {

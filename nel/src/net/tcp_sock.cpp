@@ -1,7 +1,7 @@
 /** \file tcp_sock.cpp
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.cpp,v 1.9 2006/05/31 12:03:18 boucher Exp $
+ * $Id: tcp_sock.cpp,v 1.10 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/net/tcp_sock.h"
 
 #ifdef NL_OS_WINDOWS
-#include <winsock2.h>
+#include <windows.h>
 #define socklen_t int
 #define ERROR_NUM WSAGetLastError()
 
@@ -146,7 +146,7 @@ void CTcpSock::shutdownSending()
 
 void CTcpSock::setKeepAlive( bool keepAlive)
 {
-	nlassert(_Sock != INVALID_SOCKET)
+	nlassert(_Sock != INVALID_SOCKET);
 	int b = keepAlive?1:0;
 	if ( setsockopt( _Sock, SOL_SOCKET, SO_KEEPALIVE, (char*)&b, sizeof(b) ) != 0 )
 	{

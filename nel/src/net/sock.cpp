@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.42 2006/01/10 17:38:47 boucher Exp $
+ * $Id: sock.cpp,v 1.43 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,7 @@
 
 #ifdef NL_OS_WINDOWS
 
-#	include <winsock2.h>
-//#	include <windows.h>
+#	include <windows.h>
 #	define socklen_t int
 #	define ERROR_NUM WSAGetLastError()
 #	define ERROR_WOULDBLOCK WSAEWOULDBLOCK

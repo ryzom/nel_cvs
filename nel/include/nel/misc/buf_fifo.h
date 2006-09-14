@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Dynamically resizable FIFO container which contains different size block
  *
- * $Id: buf_fifo.h,v 1.15 2006/07/12 14:37:21 boucher Exp $
+ * $Id: buf_fifo.h,v 1.16 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 
 namespace NLMISC {
 
+#undef BUFFIFO_TRACK_ALL_BUFFERS
 
 
 /**
@@ -155,9 +156,11 @@ private:
 	TTicks _FrontedTime;
 	TTicks _ResizedTime;
 
+#ifdef BUFFIFO_TRACK_ALL_BUFFERS
 	typedef std::set<CBufFIFO*> TAllBuffers;
 	// All the buffer for debug output
-	static TAllBuffers		_AllBuffers;
+	static TAllBuffers		_AllBuffers; // WARNING: not mutexed, can produce some crashes!
+#endif
 
 	NLMISC_CATEGORISED_COMMAND_FRIEND(misc, dumpAllBuffers);
 };

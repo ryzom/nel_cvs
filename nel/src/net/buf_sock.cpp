@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.43 2005/10/10 09:51:04 boucher Exp $
+ * $Id: buf_sock.cpp,v 1.44 2006/09/14 16:56:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,12 +26,11 @@
 #include "stdnet.h"
 
 #include "nel/misc/hierarchical_timer.h"
-
 #include "nel/net/buf_sock.h"
 #include "nel/net/buf_server.h"
 
 #ifdef NL_OS_WINDOWS
-#include <winsock2.h>
+#include <windows.h>
 #elif defined NL_OS_UNIX
 #include <netinet/in.h>
 #endif

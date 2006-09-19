@@ -25,3 +25,5 @@ msgstr "Letzter Patch"
 msgid "PatchNote_other"
 msgstr "Alte Patches"
 
+msgid "PatchNote_containerTitle"
+msgstr "Patchs notes"

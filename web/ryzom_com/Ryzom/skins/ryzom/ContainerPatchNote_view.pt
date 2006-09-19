@@ -17,7 +17,7 @@
                  tal:condition="python:here.isOfficial(member.getUserName())"
                  tal:attributes="href string:newPatchNote" />
 
-      <h1>Patchs Notes</h1>
+      <h1 i18n:translate="PatchNote_containerTitle">Patchs Notes</h1>
       <div tal:condition="results">
       <div tal:repeat="patch results" tal:omit-tag="">
          <tal:block define="obj patch/getObject">
@@ -27,6 +27,7 @@
                <p tal:define="text obj/getText;
                               text python:here.peekaboo(text);"
                   tal:content="structure text" />
+               <br />
                <h2 i18n:translate="PatchNote_other" ></h2>
             </div>
             

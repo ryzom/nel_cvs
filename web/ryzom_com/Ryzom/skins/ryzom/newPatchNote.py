@@ -26,34 +26,44 @@ patchId = 'patch-'+patch_en[0][7]+serverside
 patchTitle = 'patch '+patch_en[0][7]+serverside
 patchText = patch_en[0][4]
 
+if patchText == '':
+   patchText = patch_fr[0][3]
+
 context.invokeFactory(id=patchId, type_name='UrlPatchNote', title=patchTitle, description='', text=patchText)
 new_obj = getattr(context, patchId)
 new_obj.setTitle(patchTitle)
 new_obj.setText(patchText,mimetype='text/html')
 
-#french translation
+
+
+###french translation
 patch_fr = context.patchNoteQuery(lang='fr')
 
 patchId = 'patch-'+patch_fr[0][7]+serverside
 patchTitle = 'patch '+patch_fr[0][7]+serverside
 patchText = patch_fr[0][4]
+if patchText == '':
+   patchText = patch_fr[0][3]
 
 new_obj.createTranslation(set_language="fr", current="en")
 new_obj_fr = new_obj.getTranslation("fr")
 new_obj_fr.setTitle(patchTitle)
 new_obj_fr.setText(patchText,mimetype='text/html')
 
-#deutch translation
+###deutch translation
 patch_de = context.patchNoteQuery(lang='de')
 
 patchId = 'patch-'+patch_de[0][7]+serverside
 patchTitle = 'patch '+patch_de[0][7]+serverside
 patchText = patch_de[0][4]
+if patchText == '':
+   patchText = patch_fr[0][3]
 
 new_obj.createTranslation(set_language="de", current="en")
 new_obj_de = new_obj.getTranslation("de")
 new_obj_fr.setTitle(patchTitle)
 new_obj_fr.setText(patchText,mimetype='text/html')
+
 
 request = container.REQUEST
 RESPONSE =  request.RESPONSE

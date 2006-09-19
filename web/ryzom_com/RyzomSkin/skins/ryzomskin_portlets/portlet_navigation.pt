@@ -19,7 +19,7 @@
                 tal:condition="portal_properties/navtree_properties/includeTop">
                 <div class="menulevel0">
                     <a class="visualIconPadding"
-                       tal:attributes="href string:$portal_url;
+                       tal:attributes="href string:$portal_url/home_page;
                                        title portal/Description;
                                        class python:test(portal == here or (portal == here.getParentNode() and here.plone_utils.isDefaultPage(here)), 'navTreeCurrentItem visualIconPadding', 'visualIconPadding');">
                     <span tal:omit-tag=""

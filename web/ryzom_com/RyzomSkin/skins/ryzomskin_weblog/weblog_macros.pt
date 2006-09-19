@@ -104,13 +104,13 @@
           <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
         </tal:if>
       
-        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing">
-          <tal:if condition="excerpt">
+        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing;desc entry/Description|nothing">
+          <tal:if condition="python:(excerpt and desc)">
             <div class="weblog-entry-only-excerpt" tal:content="entry/Description"></div>
           </tal:if>
 
           <tal:if condition="not:excerpt">
-            <div class="weblog-entry-excerpt" tal:content="entry/Description"></div>
+            <div class="weblog-entry-excerpt" tal:condition="desc" tal:content="desc"></div>
             <div class="weblog-summary" tal:content="structure entry/getText"></div>
           </tal:if>
         </tal:define>
@@ -174,13 +174,13 @@
         <tal:if condition="not:weblog/getShowTopicImagesInWeblogView">
           <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
         </tal:if>
-        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing">
-          <tal:if condition="excerpt">
-            <div class="weblog-entry-only-excerpt" tal:content="entry/Description"></div>
+        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing; desc entry/Description">
+          <tal:if condition="python: excerpt & desc">
+            <div class="weblog-entry-only-excerpt" tal:content="desc"></div>
           </tal:if>
 
           <tal:if condition="not:excerpt">
-            <div class="weblog-entry-excerpt" tal:content="entry/Description"></div>
+            <div class="weblog-entry-excerpt" tal:condition="desc" tal:content="desc"></div>
             <div class="weblog-summary" tal:content="structure entry/getText"></div>
           </tal:if>
         </tal:define>

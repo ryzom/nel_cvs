@@ -1,7 +1,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
       lang="en-US"
-      i18n:domain="cmfquestions"
+      i18n:domain="QnA"
       metal:use-macro="here/main_template/macros/master">
+
+<metal:block fill-slot="css_slot">
+   <style type="text/css" media="all"
+     tal:content="string:@import url(${portal_url}/qna.css);">
+   </style>
+</metal:block>
 
 <body>
 
@@ -12,30 +18,36 @@
                  PostList here/getPostList">
     
    <h1>Edit Choice</h1>
+   <div tal:condition="python: len(PostList) == 0" >
+      <span i18n:translate="QnA_PostList" />
+      <a href=""
+         i18n:translate="QnA_return_to_request"
+         tal:attributes="href string:${here/absolute_url}/qna_edit_request_form" />
+   </div>
    <form class="QnA_choice"
          name="edit_form"
          method="post"
-         tal:attributes="action string:${here/absolute_url}/qna_edit_choice">        
-
-        <fieldset>
-           <tal:options tal:repeat="postkey PostList">
-		  <input type="checkbox"
-                         class="noborder"
-                         name="answer"
-                         value="option"                         
-                         tal:attributes="value postkey;
-                                         name postkey;
-                                         tabindex tabindex/next;" />
-                  <span tal:content="python: PostList[postkey][3]" />
-                  <br />
-                  <span tal:content="python: PostList[postkey][0]" />
-                  <br />
-                  <span tal:content="python: PostList[postkey][1]" />
-                  <br />
-                  <span tal:content="structure python: here.filtertext(PostList[postkey][2])" />
-                  <br />
-          </tal:options>          
-       </fieldset>
+         tal:condition="python: len(PostList) > 0"
+         tal:attributes="action string:${here/absolute_url}/qna_edit_choice">
+        
+         <tal:repeat tal:repeat="postkey PostList">
+            <div class="QnA_choice_post">
+                <div class="QnA_choice_checkpost">
+		   <input type="checkbox"
+                          class="noborder"
+                          name="answer"
+                          value="option"
+                          tal:attributes="value postkey;
+                                          name postkey;
+                                          tabindex tabindex/next;" />
+                   <span tal:content="python: PostList[postkey][3]" >id du post</span>
+                   <span i18n:translate="QnA_check_to_add" >Check to add this post</span>
+                </div>                  
+                <p tal:content="python: PostList[postkey][0]">date du post</p>
+                <p tal:content="python: PostList[postkey][1]">auteur du post</p>
+                <p tal:content="structure python: here.filtertext(PostList[postkey][2])">texte du post</p>
+           </div>
+       </tal:repeat>
 
        <input class="context" tabindex="" name="form_submit" value="OK" type="submit">
  </form>

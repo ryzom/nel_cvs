@@ -3,12 +3,12 @@
 from calendar import timegm
 from DateTime import DateTime
 from string import join
-import DateTime
 import time
 import re
-from Products.CMFCore.utils import getToolByName
 
 #import zope/archetype
+from AccessControl import ClassSecurityInfo
+from Products.CMFCore.utils import getToolByName
 from Products.CMFCore import CMFCorePermissions
 from Products.ATContentTypes.permission import ChangeEvents
 try:
@@ -22,11 +22,13 @@ from config import *
 
 QnASchema=BaseSchema.copy()+ Schema((
 	DateTimeField('dateStart',
+		default=DateTime(),
 		required=True,
 		searchable=False,
 		widget=CalendarWidget(description="date de dÃ©part",label="Date",)
 	),
 	DateTimeField('dateEnd',
+		default=DateTime(),
 		required=True,
 		searchable=False,
 		widget=CalendarWidget(description="date d'arrivÃ©e",label="Date",)
@@ -57,10 +59,10 @@ QnASchema=BaseSchema.copy()+ Schema((
  
    
 class QnA(BaseContent):
-
 	"""Add an QnA Document"""
-	schema = QnASchema
 
+	security = ClassSecurityInfo()
+	schema = QnASchema
 	archetype_name = "QnA"
 	meta_type = 'QnA'
 	default_view  = 'qna_view'
@@ -78,19 +80,28 @@ class QnA(BaseContent):
 		'action': 'string:${object_url}/qna_edit_request_form',
 		'permissions': (CMFCorePermissions.ModifyPortalContent,)
 		},
+		{ 'id': 'choice',
+		'name': 'choice',
+		'action': 'string:${object_url}/qna_edit_choice_form',
+		'permissions': (CMFCorePermissions.ModifyPortalContent,)
+		},
 	)
 
 
 	#PostList and accessor & mutator
 	PostList={}
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getPostList')
 	def getPostList(self):
 		"""return the postlist"""
 		return self.PostList
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setPostList')
 	def setPostList(self,dico):
 		"""set the PostList"""
 		self.PostList=dico
 
-	
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setFilter')
 	def setFilter(self, value, **kwargs):
 		"""set filter fields"""
 		if not value:
@@ -98,7 +109,7 @@ class QnA(BaseContent):
 		else:
 			self.getField('filter').set(self, value, **kwargs)
 
-
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'generate_text')
 	def generate_text(self,post):
 		"""write text from post"""
 		newtext=''
@@ -106,7 +117,7 @@ class QnA(BaseContent):
 		newtext+='<p id="qna_author_link">-- %s <a href="http://ryzom.com/forum/showthread.php?p=%s#post%s">[ Link ]</a></p><hr />' % (post[1], post[3], post[3])
 		return newtext
 		
-
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'parseTime')
 	def parseTime(self,date):
 		"""convert date to timestamp"""		
 		try:
@@ -116,7 +127,7 @@ class QnA(BaseContent):
 			result = timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d 00:00:00 %Z"))
 		return result
 
-
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getGroupUsers')
 	def getGroupUsers(self,groupid):
 		"""return users in group"""
 		acl_users = getToolByName(self,'acl_users')
@@ -129,12 +140,12 @@ class QnA(BaseContent):
               				 avail.append(str(user))
    		return avail
 
-	
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getUsersOfficials')
 	def getUsersOfficials(self):
 		"""return Official's users"""
 		return join(self.getGroupUsers('Officials'),' ')
 
-
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getSQLPostList')
 	def getSQLPostList(self):
 		"""return a the results of the sql request"""
 		#on convertie les dates en timestamp
@@ -146,7 +157,7 @@ class QnA(BaseContent):
 		results=self.qna(username = OfficialsNames, start = date1, end = date2)
 		return results
 
-
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'createPostList')
 	def createPostList(self):
 		"""return the PostList in a dictionnary"""
 		SQLPostList=self.getSQLPostList()
@@ -172,7 +183,7 @@ class QnA(BaseContent):
 		#return PostList
 		self.setPostList(PostList)
 
-
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'filtertext')
 	def filtertext(self,text):		
 		"""(poorly) translate bbcode to html code"""
 		newstr=text

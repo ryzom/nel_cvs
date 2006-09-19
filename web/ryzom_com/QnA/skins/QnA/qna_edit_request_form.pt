@@ -7,9 +7,11 @@
 <div metal:fill-slot="main" 
      tal:define="errors python:request.get('errors', {});
                  Iterator python:modules['Products.CMFPlone'].IndexIterator;
-                 tabindex python:Iterator();">
+                 tabindex python:Iterator();
+                 PostList here/getPostList;">
 
    <h1>QnA Request Edit</h1>
+
    <form class="QnA_choice"
          name="edit_form"
          method="post"
@@ -21,7 +23,7 @@
         <div metal:use-macro="python: here.widget('dateEnd', mode='edit')" />
         <div metal:use-macro="python: here.widget('filter', mode='edit')" />
 
-        <input class="context" tabindex="" name="form_submit" value="OK" type="submit">
+        <input class="context" tabindex="" name="form_submit" value="OK" type="submit" i18n:attributes="value QnA_next">
    </form>
 </div>
 </body>

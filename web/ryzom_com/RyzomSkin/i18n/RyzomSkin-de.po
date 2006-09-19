@@ -26,10 +26,10 @@ msgid "box_last_modified"
 msgstr "Zuletzt verändert :"
 
 msgid "box_effective"
-msgstr "Schaffungsdatum :"
+msgstr "Erstellungsdatum :"
 
 msgid "box_created"
-msgstr "Schaffungsdatum :"
+msgstr "Erstellungsdatum :"
 
 msgid "bug_report"
 msgstr "fehlerbericht"

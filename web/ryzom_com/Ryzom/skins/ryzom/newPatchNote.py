@@ -7,7 +7,11 @@
 ##parameters=
 ##title=
 ##
-#on recupere les donnees de la base
+
+
+userlang = context.portal_languages.getLanguageBindings()[0]
+if userlang != 'en':
+   return "use this script in english only"
 
 path = '/'.join(context.getPhysicalPath())
 

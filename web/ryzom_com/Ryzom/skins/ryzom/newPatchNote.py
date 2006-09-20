@@ -13,6 +13,9 @@ path = '/'.join(context.getPhysicalPath())
 
 ###create canonical object in english
 patch = context.getReleaseNote('en', path)
+if patch == -1:
+   return "already exist"
+
 context.invokeFactory(id=patch[0], type_name='UrlPatchNote', title=patch[1], description='', text=patch[2])
 new_obj = getattr(context, patch[0])
 new_obj.setTitle(patch[1])

@@ -11,7 +11,7 @@ patch = context.patchNoteQuery(lang=lang)
 
 #detect of existing last patch-note
 if lang=='en' and context.portal_catalog(id='patch-'+patch[0][7], meta_type='UrlPatchNote', path={'query':path, 'level': 0}):
-   return "already exist"
+   return -1
 
 #detect of serverside patch
 serverside=''
@@ -19,7 +19,7 @@ if 'server' in patch[0][9]:
 	serverside='b'
 
 Id = 'patch-'+patch[0][7]+serverside
-Title = 'patch '+patch[0][7]+serverside
+Title = 'Patch '+patch[0][7]+serverside
 Text = patch[0][4]
 if Text == '':
    Text = patch[0][3]

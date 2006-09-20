@@ -174,8 +174,8 @@
         <tal:if condition="not:weblog/getShowTopicImagesInWeblogView">
           <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
         </tal:if>
-        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing; desc entry/Description">
-          <tal:if condition="python: excerpt & desc">
+        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing;desc entry/Description|nothing">
+          <tal:if condition="python: excerpt and desc">
             <div class="weblog-entry-only-excerpt" tal:content="desc"></div>
           </tal:if>
 

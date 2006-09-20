@@ -57,7 +57,14 @@ WeblogSchema = BaseFolderSchema + Schema((
 
     ### 
     ## Configuration Options
-    ### 
+    ###
+    BooleanField('addNewsButton',
+        default = False,
+        widget=BooleanWidget(label='Add a Button --Submit a News-- ?',
+            description="""When enabled, a Button --Submit a News appear--.""",
+            ),
+        schemata='configuration'
+        ), 
     BooleanField('onlyExcerptInWeblogView',
         default = False,
         widget=BooleanWidget(label='Only Show Excerpts in Weblog?',

@@ -50,8 +50,9 @@
         description
       </div>
 
-      <form method="post" action=""
-        tal:attributes="action here_url" style="float:left;">
+      <form method="post" action="" style="float:left;"
+        tal:attributes="action here_url"
+        tal:condition="here/getAddNewsButton">
         <input type="hidden" name="type_name" value="WeblogEntry"/>
         <input class="submit_news_button" type="submit" value="Submit Your News"
           name="folder_factories:method" i18n:domain="RyzomSkin" i18n:attributes="value" />

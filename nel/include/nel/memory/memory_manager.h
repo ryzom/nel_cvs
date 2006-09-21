@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.24 2005/05/16 09:12:01 distrib Exp $
+ * $Id: memory_manager.h,v 1.24.24.1 2006/09/21 20:17:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,17 @@
 #ifndef NL_MEMORY_MANAGER_H
 #define NL_MEMORY_MANAGER_H
 
+#include "nel/misc/types_nl.h"
+
 // CONFIGURATION
 #include "nel/memory/memory_config.h"
-#include <stl/_site_config.h>
+
+// Debug : Sept 01 2006
+#if _STLPORT_VERSION >= 0x510
+	#include <stl/config/user_config.h>
+#else
+	#include <stl/_site_config.h>
+#endif // _STLPORT_VERSION
 
 /*	Doc:
 	----

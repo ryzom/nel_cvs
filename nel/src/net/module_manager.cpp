@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.11 2006/07/12 14:37:22 boucher Exp $
+ * $Id: module_manager.cpp,v 1.11.4.1 2006/09/21 20:29:27 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,11 @@
 #include "nel/misc/app_context.h"
 #include "nel/misc/dynloadlib.h"
 #include "nel/misc/command.h"
+#include "nel/net/module_common.h"
 #include "nel/misc/path.h"
 #include "nel/misc/twin_map.h"
 #include "nel/misc/sstring.h"
+#include "nel/misc/smart_ptr_inline.h"
 #include "nel/net/module_manager.h"
 
 #include "nel/net/service.h"
@@ -244,7 +246,7 @@ namespace NLNET
 
 			// now, load the library
 			string fullName = NLMISC::CPath::standardizePath(path)+CLibrary::makeLibName(shortName);
-			auto_ptr<TModuleLibraryInfo>	mli = auto_ptr<TModuleLibraryInfo>(new TModuleLibraryInfo);
+			std::auto_ptr<TModuleLibraryInfo>	mli = auto_ptr<TModuleLibraryInfo>(new TModuleLibraryInfo);
 			if (!mli->LibraryHandler.loadLibrary(fullName, false, true, true))
 			{
 				nlwarning("CModuleManager : failed to load the library '%s' in '%s'",
@@ -393,7 +395,7 @@ namespace NLNET
 			IModuleFactory *mf = it->second;
 			// sanity check
 			nlassert(mf->getModuleClassName() == className);
-			auto_ptr<IModule> module = auto_ptr<IModule>(mf->createModule());
+			std::auto_ptr<IModule> module = auto_ptr<IModule>(mf->createModule());
 			if (module.get() == NULL)
 			{
 				nlwarning("createModule : factory failed to create a module instance for class '%s'", className.c_str());
@@ -603,7 +605,7 @@ namespace NLNET
 			const std::string &moduleManifest,
 			TModuleId foreignModuleId)
 		{
-			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(localModule, ++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
+			std::auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(localModule, ++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
 			modProx->_Gateway = gateway;
 			modProx->_Route = route;
 			modProx->_Distance = distance;

@@ -1,7 +1,7 @@
 /** \file module_l5_transport.h
  * transport for layer 5
  *
- * $Id: module_l5_transport.cpp,v 1.4 2006/07/12 14:37:22 boucher Exp $
+ * $Id: module_l5_transport.cpp,v 1.4.4.1 2006/09/21 20:28:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -236,13 +236,13 @@ namespace NLNET
 			if (command.SubParams.size() < 1)
 				throw  EInvalidCommand();
 
-			const std::string &commandName = command.SubParams[0].ParamName;
+			const std::string &commandName = command.SubParams[0]->ParamName;
 			if (commandName == "open")
 			{
 				string subNetName;
 
 				/// look for an optional sub network name
-				const TParsedCommandLine *netName = command.SubParams[0].getParam("SubNet");
+				const TParsedCommandLine *netName = command.SubParams[0]->getParam("SubNet");
 				if (netName != NULL)
 				{
 					subNetName = netName->ParamValue;

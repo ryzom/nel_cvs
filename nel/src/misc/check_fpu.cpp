@@ -1,7 +1,7 @@
 /** \file check_fpu.cpp
  * Check FPU macro
  *
- * $Id: check_fpu.cpp,v 1.1 2005/07/22 09:35:15 berenguier Exp $
+ * $Id: check_fpu.cpp,v 1.1.20.1 2006/09/21 20:25:44 cado Exp $
  */
 
 /* Copyright, 2000, 2005 Nevrax Ltd.
@@ -83,6 +83,9 @@ void CFpuChecker::dumpFpu(int value)
 
 void CFpuChecker::check()
 {	
+	
+#if defined(NL_OS_WINDOWS) && defined(NL_COMP_VC6)
+
 	// don't Check if in a user control state
 	if (NLMISC::OptFastFloorCWStackPtr != NLMISC::OptFastFloorCWStack) return;
 
@@ -98,6 +101,9 @@ void CFpuChecker::check()
 		dumpFpu(cfp);
 		nlassert(0);	
 	}	
+
+#endif
+
 }
 
 }

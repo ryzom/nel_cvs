@@ -1,7 +1,7 @@
 /** \file module_socket.cpp
  * module socket implementation
  *
- * $Id: module_socket.cpp,v 1.4 2006/01/10 17:38:47 boucher Exp $
+ * $Id: module_socket.cpp,v 1.4.6.1 2006/09/21 20:28:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/net/module.h"
 #include "nel/net/module_manager.h"
 #include "nel/net/module_gateway.h"
+#include "nel/net/module_common.h"
 
 using namespace std;
 using namespace NLMISC;

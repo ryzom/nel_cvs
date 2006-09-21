@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="misc"
-	ProjectGUID="{44B21233-EFCC-4825-B5E5-3A3BD6CC5516}"
+	ProjectGUID="{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}"
+	RootNamespace="misc"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,7 @@
 			OutputDirectory=".\../obj/Debug/misc"
 			IntermediateDirectory=".\../obj/Debug/misc"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -41,8 +42,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="__STL_DEBUG;_LIB;LIBXML_STATIC;_DEBUG;WIN32"
 				StringPooling="true"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
 				RuntimeLibrary="3"
@@ -98,7 +101,7 @@
 			OutputDirectory=".\../obj/DebugFast/misc"
 			IntermediateDirectory=".\../obj/DebugFast/misc"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -122,6 +125,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_LIB;NL_DEBUG_FAST;LIBXML_STATIC;_DEBUG;WIN32"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -174,7 +178,7 @@
 			OutputDirectory=".\../obj/ReleaseDebug/misc"
 			IntermediateDirectory=".\../obj/ReleaseDebug/misc"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -198,6 +202,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="NL_RELEASE_DEBUG;_LIB;LIBXML_STATIC;WIN32;NDEBUG;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -250,7 +255,7 @@
 			OutputDirectory=".\../obj/Release/misc"
 			IntermediateDirectory=".\../obj/Release/misc"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -279,6 +284,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="FINAL_VERSION;NL_RELEASE_DEBUG;_LIB;LIBXML_STATIC;WIN32;NDEBUG;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -762,6 +768,38 @@
 			<File
 				RelativePath="misc\config_file\cf_gramatical.yxx"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="misc\config_file\cf_lexical.cpp"
@@ -812,6 +850,38 @@
 			<File
 				RelativePath="misc\config_file\cf_lexical.lxx"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="misc\config_file\config_file.cpp"
@@ -1778,60 +1848,6 @@
 				>
 			</File>
 			<File
-				RelativePath="misc\heap_allocator.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseDebug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\include\nel\misc\heap_allocator.h"
-				>
-			</File>
-			<File
-				RelativePath="..\include\nel\misc\heap_allocator_inline.h"
-				>
-			</File>
-			<File
 				RelativePath="misc\heap_memory.cpp"
 				>
 				<FileConfiguration
@@ -2159,14 +2175,6 @@
 			</File>
 			<File
 				RelativePath="..\include\nel\misc\tds.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Makefile"
-			>
-			<File
-				RelativePath="misc\Makefile.am"
 				>
 			</File>
 		</Filter>
@@ -2791,6 +2799,22 @@
 		<Filter
 			Name="Threads"
 			>
+			<File
+				RelativePath=".\misc\co_task.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions="_WIN32_WINNT=0x0400"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\include\nel\misc\co_task.h"
+				>
+			</File>
 			<File
 				RelativePath="misc\mutex.cpp"
 				>
@@ -3682,6 +3706,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\misc\check_fpu.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\nel\misc\check_fpu.h"
+				>
+			</File>
+			<File
 				RelativePath="misc\eval_num_expr.cpp"
 				>
 				<FileConfiguration
@@ -3817,6 +3849,14 @@
 			</File>
 			<File
 				RelativePath="..\include\nel\misc\geom_ext.h"
+				>
+			</File>
+			<File
+				RelativePath=".\misc\grid_traversal.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\nel\misc\grid_traversal.h"
 				>
 			</File>
 			<File
@@ -4144,48 +4184,6 @@
 			<File
 				RelativePath="..\include\nel\misc\quat.h"
 				>
-			</File>
-			<File
-				RelativePath="misc\random.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseDebug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\nel\misc\random.h"
@@ -4664,6 +4662,14 @@
 			Name="Admin and info"
 			>
 			<File
+				RelativePath=".\misc\app_context.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\nel\misc\app_context.h"
+				>
+			</File>
+			<File
 				RelativePath="misc\command.cpp"
 				>
 				<FileConfiguration
@@ -5036,7 +5042,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\nel\misc\enum_bitset.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\nel\misc\historic.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\nel\misc\mutable_container.h"
 				>
 			</File>
 			<File
@@ -5102,6 +5116,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\nel\misc\speaker_listener.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\nel\misc\twin_map.h"
 				>
 			</File>
@@ -5153,10 +5171,6 @@
 			</File>
 			<File
 				RelativePath="..\include\nel\misc\algo.h"
-				>
-			</File>
-			<File
-				RelativePath=".\misc\app_context.cpp"
 				>
 			</File>
 			<File

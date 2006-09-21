@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="driver_dsound"
 	ProjectGUID="{309F8A55-BFBA-433B-8C3E-CB2223F799C3}"
-	SignManifests="true"
+	RootNamespace="driver_dsound"
 	>
 	<Platforms>
 		<Platform
@@ -19,7 +19,7 @@
 			OutputDirectory=".\../../../../obj/ReleaseDebug/driver_dsound"
 			IntermediateDirectory=".\../../../../obj/ReleaseDebug/driver_dsound"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -49,6 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="NL_RELEASE_DEBUG;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -115,7 +116,7 @@
 			OutputDirectory=".\../../../../obj/DebugFast/driver_dsound"
 			IntermediateDirectory=".\../../../../obj/DebugFast/driver_dsound"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -145,6 +146,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -211,7 +213,7 @@
 			OutputDirectory=".\../../../../obj/Debug/driver_dsound"
 			IntermediateDirectory=".\../../../../obj/Debug/driver_dsound"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -240,6 +242,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_DEBUG;__STL_DEBUG;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -306,7 +309,7 @@
 			OutputDirectory=".\../../../../obj/Release/driver_dsound"
 			IntermediateDirectory=".\../../../../obj/Release/driver_dsound"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -336,6 +339,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="NDEBUG;NLSOUND_PROFILE;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -447,6 +451,38 @@
 		<File
 			RelativePath="driver_dsound.def"
 			>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="listener_dsound.cpp"

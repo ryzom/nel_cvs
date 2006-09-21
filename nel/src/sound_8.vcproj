@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sound"
 	ProjectGUID="{4AF7ADB2-DAF8-4F04-9793-F92010001470}"
 	>
@@ -18,7 +18,7 @@
 			OutputDirectory=".\../obj/DebugFast/sound"
 			IntermediateDirectory=".\../obj/DebugFast/sound"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -42,6 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_LIB;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -94,7 +95,7 @@
 			OutputDirectory=".\../obj/ReleaseDebug/sound"
 			IntermediateDirectory=".\../obj/ReleaseDebug/sound"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -118,6 +119,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="NL_RELEASE_DEBUG;_LIB;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -170,7 +172,7 @@
 			OutputDirectory=".\../obj/Release/sound"
 			IntermediateDirectory=".\../obj/Release/sound"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -194,6 +196,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -245,7 +248,7 @@
 			OutputDirectory=".\../obj/Debug/sound"
 			IntermediateDirectory=".\../obj/Debug/sound"
 			ConfigurationType="4"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -269,6 +272,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm400 "
 				Optimization="0"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_LIB;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -520,14 +524,6 @@
 			</File>
 			<File
 				RelativePath="sound\listener_user.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Makefile"
-			>
-			<File
-				RelativePath="sound\Makefile.am"
 				>
 			</File>
 		</Filter>
@@ -954,7 +950,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="source"
+			Name="Source"
 			>
 			<File
 				RelativePath="sound\background_source.cpp"
@@ -1188,7 +1184,7 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="sound\ambiant_source.cpp"
+			RelativePath=".\sound\ambiant_source.cpp"
 			>
 			<FileConfiguration
 				Name="DebugFast|Win32"
@@ -1196,29 +1192,6 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1227,33 +1200,14 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
 				/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="sound\ambiant_source.h"
+			RelativePath=".\sound\ambiant_source.h"
 			>
 			<FileConfiguration
 				Name="DebugFast|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
 				ExcludedFromBuild="true"
 				>
 				<Tool
@@ -1408,7 +1362,7 @@
 			>
 		</File>
 		<File
-			RelativePath="sound\env_effect.cpp"
+			RelativePath=".\sound\env_effect.cpp"
 			>
 			<FileConfiguration
 				Name="DebugFast|Win32"
@@ -1416,9 +1370,6 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1427,8 +1378,6 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1437,8 +1386,6 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1447,14 +1394,11 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
 				/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="sound\env_effect.h"
+			RelativePath=".\sound\env_effect.h"
 			>
 			<FileConfiguration
 				Name="DebugFast|Win32"

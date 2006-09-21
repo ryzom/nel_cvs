@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="memory"
 	ProjectGUID="{FDE48963-8390-4E65-AB12-1840C7587928}"
+	RootNamespace="memory"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,7 @@
 			OutputDirectory=".\../obj/DebugFast/memory"
 			IntermediateDirectory=".\../obj/DebugFast/memory"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -48,6 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MEMORY_EXPORTS;_STL_USE_DEBUG_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -111,7 +113,7 @@
 			OutputDirectory=".\../obj/Release/memory"
 			IntermediateDirectory=".\../obj/Release/memory"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -141,6 +143,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MEMORY_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -203,7 +206,7 @@
 			OutputDirectory=".\../obj/Debug/memory"
 			IntermediateDirectory=".\../obj/Debug/memory"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -232,6 +235,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MEMORY_EXPORTS;__STL_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -258,7 +262,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="../lib/nel_memory_d.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\../obj/Debug/memory/nel_memory_d.pdb"
@@ -295,7 +299,7 @@
 			OutputDirectory=".\../obj/ReleaseDebug/memory"
 			IntermediateDirectory=".\../obj/ReleaseDebug/memory"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="..\..\..\..\..\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -325,6 +329,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;MEMORY_EXPORTS;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"

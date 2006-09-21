@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
+# Visual Studio 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3d", "src\3d_8.vcproj", "{64145258-1F80-4E02-9B75-1A9A1514CD17}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
@@ -11,6 +11,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_direct3d", "src\3d\d
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_dsound", "src\sound\driver\dsound\driver_dsound_8.vcproj", "{309F8A55-BFBA-433B-8C3E-CB2223F799C3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4AF7ADB2-DAF8-4F04-9793-F92010001470} = {4AF7ADB2-DAF8-4F04-9793-F92010001470}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_opengl", "src\3d\driver\opengl\driver_opengl_8.vcproj", "{6EBC5C17-A42F-4EA2-B790-D97E3DA72AC7}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -18,14 +21,26 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_opengl", "src\3d\dri
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "georges", "src\georges_8.vcproj", "{9D284C6B-BE12-4549-87E5-2337D64F31BE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ligo", "src\ligo_8.vcproj", "{1DDC11C7-AF79-40F3-A6D4-F84BA8644B5C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logic", "src\logic_8.vcproj", "{0E723473-FDBB-48D7-8141-1273B917D681}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memory", "src\memory_8.vcproj", "{FDE48963-8390-4E65-AB12-1840C7587928}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "misc", "src\misc_8.vcproj", "{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FDE48963-8390-4E65-AB12-1840C7587928} = {FDE48963-8390-4E65-AB12-1840C7587928}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "net", "src\net_8.vcproj", "{8E2BDB2D-7F81-417D-A1A6-73A2E0DBB242}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,6 +48,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "net", "src\net_8.vcproj", "
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pacs", "src\pacs_8.vcproj", "{C5253970-8728-4A6F-8BF2-E1D9CF0F3861}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sound", "src\sound_8.vcproj", "{4AF7ADB2-DAF8-4F04-9793-F92010001470}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -40,10 +58,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sound", "src\sound_8.vcproj
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sound_lowlevel", "src\sound\driver\sound_lowlevel_8.vcproj", "{89064E9B-14E9-4FB2-8536-A9151DF55C68}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_fmod", "src\sound\driver\fmod\driver_fmod_8.vcproj", "{9440443B-97BA-43C2-A762-31EEC8958BEE}"
 	ProjectSection(ProjectDependencies) = postProject
-		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
 		{4AF7ADB2-DAF8-4F04-9793-F92010001470} = {4AF7ADB2-DAF8-4F04-9793-F92010001470}
 	EndProjectSection
 EndProject

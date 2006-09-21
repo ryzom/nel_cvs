@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.9 2006/05/31 12:03:13 boucher Exp $
+ * $Id: big_file.h,v 1.9.6.1 2006/09/21 20:01:39 cado Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -129,10 +129,20 @@ private:
 	class CBNPFileComp
 	{
 	public:
-		bool operator()(const BNPFile &f, const char *s)
-		{
-			return strcmp(f.Name,s) < 0;
-		}
+
+		// Debug : Sept 01 2006
+		#if _STLPORT_VERSION >= 0x510
+			bool operator()(const BNPFile &f, const BNPFile &s )
+			{
+				return strcmp( f.Name, s.Name ) < 0;
+			}
+		#else
+			bool operator()(const BNPFile &f, const char *s)
+			{
+				return strcmp(f.Name,s) < 0;
+			}
+		#endif //_STLPORT_VERSION
+
 	};
 
 	// A BNP structure

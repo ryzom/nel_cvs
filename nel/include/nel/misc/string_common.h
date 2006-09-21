@@ -1,7 +1,7 @@
 /** \file misc/string_common.h
  * common algorithms on string like toString() and fromString()
  *
- * $Id: string_common.h,v 1.7 2005/02/22 10:14:12 besson Exp $
+ * $Id: string_common.h,v 1.7.30.1 2006/09/21 20:20:24 cado Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include <cstdio>
 #include <cstdarg>
 
-namespace	NLMISC
+namespace NLMISC
 {
 
 // get a string and add \r before \n if necessary
@@ -44,7 +44,7 @@ std::string removeSlashR (std::string str);
  * The maximum size allowed for C string (zero terminated string) buffer.
  * This value is used when we have to create a standard C string buffer and we don't know exactly the final size of the string.
  */
-const int MaxCStringSize = 1024*2;
+const int MaxCStringSize = 2048;
 
 
 /**
@@ -103,16 +103,20 @@ inline void _check(char a) { }
 inline void _check(unsigned char a) { }
 inline void _check(long a) { }
 inline void _check(unsigned long a) { }
+
 #ifdef NL_COMP_VC6
-inline void _check(uint8 a) { }
-#endif
+	inline void _check(uint8 a) { }
+#endif // NL_COMP_VC6
+
 inline void _check(sint8 a) { }
 inline void _check(uint16 a) { }
 inline void _check(sint16 a) { }
+
 #ifdef NL_COMP_VC6
-inline void _check(uint32 a) { }
-inline void _check(sint32 a) { }
-#endif
+	inline void _check(uint32 a) { }
+	inline void _check(sint32 a) { }
+#endif // NL_COMP_VC6
+
 inline void _check(uint64 a) { }
 inline void _check(sint64 a) { }
 inline void _check(float a) { }
@@ -152,9 +156,9 @@ template<class A, class B, class C, class D, class E, class F, class G, class H,
 #endif
 	
 #ifdef NL_OS_WINDOWS
-inline std::string _toString(const char *format, ...)
+	inline std::string _toString(const char *format, ...)
 #else
-inline std::string toString(const char *format, ...)
+	inline std::string toString(const char *format, ...)
 #endif
 {
 	std::string Result;
@@ -163,7 +167,7 @@ inline std::string toString(const char *format, ...)
 }
 
 #ifdef NL_OS_WINDOWS
-CHECK_TYPES(std::string toString, return _toString)
+	CHECK_TYPES(std::string toString, return _toString)
 #endif // NL_OS_WINDOWS
 
 template<class T> std::string toStringPtr(const T *val) { return toString("%p", val); }
@@ -195,12 +199,20 @@ inline std::string toString(const float &val) { return toString("%f", val); }
 inline std::string toString(const double &val) { return toString("%lf", val); }
 inline std::string toString(const bool &val) { return toString("%u", val?1:0); }
 inline std::string toString(const std::string &val) { return val; }
+
 // stl vectors of bool use bit reference and not real bools, so define the operator for bit reference
-inline std::string toString(const std::_Bit_reference &val) { return toString( bool(val)); }
+
+// Debug : Sept 01 2006
+#if _STLPORT_VERSION >= 0x510
+	inline std::string toString(const std::priv::_Bit_reference &val) { return toString( bool(val)); }
+#else
+	inline std::string toString(const std::_Bit_reference &val) { return toString( bool(val)); }
+#endif // _STLPORT_VERSION
+
 #ifdef NL_COMP_VC6
 inline std::string toString(const uint &val) { return toString("%u", val); }
 inline std::string toString(const sint &val) { return toString("%d", val); }
-#endif // NL_OS_WINDOWS
+#endif // NL_COMP_VC6
 
 inline void fromString(const std::string &str, uint32 &val) { sscanf(str.c_str(), "%u", &val); }
 inline void fromString(const std::string &str, sint32 &val) { sscanf(str.c_str(), "%d", &val); }
@@ -214,12 +226,20 @@ inline void fromString(const std::string &str, float &val) { sscanf(str.c_str(),
 inline void fromString(const std::string &str, double &val) { sscanf(str.c_str(), "%lf", &val); }
 inline void fromString(const std::string &str, bool &val) { uint32 v; fromString(str, v); val = (v==1); }
 inline void fromString(const std::string &str, std::string &val) { val = str; }
+
 // stl vectors of bool use bit reference and not real bools, so define the operator for bit reference
-inline void fromString(const std::string &str, std::_Bit_reference &val) { uint32 v; fromString(str, v); val = (v==1); }
+
+// Debug : Sept 01 2006
+#if _STLPORT_VERSION >= 0x510
+	inline void fromString(const std::string &str, std::priv::_Bit_reference &val) { uint32 v; fromString(str, v); val = (v==1); }
+#else
+	inline void fromString(const std::string &str, std::_Bit_reference &val) { uint32 v; fromString(str, v); val = (v==1); }
+#endif // _STLPORT_VERSION
+
 #ifdef NL_COMP_VC6
 inline void fromString(const std::string &str, uint &val) { sscanf(str.c_str(), "%u", &val); }
 inline void fromString(const std::string &str, sint &val) { sscanf(str.c_str(), "%d", &val); }
-#endif // NL_OS_WINDOWS
+#endif // NL_COMP_VC6
 
 
 } // NLMISC

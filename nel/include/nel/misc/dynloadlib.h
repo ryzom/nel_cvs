@@ -1,7 +1,7 @@
 /** \file misc/dynloadlib.h
  * class for dynamic library loading
  *
- * $Id: dynloadlib.h,v 1.6 2005/08/29 16:12:12 boucher Exp $
+ * $Id: dynloadlib.h,v 1.6.18.1 2006/09/21 20:33:58 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,11 +31,11 @@
 #include <vector>
 
 #ifdef NL_OS_WINDOWS
-#include <windows.h>
-#undef max
-#undef min
+	#include <windows.h>
+	#undef max
+	#undef min
 #else
-#include <dlfcn.h>
+	#include <dlfcn.h>
 #endif
 
 namespace NLMISC 

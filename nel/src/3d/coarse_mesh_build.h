@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.h
  * Class used to build the coarse meshes
  *
- * $Id: coarse_mesh_build.h,v 1.2 2003/01/31 16:14:10 corvazier Exp $
+ * $Id: coarse_mesh_build.h,v 1.2.62.1 2006/09/21 20:02:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,14 +27,10 @@
 #define NL_COARSE_MESH_BUILD_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/bitmap.h"
 
 #include <vector>
 #include <map>
-
-namespace NLMISC
-{
-class CBitmap;
-}
 
 namespace NL3D 
 {

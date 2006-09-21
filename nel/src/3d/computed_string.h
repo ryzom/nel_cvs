@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.17 2006/05/31 12:03:14 boucher Exp $
+ * $Id: computed_string.h,v 1.17.6.1 2006/09/21 20:05:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,19 +75,20 @@ class CLetterColors : public ULetterColors
 
 public:
 
-	struct SLetterColor{
+	struct SLetterColor
+	{
 		uint Index;
 		NLMISC::CRGBA Color;
 
-		SLetterColor(uint index, const NLMISC::CRGBA & color)
+		SLetterColor( uint index, const NLMISC::CRGBA & color )
 		{
 			Index = index;
 			Color = color;
 		}
 
-		operator==(const SLetterColor lc) const
+		bool operator == ( const SLetterColor lc ) const
 		{
-			return (Index==lc.Index && Color==lc.Color);
+			return (Index == lc.Index && Color == lc.Color);
 		}
 	};
 	

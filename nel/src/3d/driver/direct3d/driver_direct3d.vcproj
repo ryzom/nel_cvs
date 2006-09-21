@@ -225,7 +225,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="../../../../include"
+				AdditionalIncludeDirectories="../../../../include;../.."
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"

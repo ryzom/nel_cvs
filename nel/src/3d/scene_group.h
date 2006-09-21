@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * TODO: File description
  *
- * $Id: scene_group.h,v 1.34 2005/02/22 10:19:11 besson Exp $
+ * $Id: scene_group.h,v 1.34.30.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "point_light_named.h"
 #include "point_light_named_array.h"
 #include "ig_surface_light.h"
+#include "clip_trav.h"
 
 #include <vector>
 

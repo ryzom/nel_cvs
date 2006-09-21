@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * TODO: File description
  *
- * $Id: ps_plane_basis_maker.h,v 1.15 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.15.30.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 
 namespace NL3D {
 
+template <>
 const char *CPSAttribMaker<CPlaneBasis>::getType() { return "CPlaneBasis";}
 
 /** these are some attribute makers for plane_basis

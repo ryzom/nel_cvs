@@ -1,7 +1,7 @@
 /** \file pacs/main.cpp
  * Pacs sample using user interface.
  *
- * $Id: main.cpp,v 1.6 2004/12/28 12:43:31 lecroart Exp $
+ * $Id: main.cpp,v 1.6.38.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,6 +136,8 @@ int main ()
 #endif // NL_OS_WINDOWS
 
 {
+	NLMISC::CApplicationContext myApplicationContext;
+
 	try
 	{
 		// Init search pathes
@@ -275,8 +277,6 @@ int main ()
 				// Check selected
 				if (selected>=arrayObj.size())
 					selected=arrayObj.size()-1;
-				if (selected<0)
-					selected=0;
 
 				// Change selected object if TAB pressed
 				if (pDriver->AsyncListener.isKeyPushed (KeyTAB))

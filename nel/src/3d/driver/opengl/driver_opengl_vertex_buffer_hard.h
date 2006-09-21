@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * TODO: File description
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.11 2004/11/15 10:24:55 lecroart Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.11.46.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -36,6 +36,9 @@ namespace NL3D
 class	CDriverGL;
 class	IVertexBufferHardGL;
 class   CVertexBufferInfo;
+class	CVertexBufferHardGLMapObjectATI;
+class	CVertexBufferHardARB;
+
 
 
 // ***************************************************************************

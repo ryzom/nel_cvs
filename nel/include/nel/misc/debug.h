@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.86 2005/11/07 15:20:53 guignot Exp $
+ * $Id: debug.h,v 1.86.6.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -672,6 +672,9 @@ struct TInstanceCounterData
 
 	~TInstanceCounterData();
 };
+
+// forward declaration for members of CInstanceCounterManager
+class CInstanceCounterLocalManager;
 
 // The singleton used to display the instance counter
 class CInstanceCounterManager

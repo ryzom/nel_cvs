@@ -1,7 +1,7 @@
 /** \file ps_float.h
  * TODO: File description
  *
- * $Id: ps_float.h,v 1.17 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_float.h,v 1.17.30.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@
 
 namespace NL3D {
 
-
+template <>
 const char *CPSAttribMaker<float>::getType() { return "float"; }
 
 /// these are some attribute makers for float

@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.23 2005/08/09 19:06:25 boucher Exp $
+ * $Id: buf_sock.h,v 1.23.20.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLNET {
 
 
 class CTcpSock;
-
+class CServerReceiveTask;
 class CBufNetBase;
 
 

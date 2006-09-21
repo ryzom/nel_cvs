@@ -2,7 +2,7 @@
 #
 # Macros used by Nevrax in configure.in files.
 #
-# $Id: acinclude.m4,v 1.20 2005/04/04 10:07:29 cado Exp $
+# $Id: acinclude.m4,v 1.20.24.1 2006/09/21 20:48:37 cado Exp $
 # 
 # =========================================================================
 
@@ -371,16 +371,16 @@ AC_ARG_WITH( stlport-lib,
 
 if test "$with_debug" = "full"
 then
- stlport_lib="stlport_gcc_debug"
+ stlport_lib="stlport_debug"
 else
- stlport_lib="stlport_gcc"
+ stlport_lib="stlport"
 fi
 
 if test "$with_debug" = "full"
 then
- stlport_lib2="stlport_gcc_debug"
+ stlport_lib2="stlport_debug"
 else
- stlport_lib2="stlport_gcc"
+ stlport_lib2="stlport"
 fi
 
 if test "$with_stlport" = no

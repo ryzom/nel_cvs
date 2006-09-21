@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * TODO: File description
  *
- * $Id: ps_int.h,v 1.8 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_int.h,v 1.8.30.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 
 namespace NL3D {
 
-
+template <>
 const char *CPSAttribMaker<uint32>::getType() { return "int32"; }
 
 /// these are some attribute makers for int

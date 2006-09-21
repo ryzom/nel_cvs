@@ -1,6 +1,6 @@
 /** \file occlusion_query.h
  *
- * $Id: occlusion_query.h,v 1.2 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: occlusion_query.h,v 1.2.36.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -99,3 +99,4 @@ struct IOcclusionQuery
 } // NL3D
 
 #endif
+

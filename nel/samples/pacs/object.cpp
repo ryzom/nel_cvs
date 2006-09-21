@@ -1,7 +1,7 @@
 /** \file net_layer5/object.cpp
  * Objects for the sample. Link between 3d instance and collision primitives.
  *
- * $Id: object.cpp,v 1.5 2004/12/28 12:43:31 lecroart Exp $
+ * $Id: object.cpp,v 1.5.38.1 2006/09/21 20:48:37 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ CObjectDyn::CObjectDyn (double width, double depth, double height, double orient
 		uint i;
 		for (i=0; i<_Instance.getNumMaterials(); i++)
 		{
-			UInstanceMaterial &material = _Instance.getMaterial(i);
+			UInstanceMaterial material = _Instance.getMaterial(i);
 			if (trigger != UMovePrimitive::NotATrigger)
 			{
 				// material.setBlend(true);
@@ -151,7 +151,7 @@ CObjectDyn::CObjectDyn (double diameter, double height, const CVectorD& pos, con
 		uint i;
 		for (i=0; i<_Instance.getNumMaterials(); i++)
 		{
-			UInstanceMaterial &material = _Instance.getMaterial(i);
+			UInstanceMaterial material = _Instance.getMaterial(i);
 			if (trigger != UMovePrimitive::NotATrigger)
 			{
 				// material.setBlend(true);

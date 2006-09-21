@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.40 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: mutex.cpp,v 1.40.32.1 2006/09/21 19:42:17 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,7 +230,7 @@ CFairMutex::CFairMutex()
 
 #if (_WIN32_WINNT >= 0x0500)
 	DWORD dwSpinCount = 0x80000000; // set high-order bit to use preallocation
-	if ( ! InitializeCriticalSectionAndSpinCount( &_Cs, dwSpinCount ) )
+	if ( ! InitializeCriticalSectionAndSpinCount( (CRITICAL_SECTION*)&_Cs, dwSpinCount ) )
 	{
 		nlerror( "Error entering critical section" );
 	}
@@ -255,7 +255,7 @@ CFairMutex::CFairMutex(const string &name)
 
 #if (_WIN32_WINNT >= 0x0500)
 	DWORD dwSpinCount = 0x80000000; // set high-order bit to use preallocation
-	if ( ! InitializeCriticalSectionAndSpinCount( &_Cs, dwSpinCount ) )
+	if ( ! InitializeCriticalSectionAndSpinCount( (CRITICAL_SECTION*)&_Cs, dwSpinCount ) )
 	{
 		nlerror( "Error entering critical section" );
 	}

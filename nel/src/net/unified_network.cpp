@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.97 2006/09/14 16:56:08 cado Exp $
+ * $Id: unified_network.cpp,v 1.97.4.1 2006/09/21 20:40:58 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -2735,8 +2735,8 @@ NLMISC_CLASS_COMMAND_IMPL(CUnifiedNetwork, addService)
 	// syntax is as follow : 
 	// <serviceName> ( address=<address:port> [sid=<serviceId>] [sendId] [external] [autoRetry] )
 
-	TParsedCommandLine &serviceInfo = pcl.SubParams[1];
-	const TParsedCommandLine *address = serviceInfo.getParam("address");
+	TParsedCommandLine * serviceInfo = pcl.SubParams[1];
+	const TParsedCommandLine *address = serviceInfo->getParam("address");
 	if (address == NULL)
 	{
 		log.displayNL("Can't find param 'address'");
@@ -2751,23 +2751,23 @@ NLMISC_CLASS_COMMAND_IMPL(CUnifiedNetwork, addService)
 	}
 
 	uint16 serviceId = 0;
-	const TParsedCommandLine *sid = serviceInfo.getParam("sid");
+	const TParsedCommandLine *sid = serviceInfo->getParam("sid");
 	if (sid != NULL)
 		serviceId = atoi(sid->ParamValue.c_str());
 
-	bool sendId = serviceInfo.getParam("sendId") != NULL;
-	bool external = serviceInfo.getParam("external") != NULL;
-	bool autoRetry = serviceInfo.getParam("autoRetry") != NULL;
+	bool sendId = serviceInfo->getParam("sendId") != NULL;
+	bool external = serviceInfo->getParam("external") != NULL;
+	bool autoRetry = serviceInfo->getParam("autoRetry") != NULL;
 
 	log.displayNL("Adding service '%s' as sid %u with [sendId = %s], [external = %s], [autoRetry = %s]",
-		serviceInfo.ParamName.c_str(),
+		serviceInfo->ParamName.c_str(),
 		sid,
 		sendId ? "YES" : "NO",
 		external ? "YES" : "NO",
 		autoRetry ? "YES" : "NO"
 		);
 
-	addService(serviceInfo.ParamName, 
+	addService(serviceInfo->ParamName, 
 				ia, 
 				sendId, 
 				external, 

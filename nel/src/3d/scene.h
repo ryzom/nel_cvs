@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.64 2005/07/22 12:41:02 legallo Exp $
+ * $Id: scene.h,v 1.64.20.1 2006/09/21 20:18:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,13 +43,14 @@
 #include "render_trav.h"
 #include "flare_model.h"
 
-
-
 #include "nel/3d/viewport.h"
 #include "nel/3d/u_scene.h"
 
 #include "nel/misc/rgba.h"
 #include "nel/misc/smart_ptr.h"
+
+// Debug : Sept 01 2006
+#include "skeleton_spawn_script.h"
 
 #include <map>
 #include <list>
@@ -57,7 +58,6 @@
 /// This namespace contains all 3D class
 namespace NL3D
 {
-
 
 using	NLMISC::CRefPtr;
 using	NLMISC::CSmartPtr;
@@ -74,7 +74,7 @@ class	CSkeletonModel;
 class	CRootModel;
 class	CVisualCollisionManager;
 class   CTextureCube;
-class   CWaterEnvMap;
+class	CWaterEnvMap;
 
 // ***************************************************************************
 /**
@@ -553,7 +553,7 @@ public:
 	ItShadowCasterList			getShadowCasterListEnd() {return _ShadowCasterList.end();}
 
 	/// For skeleton spawn script model creation
-	void						addSSSModelRequest(const class CSSSModelRequest &req);
+	void						addSSSModelRequest(const CSSSModelRequest &req);
 
 	// @}
 
@@ -831,7 +831,7 @@ private:
 	void	renderOcclusionTestMeshsWithCurrMaterial();
 	CWaterEnvMap	*_WaterEnvMap;	
 	/// Delayed model creation For skeleton spawn script animation
-	std::vector<class CSSSModelRequest>		_SSSModelRequests;
+	std::vector<CSSSModelRequest>		_SSSModelRequests;
 	void									flushSSSModelRequests();
 	// common vb for water display
 	CVertexBuffer	 _WaterVB;

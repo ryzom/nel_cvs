@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.21 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.21.30.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 				throw Exception("SSE Allocation Failed");
 
 			// Align ptr
-			newData= (void*) ( ((uint32)newAllocData+NL3D_SSE_ALIGNEMENT-1) & (~(NL3D_SSE_ALIGNEMENT-1)) );
+			newData= (void*) ( ((ptrdiff_t)newAllocData+NL3D_SSE_ALIGNEMENT-1) & (~(NL3D_SSE_ALIGNEMENT-1)) );
 
 			// copy valid data from old to new.
 			memcpy(newData, _Data, size() * sizeof(CMatrix3x4SSE) );

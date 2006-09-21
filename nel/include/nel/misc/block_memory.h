@@ -1,7 +1,7 @@
 /** \file block_memory.h
  * Block memory allocation
  *
- * $Id: block_memory.h,v 1.6 2005/02/22 10:14:12 besson Exp $
+ * $Id: block_memory.h,v 1.6.30.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 	{
 		nlassert(blockSize);
 		_BlockSize= blockSize;
-		_EltSize= std::max(sizeof(T), sizeof(void*));
+		_EltSize= std::max((uint)sizeof(T), (uint)sizeof(void*));
 		_NextFreeElt= NULL;
 		_NAllocatedElts= 0;
 	}
@@ -213,7 +213,7 @@ public:
 		// must not be used with object ctor/dtor behavior.
 		nlassert(__ctor_dtor__ == false);
 		// format size.
-		eltSize= std::max(eltSize, sizeof(void*));
+		eltSize= std::max((uint)eltSize, (uint)sizeof(void*));
 		// if not the same size as before
 		if(_EltSize!= eltSize)
 		{

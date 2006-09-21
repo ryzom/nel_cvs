@@ -1,7 +1,7 @@
 /** \file form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.24 2004/11/15 10:24:57 lecroart Exp $
+ * $Id: form_dfn.cpp,v 1.24.46.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 	if ( ((const char*)root->name == NULL) || (strcmp ((const char*)root->name, "DFN") != 0) )
 	{
 		// Throw exception
-		warning (true, "read", "XML Syntax error in block line %d, node (%s) should be DFN.", (int)root->content, root->name);
+		warning (true, "read", "XML Syntax error in block line %d, node (%s) should be DFN.", (ptrdiff_t)root->content, root->name);
 	}
 
 	// Count the parent
@@ -157,7 +157,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 		{
 			// Throw exception
 			warning (true, "read", "XML Syntax error in block (%s) line %d, aguments Name not found.", 
-				parent->name, (int)parent->content);
+				parent->name, (ptrdiff_t)parent->content);
 		}
 
 		// Next parent
@@ -240,7 +240,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 						{
 							// Throw exception
 							warning (true, "read", "In XML block (%s) line %d, file not found %s.", 
-								child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
+								child->name, (ptrdiff_t)child->content, Entries[childNumber].Filename.c_str ());
 						}
 
 						// Read the default value
@@ -257,7 +257,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 					{
 						// Throw exception
 						warning (true, "read", "XML In block (%s) line %d, no filename found for the .typ file.", 
-							child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
+							child->name, (ptrdiff_t)child->content, Entries[childNumber].Filename.c_str ());
 					}
 				}
 				else if (stricmp (typeName, "Dfn") == 0)
@@ -274,14 +274,14 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 						{
 							// Throw exception
 							warning (true, "read", "XML In block (%s) line %d, file not found %s.", 
-								child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
+								child->name, (ptrdiff_t)child->content, Entries[childNumber].Filename.c_str ());
 						}
 					}
 					else
 					{
 						// Throw exception
 						warning (true, "read", "XML In block (%s) line %d, no filename found for the .typ file.", 
-							child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
+							child->name, (ptrdiff_t)child->content, Entries[childNumber].Filename.c_str ());
 					}
 				}
 				else if (stricmp (typeName, "DfnPointer") == 0)
@@ -292,7 +292,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 				{
 					// Throw exception
 					warning (true, "read", "XML Syntax error in block (%s) line %d, element has not a valid type name attribut \"Type = %s\".", 
-						child->name, (int)child->content, typeName);
+						child->name, (ptrdiff_t)child->content, typeName);
 				}
 
 				// Delete the value
@@ -302,7 +302,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 			{
 				// Throw exception
 				warning (true, "read", "XML Syntax error in block (%s) line %d, element has no type name attribut \"Type = [Type][Dfn][DfnPointer]\".", 
-					child->name, (int)child->content);
+					child->name, (ptrdiff_t)child->content);
 			}
 
 			// Get the array attrib
@@ -320,7 +320,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 		{
 			// Throw exception
 			warning (true, "read", "XML Syntax error in block (%s) line %d, aguments Name not found.", 
-				root->name, (int)root->content);
+				root->name, (ptrdiff_t)root->content);
 		}
 
 		// Next child

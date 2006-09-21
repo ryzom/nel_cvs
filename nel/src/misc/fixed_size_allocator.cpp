@@ -1,6 +1,6 @@
 /** \file fixed_size_allocator.cpp
  *
- * $Id: fixed_size_allocator.cpp,v 1.3 2004/05/18 14:35:32 vizerie Exp $
+ * $Id: fixed_size_allocator.cpp,v 1.3.54.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -87,7 +87,7 @@ void CFixedSizeAllocator::free(void *block)
 //*****************************************************************************************************************
 uint CFixedSizeAllocator::CChunk::getBlockSizeWithOverhead() const
 {
-	return std::max(sizeof(CNode) - offsetof(CNode, Next), Allocator->getNumBytesPerBlock()) + offsetof(CNode, Next);	
+	return std::max((uint)(sizeof(CNode) - offsetof(CNode, Next)),(uint)(Allocator->getNumBytesPerBlock())) + offsetof(CNode, Next);	
 }
 
 //*****************************************************************************************************************

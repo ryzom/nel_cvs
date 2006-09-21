@@ -1,7 +1,7 @@
 /** \file type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.24 2005/02/22 10:19:22 besson Exp $
+ * $Id: type.cpp,v 1.24.30.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,7 @@ void CType::read (xmlNodePtr root)
 	{
 		// Throw exception
 		warning2 (true, "read", "XML Syntax error in block line %d, node (%s) should be TYPE.",
-			(int)root->content, root->name);
+			(ptrdiff_t)root->content, root->name);
 	}
 
 	// Read the type
@@ -148,7 +148,7 @@ void CType::read (xmlNodePtr root)
 
 			// Throw exception
 			warning2 (true, "read", "XML Syntax error in TYPE block line %d, the Type value is unknown (%s).", 
-				(int)root->content, valueStr.c_str ());
+				(ptrdiff_t)root->content, valueStr.c_str ());
 		}
 
 		// Delete the value
@@ -158,7 +158,7 @@ void CType::read (xmlNodePtr root)
 	{
 		// Throw exception
 		warning2 (true, "read", "XML Syntax error in TYPE block line %d, the Type argument was not found.", 
-			(int)root->content);
+			(ptrdiff_t)root->content);
 	}
 
 	// Read the UI
@@ -266,7 +266,7 @@ void CType::read (xmlNodePtr root)
 
 				// Throw exception
 				warning2 (true, "read", "XML Syntax error in DEFINITION block line %d, the Value argument was not found.", 
-					(int)childPtr->content);
+					(ptrdiff_t)childPtr->content);
 			}			
 
 			// Delete the value
@@ -276,7 +276,7 @@ void CType::read (xmlNodePtr root)
 		{
 			// Throw exception
 			warning2 (true, "read", "XML Syntax error in DEFINITION block line %d, the Label argument was not found.", 
-				(int)childPtr->content);
+				(ptrdiff_t)childPtr->content);
 		}
 
 		// One more

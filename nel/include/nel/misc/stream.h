@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.76 2006/01/10 17:38:46 boucher Exp $
+ * $Id: stream.h,v 1.76.6.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -513,7 +513,7 @@ public:
 			else
 			{
 				ItIdMap	it;
-				it = _IdMap.find((uint64)(uint)ptr);
+				it = _IdMap.find((uint64)/*(uint)*/ptr);
 
 				// Test if object has been already written
 				if( it==_IdMap.end() )
@@ -527,7 +527,7 @@ public:
 					serial(node);
 
 					// Insert the pointer in the map with the id
-					_IdMap.insert( ValueIdMap((uint64)(uint)ptr, (void*)(uint)node) );
+					_IdMap.insert( ValueIdMap((uint64)/*(uint)*/ptr, (void*)/*(uint)*/node) );
 
 					// Close the header
 					xmlPushEnd ();
@@ -538,7 +538,7 @@ public:
 				else
 				{
 					// Write only the object id
-					node = (uint64)(uint)(it->second);
+					node = (uint64)/*(uint)*/(it->second);
 
 					serial(node);
 		

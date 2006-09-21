@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * TODO: File description
  *
- * $Id: coarse_mesh_build.cpp,v 1.13 2006/07/12 09:27:22 vizerie Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.13.4.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 						else
 						{
 							// Build a name
-							name+=toString ((uint)texture);
+							name+=toString ("%d",(ptrdiff_t)texture);
 						}
 					}
 
@@ -486,7 +486,7 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 						else
 						{
 							// Build a name
-							name+=toString ((uint)texture);
+							name+=toString ("%d",(ptrdiff_t)texture);
 						}
 					}
 

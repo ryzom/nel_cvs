@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * TODO: File description
  *
- * $Id: primitive.cpp,v 1.52 2005/09/22 10:16:34 lancon Exp $
+ * $Id: primitive.cpp,v 1.52.18.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ void XMLError (xmlNodePtr xmlNode, const char *filename, const char *format, ...
 	vsnprintf( buffer, 1024, format, args );
 	va_end( args );
 
-	Error (filename, "node (%s), line (%d) : %s", xmlNode->name, (int)xmlNode->content, buffer);
+	Error (filename, "node (%s), line (%d) : %s", xmlNode->name, (ptrdiff_t)xmlNode->content, buffer);
 }
 
 

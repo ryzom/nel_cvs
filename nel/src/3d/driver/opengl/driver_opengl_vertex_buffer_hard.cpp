@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * TODO: File description
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.21 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.21.30.1 2006/09/21 20:50:31 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -699,7 +699,7 @@ void		CVertexBufferHardGLATI::unlock()
 {
 	H_AUTO_OGL(CVertexBufferHardGLATI_unlock)
 	// Copy All mirror into the ATI Vertex Object
-	nglUpdateObjectBufferATI(getATIVertexObjectId(), (uint)_VertexPtr - NL3D_DRV_ATI_FAKE_MEM_START,
+	nglUpdateObjectBufferATI(getATIVertexObjectId(), (ptrdiff_t)_VertexPtr - NL3D_DRV_ATI_FAKE_MEM_START,
 		_RAMMirrorVertexSize, _RAMMirrorVertexPtr, GL_PRESERVE_ATI);
 }
 
@@ -724,7 +724,7 @@ void		CVertexBufferHardGLATI::unlock(uint start, uint end)
 	// Copy a subset of the mirror into the ATI Vertex Object
 	uint	size= end-start;
 	uint	srcOffStart= start;
-	uint	dstOffStart= ((uint)_VertexPtr - NL3D_DRV_ATI_FAKE_MEM_START) + srcOffStart;
+	uint	dstOffStart= ((ptrdiff_t)_VertexPtr - NL3D_DRV_ATI_FAKE_MEM_START) + srcOffStart;
 	// copy.
 	nglUpdateObjectBufferATI(getATIVertexObjectId(), dstOffStart,
 		size, (uint8*)_RAMMirrorVertexPtr + srcOffStart, GL_PRESERVE_ATI);		

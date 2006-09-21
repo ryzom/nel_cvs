@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.15 2006/09/14 16:56:08 cado Exp $
+ * $Id: win_thread.cpp,v 1.15.4.1 2006/09/21 20:20:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,13 @@
 
 #include "nel/misc/win_thread.h"
 #include <windows.h>
-#include <typeinfo.h>
+
+// Debug : Sept 01 2006
+#if _STLPORT_VERSION >= 0x510
+	#include <typeinfo>
+#else
+	#include <typeinfo.h>
+#endif
 
 namespace NLMISC {
 

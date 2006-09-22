@@ -1,0 +1,10 @@
+<dtml-comment>
+connection_id:r2linux03
+arguments: char_id
+title:Session: get Owners mastered score
+</dtml-comment>
+
+select distinct sum(rrp_scored) as mastered_score
+from session_log
+where owner=<dtml-sqlvar guild_id type="string">
+group by owner

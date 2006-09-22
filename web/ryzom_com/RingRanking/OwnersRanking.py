@@ -13,7 +13,14 @@ except ImportError:
 #import de fonction du produit
 from config import *
 
-OwnersRankingSchema=BaseSchema.copy()+ Schema(())
+OwnersRankingSchema=BaseSchema.copy()+ Schema((
+	BooleanField('Masterless',
+		default = False,
+		widget=BooleanWidget(
+			description="Select for Masterless Ranking"
+		),
+	),
+))
 
 class OwnersRanking(BaseContent):
 	"""Don't **use** this object"""
@@ -67,11 +74,13 @@ class OwnersRanking(BaseContent):
 		for row in request:
 			rank+=1
 			guild_name = self.SQL_GuildName(guild_id=str(row[2]))
-			mastered = self.SQL_AnimMode(char_id=str(row[3]),anim_mode='am_dm')
 			masterless = self.SQL_AnimMode(char_id=str(row[3]),anim_mode='am_autonomous')
+			mastered = self.SQL_AnimMode(char_id=str(row[3]),anim_mode='am_dm')
+			mastered_score = self.SQL_MasteredScore(char_id=str(row[3]))
 			info = {'rank':rank,
 				'name':row[0],
 				'score':row[1],
+				'mastered_score':mastered_score,
 				'guild':guild_name,
 				'mastered':mastered,
 				'masterless':masterless,				
@@ -81,7 +90,7 @@ class OwnersRanking(BaseContent):
 
 
 	security.declareProtected(CMFCorePermissions.View, 'sortedRanking')
-	def sortedRanking(ranking_by=none):
+	def sortedRanking(ranking_by='rank'):
 		"""return a sorted ranking tab"""
 		ranking = self.getRanking()
 		return ranking

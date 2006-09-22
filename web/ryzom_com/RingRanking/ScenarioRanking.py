@@ -13,7 +13,14 @@ except ImportError:
 #import de fonction du produit
 from config import *
 
-ScenarioRankingSchema=BaseSchema.copy()+ Schema(())
+ScenarioRankingSchema=BaseSchema.copy()+ Schema((
+	BooleanField('Masterless',
+		default = False,
+		widget=BooleanWidget(
+			description="Select for Masterless Ranking"
+		),
+	),
+))
 
 class ScenarioRanking(BaseContent):
 	"""Don't **use** this object"""

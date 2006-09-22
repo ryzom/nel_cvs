@@ -169,6 +169,7 @@ class QnA(BaseContent):
 			post_date = str(row[1])
 			post_author = str(row[2])
 			post_text   = str(row[3])
+			post_title  = str(row[4])
 			#conversion du texte
 			try:
 				post_text=post_text.replace('\xc2','').decode('cp1252').encode('utf')
@@ -179,7 +180,7 @@ class QnA(BaseContent):
 					post_text=post_text.decode('latin')
 			#ajout des donnÃ©es dans le dictionnaire
 			newtext = self.generate_text([post_date,post_author,post_text,post_id])
-			PostList.update({i:[post_date,post_author,newtext,post_id]})
+			PostList.update({i:[post_date,post_author,newtext,post_id,post_title]})
 		#return PostList
 		self.setPostList(PostList)
 

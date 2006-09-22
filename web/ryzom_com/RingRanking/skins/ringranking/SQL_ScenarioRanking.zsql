@@ -1,0 +1,10 @@
+<dtml-comment>
+arguments: ranking_by
+connection_id:r2linux03
+title:Session: get scenario ranking
+</dtml-comment>
+
+select distinct id,md5,title,description,author,rrp_total,anim_mode,language,orientation,level
+from scenario
+order by <dtml-sqlvar ranking_by type="string">,rrp_total desc
+limit 50

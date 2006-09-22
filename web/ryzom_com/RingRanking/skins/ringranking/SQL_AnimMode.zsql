@@ -1,0 +1,12 @@
+<dtml-comment>
+arguments: char_id,anim_mode
+connection_id:r2linux03
+title:Session: count 'anim_mode' session
+</dtml-comment>
+
+select count(sce.anim_mode) as mastered
+from session_log ses,scenario sce
+where sce.id=ses.scenario_id
+  and char_id=<dtml-sqlvar char_id type="string">
+  and sce.anim_mode=<dtml-sqlvar anim_mode type="string">
+group by participants

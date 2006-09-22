@@ -1,0 +1,11 @@
+<dtml-comment>
+connection_id:r2linux03
+title:Session: get Owners name, score, and guild id
+</dtml-comment>
+
+select distinct c.char_name, sum(s.rrp_scored) as score,c.guild_id,c.char_id
+from characters c,session_log s
+where c.char_id=s.owner
+group by char_id
+order by score desc
+limit 50

@@ -17,7 +17,7 @@ ScenarioRankingSchema=BaseSchema.copy()+ Schema((
 	BooleanField('Masterless',
 		default = False,
 		widget=BooleanWidget(
-			description="Select for Masterless Ranking"
+			description="Select for Masterless Ranking **not use for the moment**"
 		),
 	),
 ))
@@ -100,10 +100,25 @@ class ScenarioRanking(BaseContent):
 		return result
 
 	security.declareProtected(CMFCorePermissions.View, 'sortedRanking')
-	def sortedRanking(ranking_by=none):
+	def sortedRanking(ranking_by=none,anim_mode='all'):
 		"""return a sorted ranking tab"""
 		ranking = self.getRanking()
-		return ranking
+		newRanking = {}
+
+		if anim_mode == 'all':
+			newRanking = ranking
+		elif anim_mode == 'am_dm':			
+			list_keys = ranking.keys()
+			for key in list_keys:
+				if ranking[key]['anim_mode']=='am_dm':
+					newRanking.update({key:ranking[key]})
+		elif anim_mode == 'am_autonomous':
+			list_keys = ranking.keys()
+			for key in list_keys:
+				if ranking[key]['anim_mode']=='am_autonomous':
+					newRanking.update({key:ranking[key]})
+		return newRanking
+
 
 	
 		

@@ -23,9 +23,33 @@
 	     tal:define="errors python:request.get('errors', {});
 	                 Iterator python:modules['Products.CMFPlone'].IndexIterator;
 	                 tabindex python:Iterator()">
-		<h1>Ring ranking</h1>
-		<p>Retrouvez ici le classement des meilleurs sc&eacute;narios, joueurs et MJ</p>
-		<p>Acc&egrave;s aux diff&eacute;rentes rubriques:</p>
+		
+		<h1 tal:condition="here/Masterless">Le classement des meilleurs sc&eacute;narios autonomes</h1>
+		<h1 tal:condition="not:here/Masterless">Le classement des meilleurs sc&eacute;narios avec maitre du jeu</h1>
+		
+		<table tal:define="ranks here/getRanking">
+			<tbody>
+				<tr>
+					<th>Rank</th>
+					<th>Title</th>
+					<th>Author</th>
+					<th>Language</th>
+					<th>Orientation</th>
+					<th>Level</td>
+					<th>Score</th>
+				</tr>
+				<tr title="" tal:attribute="title rank['description']" tal:repeat="rank ranks" >
+					<td tal:content="rank['rank']">rank</td>
+					<td tal:content="rank['title']">titre</td>
+					<td tal:content="rank['author']">auteur</td>
+					<td tal:content="rank['score']">langue</td>
+					<td tal:content="rank['orientation']">type</td>
+					<td tal:content="rank['level']">niveau du scenario</td>
+					<td tal:content="rank['score']">score</td>
+				</tr>
+			</tbody>
+		</table>
+		
 	</div>        
 
 </body>

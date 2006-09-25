@@ -5,7 +5,7 @@
 
 <metal:block fill-slot="css_slot">
    <style type="text/css" media="screen"
-     tal:content="string:@import url(${portal_url}/qna.css);">
+     tal:content="string:@import url(${portal_url}/css/RingRanking.css);">
    </style>
 
 </metal:block>
@@ -25,7 +25,31 @@
 	                 tabindex python:Iterator()">
 		<h1>Ring ranking</h1>
 		<p>Retrouvez ici le classement des meilleurs sc&eacute;narios, joueurs et MJ</p>
-		
+		<p>Acc&egrave;s aux diff&eacute;rentes rubriques:
+			<ul>
+				<li>
+					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasteredRanking/view">
+						Classement des scénarios avec MJ
+					</a>
+				</li>
+				<li>
+					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasterlessRanking/view">
+						Classement des scénarios sans MJ
+					</a>
+				</li>
+<!-- 				<li>
+					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasterlessRanking/view">
+						Classement des MJ
+					</a>
+				</li>
+				<li>
+					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasterlessRanking/view">
+						Classement des auteurs
+					</a>
+				</li> -->
+				
+			</ul>
+		</p>
 	</div>        
 
 </body>

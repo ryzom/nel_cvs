@@ -79,22 +79,25 @@ class AuthorsRanking(BaseContent):
 		rank = 0
 		for row in request:
 			rank+=1
+			guild = ''
+			pioneer = 0
 			#get the guild name
 			try:
-				guild = self.zsql.SQL_GuildName(guild_id=row[3])
+				#this SQL return one row of one column
+				guild = self.zsql.SQL_GuildName(guild_id=row[3])[0][0]
 			except:
 				guild = ''
 
-			#get if characters's users is pioneer
-			pioneer = 0
+			#get if characters's users is pioneer			
 			try:
-				pioneer = self.zsql.SQL_GetPrivileges(user_id=row[2])				
+				#this SQL return one row of one column
+				pioneer = self.zsql.SQL_GetPrivileges(user_id=row[2])[0][0]			
 			except:
 				pioneer = 0
 			
 			#create information
 			info = {'rank':rank,
-				'name':row[0],
+				'name':row[1],
 				'guild':guild,
 				'pioneer':pioneer,
 				'score_am':row[3],

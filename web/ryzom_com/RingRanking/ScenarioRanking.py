@@ -70,7 +70,6 @@ class ScenarioRanking(BaseContent):
 		## Format Result of the request
 		formatted_request=self.FormatRequest(request)
 		## store Result formatted
-		#self.updateRanking(formatted_request)
 		self.setRanking(formatted_request)
 		return 'ScenarioRanking Update Success'
 
@@ -84,7 +83,8 @@ class ScenarioRanking(BaseContent):
 			rank+=1
 			average_time = 'no stats'
 			try:
-				average_time = self.zsql.SQL_AverageScenarioTime(scenario_id=row[8])
+				#this SQL return one row of one column
+				average_time = self.zsql.SQL_AverageScenarioTime(scenario_id=row[8])[0][0]
 			except:
 				average_time = 'no stats'
 			info = {'rank':rank,
@@ -92,7 +92,6 @@ class ScenarioRanking(BaseContent):
 				'description':row[1],
 				'author':row[2],
 				'score':row[3],
-				'anim_mode':row[4],
 				'language':row[5],
 				'orientation':row[6],
 				'level':row[7],

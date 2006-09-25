@@ -1,0 +1,9 @@
+<dtml-comment>
+arguments: guild_id
+connection_id:r2linux03
+title:Session: get Owners guild name
+</dtml-comment>
+
+select distinct guild_name
+from guilds
+where guild_id=<dtml-sqlvar guild_id type="string">

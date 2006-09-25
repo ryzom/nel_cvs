@@ -13,7 +13,14 @@ except ImportError:
 #import de fonction du produit
 from config import *
 
-AuthorsRankingSchema=BaseSchema.copy()+ Schema(())
+AuthorsRankingSchema=BaseSchema.copy()+ Schema((
+	BooleanField('AM',
+		default = False,
+		widget=BooleanWidget(
+			description="Select for Animator Ranking **not use for the moment**"
+		),
+	),
+))
 
 class AuthorsRanking(BaseContent):
 	"""Don't **use** this object"""
@@ -39,49 +46,73 @@ class AuthorsRanking(BaseContent):
 		"""return the ranking's list"""
 		return self.Ranking
 	
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateRanking')
-	def updateRanking(self,d):
-		"""update the ranking's list"""
-		self.Ranking.update(d)
+#	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateRanking')
+#	def updateRanking(self,d):
+#		"""update the ranking's list"""
+#		self.Ranking.update(d)
 
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
 	def update(self):
-		"""update Ranking"""		
+		"""update Ranking"""
+
+		if self.getAM():
+			ranking_by = 'rrp_am'
+		else:
+			ranking_by = 'rrp_author'		
 		## SQL Request
 		try:
-			request = self.SQL_AuthorsRanking(ranking_by='rrp_scored')
+			request = self.SQL_AuthorsRanking(ranking_by=ranking_by)
 		except:
 			return 'Ranking Update Failed'
+		
 		## Format Result of the request
 		formatted_request=self.FormatRequest(request)
 		## store Result formatted
-		self.updateRanking(formatted_request)		
+		self.Ranking = formatted_request
 		return 'AuthorsRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
 	def FormatRequest(request):
 		"""retourne un dictionnaire avec le rang comme clef"""
 		result = {}
-		rank = 0		
+		rank = 0
 		for row in request:
 			rank+=1
-			title = row[0]
-			description = row[1]			
-			author = row[2]
-			score = row[3]
-			anim_mode = row[4]
-			language = row[5]
-			orientation = row[6] 			
-			info = [rank,title,description,author,score,anim_mode,language,orientation]
+			#get the guild name
+			try:
+				guild = self.SQL_GuildName(guild_id=row[3])
+			except:
+				guild = ''
+
+			#get if charecters's users is pioneer
+			try:
+				request = self.SQL_GetPrivileges(user_id=row[2])				
+			except:
+				request = 'no stats'
+			if 'PIONEER' in request:
+				pioneer = 1
+			else:
+				pioneer = 0
+			
+			#create information
+			info = {'rank':rank,
+				'name':row[0],
+				'guild':guild,
+				'pioneer':pioneer,
+				'score_am':row[3],
+				'score_author':row[3],
+				}
+			#update dictionnarie
 			result.update({rank:info})
 		return result
 
-	security.declareProtected(CMFCorePermissions.View, 'sortedRanking')
-	def sortedRanking(ranking_by=none):
-		"""return a sorted ranking tab"""
-		ranking = self.getRanking()
-		return ranking
+
+#	security.declareProtected(CMFCorePermissions.View, 'sortedRanking')
+#	def sortedRanking(ranking_by=none):
+#		"""return a sorted ranking tab"""
+#		ranking = self.getRanking()
+#		return ranking
 
 		
 

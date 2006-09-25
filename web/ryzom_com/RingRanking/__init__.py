@@ -12,7 +12,6 @@ registerDirectory(SKINS_DIR, GLOBALS)
 def initialize(context):
 	import RingRanking
 	import AuthorsRanking
-	import OwnersRanking
 	import ScenarioRanking
 
 	content_types, constructors, ftis = process_types(

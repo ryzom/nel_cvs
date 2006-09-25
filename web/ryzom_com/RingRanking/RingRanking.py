@@ -13,6 +13,7 @@ except ImportError:
 #import de fonction du produit
 from config import *
 
+#Ajouter un formulaire pour modifier le titre des objets generer a la crÃ©ation.
 
 RingRankingSchema=BaseFolderSchema.copy()+ Schema(())
  
@@ -26,8 +27,16 @@ class RingRanking(BaseFolder):
 	archetype_name = meta_type = 'RingRanking'
 	allowed_content_types = ['AuthorsRanking',
 				 'OwnersRanking',
-				 'ScenarioRanking',]
+				 'ScenarioRanking',
+				 'AMRanking',]
 	_at_rename_after_creation = True
+
+	#name (title & id) of the content created
+	content = ['AMRanking',
+		   'AuthorRanking',
+		   'ScenarioMasterlessRanking',
+		   'ScenarioMasteredRanking',]
+
 
 #	actions = (
 #		{ 'id': 'view',
@@ -42,23 +51,49 @@ class RingRanking(BaseFolder):
 		"""use automatically at creation"""
 		BaseFolder.initializeArchetype(self, **kwargs)
 
-		for name in self.allowed_content_types:
-			# Create a 'name' category
-			if not hasattr(self.aq_inner.aq_explicit, name):
-				self.invokeFactory(name,id=name)
-				obj = getattr(self.aq_inner.aq_explicit, name)
-				obj.setTitle(name)
+#		for name in self.allowed_content_types:
+#			# Create a 'name' category
+#			if not hasattr(self.aq_inner.aq_explicit, name):
+#				self.invokeFactory(name,id=name)
+#				obj = getattr(self.aq_inner.aq_explicit, name)
+#				obj.setTitle(name)
 
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'list_content_types')
-	def list_content_types(self):
-		"""return the list of authorized content"""
-		return self.allowed_content_types
+		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking'):
+			self.invokeFactory('ScenarioRanking',id='ScenarioMasteredRanking')
+			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking')
+			obj.setTitle('ScenarioMasteredRanking')
+			obj.setMaster(True)
+
+		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking'):
+			self.invokeFactory('ScenarioRanking',id='ScenarioMasterlessRanking')
+			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking')
+			obj.setTitle('ScenarioMasterlessRanking')
+			obj.setMaster(False)
+
+		if not hasattr(self.aq_inner.aq_explicit, 'AuthorsRanking'):
+			self.invokeFactory('AuthorsRanking',id='AuthorsRanking')
+			obj = getattr(self.aq_inner.aq_explicit, 'AuthorsRanking')
+			obj.setTitle('AuthorsRanking')
+			obj.setMaster(False)
+
+		if not hasattr(self.aq_inner.aq_explicit, 'AMRanking'):
+			self.invokeFactory('AuthorsRanking',id='AMRanking')
+			obj = getattr(self.aq_inner.aq_explicit, 'AMRanking')
+			obj.setTitle('AMRanking')
+			obj.setMaster(True)
+
+#		if not hasattr(self.aq_inner.aq_explicit, 'AMRanking'):
+#			self.invokeFactory('AMRanking',id='AMRanking')
+#			obj = getattr(self.aq_inner.aq_explicit, 'AMRanking')
+#			obj.setTitle('AMRanking')
+
+
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateAllRank')
 	def updateAllRank(self):
 		"""update all ranking in the content"""
-		result = []
-		for name in self.allowed_content_types:
+		result = []		
+		for name in self.content:
 			obj = getattr(self.aq_inner.aq_explicit, name)
 			result.append(obj.update())
 		return result

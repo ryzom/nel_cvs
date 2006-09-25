@@ -14,7 +14,7 @@ except ImportError:
 from config import *
 
 ScenarioRankingSchema=BaseSchema.copy()+ Schema((
-	BooleanField('Masterless',
+	BooleanField('master',
 		default = False,
 		widget=BooleanWidget(
 			description="Select for Masterless Ranking **not use for the moment**"
@@ -39,19 +39,6 @@ class ScenarioRanking(BaseContent):
 #	)
 
 
-#	au cas ou on fonctionnerais uniquement en attaquant la bdd, il faudrais penser a gere les types complexes	
-#	## nom du type : colonne SQL
-#	ranking_simple={'Rank':'rrp_total',
-#			'Name of scenario':'title',
-#			'Name of author':'author',
-#			'Type of scenario':'orientation',
-#			'Mastered / masterless':'anim_mode',
-#			'Language':'language',
-#			}
-#	## nom du type : nom de la requete SQL
-#	ranking_complex={'Guild':'SQL_scenarioGuild'}
-
-
 	## {rang : [info sur le scenario]}
 	Ranking={}
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
@@ -59,33 +46,46 @@ class ScenarioRanking(BaseContent):
 		"""return the ranking's list"""
 		return self.Ranking
 	
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateRanking')
-	def updateRanking(self,d):
-		"""update the ranking's list"""
-		self.Ranking.update(d)
+#	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateRanking')
+#	def updateRanking(self,d):
+#		"""update the ranking's list"""
+#		self.Ranking.update(d)
 
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
 	def update(self):
-		"""update Ranking"""		
+		"""update Ranking"""
+		ranking_by='rrp_scored'
+		if self.getMaster():
+			master = 'am_dm'
+		else:
+			master = 'am_autonomous'
+				
 		## SQL Request
 		try:
-			request = self.SQL_ScenarioRanking(ranking_by='rrp_scored')
+			request = self.SQL_ScenarioRanking(ranking_by=ranking_by,master=master)
 		except:
 			return 'ScenarioRanking Update Failed'
+
 		## Format Result of the request
 		formatted_request=self.FormatRequest(request)
 		## store Result formatted
-		self.updateRanking(formatted_request)		
+		#self.updateRanking(formatted_request)
+		self.Ranking = formatted_request
 		return 'ScenarioRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
-	def FormatRequest(request):
+	def FormatRequest(self,request):
 		"""retourne un dictionnaire avec le rang comme clef"""
 		result = {}
-		rank = 0		
+		rank = 0
+
 		for row in request:
 			rank+=1
+			try:
+				average_time = self.SQL_AverageScenarioTime(scenario_id=row[8])
+			except:
+				average_time = 'no stats'
 			info = {'rank':rank,
 				'title':row[0],
 				'description':row[1],
@@ -95,34 +95,17 @@ class ScenarioRanking(BaseContent):
 				'language':row[5],
 				'orientation':row[6],
 				'level':row[7],
+				'average_time':average_time,
 				}
 			result.update({rank:info})
 		return result
 
-	security.declareProtected(CMFCorePermissions.View, 'sortedRanking')
-	def sortedRanking(ranking_by=none,anim_mode='all'):
-		"""return a sorted ranking tab"""
-		ranking = self.getRanking()
-		newRanking = {}
-
-		if anim_mode == 'all':
-			newRanking = ranking
-		elif anim_mode == 'am_dm':			
-			list_keys = ranking.keys()
-			for key in list_keys:
-				if ranking[key]['anim_mode']=='am_dm':
-					newRanking.update({key:ranking[key]})
-		elif anim_mode == 'am_autonomous':
-			list_keys = ranking.keys()
-			for key in list_keys:
-				if ranking[key]['anim_mode']=='am_autonomous':
-					newRanking.update({key:ranking[key]})
-		return newRanking
-
-
-	
-		
-
-
+#	#do nothing for the moment
+#	security.declareProtected(CMFCorePermissions.View, 'sortedRanking')
+#	def sortedRanking(self,ranking_by=none):
+#		"""return a sorted ranking tab"""
+#		ranking = self.getRanking()
+#		newRanking = ranking		
+#		return newRanking
 
 registerType(ScenarioRanking,PROJECTNAME)

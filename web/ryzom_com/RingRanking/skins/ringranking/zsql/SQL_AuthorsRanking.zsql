@@ -4,7 +4,7 @@ connection_id:r2linux03
 title:Session: get Authors ranking
 </dtml-comment>
 
-select disctinct char_id,char_name,user_id,guild_id,rrp_am,rrp_masterless,rrp_author
+select distinct char_id,char_name,user_id,guild_id,rrp_am,rrp_masterless,rrp_author
 from characters
 order by <dtml-sqlvar ranking_by type="string"> desc
 

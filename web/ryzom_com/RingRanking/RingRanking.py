@@ -33,7 +33,7 @@ class RingRanking(BaseFolder):
 
 	#name (title & id) of the content created
 	content = ['AMRanking',
-		   'AuthorRanking',
+		   'AuthorsRanking',
 		   'ScenarioMasterlessRanking',
 		   'ScenarioMasteredRanking',]
 
@@ -74,13 +74,13 @@ class RingRanking(BaseFolder):
 			self.invokeFactory('AuthorsRanking',id='AuthorsRanking')
 			obj = getattr(self.aq_inner.aq_explicit, 'AuthorsRanking')
 			obj.setTitle('AuthorsRanking')
-			obj.setMaster(False)
+			obj.setAM(False)
 
 		if not hasattr(self.aq_inner.aq_explicit, 'AMRanking'):
 			self.invokeFactory('AuthorsRanking',id='AMRanking')
 			obj = getattr(self.aq_inner.aq_explicit, 'AMRanking')
 			obj.setTitle('AMRanking')
-			obj.setMaster(True)
+			obj.setAM(True)
 
 #		if not hasattr(self.aq_inner.aq_explicit, 'AMRanking'):
 #			self.invokeFactory('AMRanking',id='AMRanking')

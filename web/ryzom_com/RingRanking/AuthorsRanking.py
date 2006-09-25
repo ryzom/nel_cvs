@@ -46,10 +46,10 @@ class AuthorsRanking(BaseContent):
 		"""return the ranking's list"""
 		return self.Ranking
 	
-#	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateRanking')
-#	def updateRanking(self,d):
-#		"""update the ranking's list"""
-#		self.Ranking.update(d)
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
+	def setRanking(self,d):
+		"""set the ranking's list"""
+		self.Ranking = d
 
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
@@ -60,20 +60,20 @@ class AuthorsRanking(BaseContent):
 			ranking_by = 'rrp_am'
 		else:
 			ranking_by = 'rrp_author'		
-		## SQL Request
+		## SQL Request		
 		try:
-			request = self.SQL_AuthorsRanking(ranking_by=ranking_by)
+			request = self.zsql.SQL_AuthorsRanking(ranking_by=ranking_by)
 		except:
 			return 'Ranking Update Failed'
 		
 		## Format Result of the request
 		formatted_request=self.FormatRequest(request)
 		## store Result formatted
-		self.Ranking = formatted_request
+		self.setRanking(formatted_request)
 		return 'AuthorsRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
-	def FormatRequest(request):
+	def FormatRequest(self,request):
 		"""retourne un dictionnaire avec le rang comme clef"""
 		result = {}
 		rank = 0
@@ -81,18 +81,15 @@ class AuthorsRanking(BaseContent):
 			rank+=1
 			#get the guild name
 			try:
-				guild = self.SQL_GuildName(guild_id=row[3])
+				guild = self.zsql.SQL_GuildName(guild_id=row[3])
 			except:
 				guild = ''
 
-			#get if charecters's users is pioneer
+			#get if characters's users is pioneer
+			pioneer = 0
 			try:
-				request = self.SQL_GetPrivileges(user_id=row[2])
+				pioneer = self.zsql.SQL_GetPrivileges(user_id=row[2])				
 			except:
-				request = 'no stats'
-			if 'PIONEER' in request:
-				pioneer = 1
-			else:
 				pioneer = 0
 			
 			#create information

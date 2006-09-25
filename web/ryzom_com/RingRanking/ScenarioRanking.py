@@ -46,10 +46,10 @@ class ScenarioRanking(BaseContent):
 		"""return the ranking's list"""
 		return self.Ranking
 	
-#	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateRanking')
-#	def updateRanking(self,d):
-#		"""update the ranking's list"""
-#		self.Ranking.update(d)
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
+	def setRanking(self,d):
+		"""set the ranking's list"""
+		self.Ranking = d
 
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
@@ -63,7 +63,7 @@ class ScenarioRanking(BaseContent):
 				
 		## SQL Request
 		try:
-			request = self.SQL_ScenarioRanking(ranking_by=ranking_by,master=master)
+			request = self.zsql.SQL_ScenarioRanking(ranking_by=ranking_by,master=master)
 		except:
 			return 'ScenarioRanking Update Failed'
 
@@ -71,7 +71,7 @@ class ScenarioRanking(BaseContent):
 		formatted_request=self.FormatRequest(request)
 		## store Result formatted
 		#self.updateRanking(formatted_request)
-		self.Ranking = formatted_request
+		self.setRanking(formatted_request)
 		return 'ScenarioRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
@@ -82,8 +82,9 @@ class ScenarioRanking(BaseContent):
 
 		for row in request:
 			rank+=1
+			average_time = 'no stats'
 			try:
-				average_time = self.SQL_AverageScenarioTime(scenario_id=row[8])
+				average_time = self.zsql.SQL_AverageScenarioTime(scenario_id=row[8])
 			except:
 				average_time = 'no stats'
 			info = {'rank':rank,

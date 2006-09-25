@@ -35,17 +35,17 @@
 					<th>Author</th>
 					<th>Language</th>
 					<th>Orientation</th>
-					<th>Level</td>
+					<th>Level</th>
 					<th>Score</th>
 				</tr>
-				<tr title="" tal:attribute="title rank['description']" tal:repeat="rank ranks" >
-					<td tal:content="rank['rank']">rank</td>
-					<td tal:content="rank['title']">titre</td>
-					<td tal:content="rank['author']">auteur</td>
-					<td tal:content="rank['score']">langue</td>
-					<td tal:content="rank['orientation']">type</td>
-					<td tal:content="rank['level']">niveau du scenario</td>
-					<td tal:content="rank['score']">score</td>
+				<tr tal:repeat="rank ranks" > <!-- title="" tal:attribute="title python:rank['description']"-->
+ 					<td tal:content="python:rank['rank']">rank</td>
+					<td tal:content="python:rank['title']">titre</td>
+					<td tal:content="python:rank['author']">auteur</td>
+					<td tal:content="python:rank['score']">langue</td>
+					<td tal:content="python:rank['orientation']">type</td>
+					<td tal:content="python:rank['level']">niveau du scenario</td>
+					<td tal:content="python:rank['score']">score</td>
 				</tr>
 			</tbody>
 		</table>

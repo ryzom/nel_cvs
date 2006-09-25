@@ -87,7 +87,7 @@ class AuthorsRanking(BaseContent):
 
 			#get if charecters's users is pioneer
 			try:
-				request = self.SQL_GetPrivileges(user_id=row[2])				
+				request = self.SQL_GetPrivileges(user_id=row[2])
 			except:
 				request = 'no stats'
 			if 'PIONEER' in request:

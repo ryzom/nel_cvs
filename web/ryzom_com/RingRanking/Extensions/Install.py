@@ -7,11 +7,11 @@ from Products.RingRanking.config import PROJECTNAME, GLOBALS
 from StringIO import StringIO
 
 def install_maintenancetask(self,action='install'):
+	task_id = task_title = task = 'runUpdateRingRanking'
 	mtool = getToolByName(self, 'portal_maintenance', None)
 	if not mtool:
 		return
-	if action in ('install', 'reinstall'):
-		task_id = task_title = task = 'runUpdateRingRanking'
+	if action in ('install', 'reinstall'):		
 		manage_addExternalMethod(mtool.scripts,task_id,task_title,PROJECTNAME+'.MaintenanceToolbox',task)
 		try:
 			mtool.tasks.manage_addProduct['PloneMaintenance'].addMaintenanceTask(task_id)
@@ -22,7 +22,7 @@ def install_maintenancetask(self,action='install'):
 		obj.scheduled_day_of_month = '*'
 		obj.scheduled_hour = '0'
 		obj.scheduled_minute = '0'
-	        obj.script_name = task_id
+		obj.script_name = task_id
 	else:
 		if task_id in mtool.tasks.objectIds():
 			mtool.tasks.manage_delObjects(task_id)
@@ -32,8 +32,8 @@ def install_maintenancetask(self,action='install'):
 
 def install(self,reinstall=False):
 
-#	if not reinstall:
-#		install_maintenancetask(self, 'install')
+	if not reinstall:
+		install_maintenancetask(self, 'install')
 
 	out = StringIO()    
 	installTypes(self, out, listTypes(PROJECTNAME), PROJECTNAME)
@@ -42,5 +42,5 @@ def install(self,reinstall=False):
 	#print>>out("Successfully installed %s." % PROJECTNAME)
 	return out.getvalue()
 
-#def uninstall(self):
-#    install_maintenancetask(self, 'uninstall')
+def uninstall(self):
+    install_maintenancetask(self, 'uninstall')

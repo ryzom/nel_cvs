@@ -16,6 +16,13 @@ msgstr ""
 "Domain: RingRanking\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
+
+msgid "scenario_mastered"
+msgstr "Le classement des meilleurs sc&eacute;narios autonomes"
+
+msgid "scenario_masterless"
+msgstr "Le classement des meilleurs sc&eacute;narios avec maitre du jeu"
+
 msgid "am_dm"
 msgstr "Mastered"
 

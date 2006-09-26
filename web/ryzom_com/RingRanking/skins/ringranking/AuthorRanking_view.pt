@@ -1,95 +1,85 @@
-<head>
-<style type="text/css">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"
+	i18n:domain="RingRanking"
+	metal:use-macro="here/main_template/macros/master">
 
-#dhtmltooltip{
-position: absolute;
-width: 150px;
-border: 2px solid black;
-padding: 2px;
-background-color: lightyellow;
-visibility: hidden;
-z-index: 100;
-/*Remove below line to remove shadow. Below line should always appear last within this CSS*/
-filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
-}
+<metal:block fill-slot="css_slot">
+	<style type="text/css" media="screen"
+		tal:content="string:@import url(${portal_url}/RingRanking.css);">
+   </style>
 
-</style>
-</head>
+</metal:block>
+
+<metal:block fill-slot="javascript_head_slot">
+	<script type="text/javascript">
+		// <![CDATA[
+			//prend en parametre l'id de l'objet a cacher/decouvrir
+			//resultat: cache/decouvre l'objet au meme niveau dont la classe est hideable
+			function hideOrNot(idElement){
+				if(!idElement) return false;
+				
+				var toHide = document.getElementById(idElement);
+				
+				if(toHide.className=='hidden'){
+					toHide.className='notHidden';
+				}
+				else{
+					toHide.className='hidden';
+				}
+			}
+			
+			window.onload = hideAll("edit_form");
+		// ]]>
+	</script>
+</metal:block>
 
 <body>
-<div id="dhtmltooltip"></div>
 
-<script type="text/javascript">
+<div metal:fill-slot="main"
+	tal:define="errors python:request.get('errors', {});
+	                 Iterator python:modules['Products.CMFPlone'].IndexIterator;
+	                 tabindex python:Iterator()">
 
-/***********************************************
-* Cool DHTML tooltip script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
-* This notice MUST stay intact for legal use
-* Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
-***********************************************/
+<h1 tal:condition="here/getMasterless">Le classement des meilleurs
+sc&eacute;narios autonomes</h1>
+<h1 tal:condition="not:here/getMasterless">Le classement des
+meilleurs sc&eacute;narios avec maitre du jeu</h1>
 
-var offsetxpoint=-60 //Customize x offset of tooltip
-var offsetypoint=20 //Customize y offset of tooltip
-var ie=document.all
-var ns6=document.getElementById && !document.all
-var enabletip=false
-if (ie||ns6)
-var tipobj=document.all? document.all["dhtmltooltip"] : document.getElementById? document.getElementById("dhtmltooltip") : ""
+<table tal:define="ranks here/getRanking" id="score" border="0"
+	cellpadding="0" cellspacing="0">
+	<tbody>
+		<tr>
+			<th>Rank</th>
+			<th>Title</th>
+			<th>Author</th>
+			<th>Orientation</th>
+			<th>Level</th>
+			<th>Score</th>
+		</tr>
+		<!-- title="" tal:attribute="title python:rank['description']"-->
+		<div tal:omit-tag="" tal:repeat="rank ranks">
+			<tr class="" title="cliquez ici pour plus de details" onclick=""
+			tal:attributes="class python:'parite'+str(rank%2);
+							onclick python:'hideOrNot(\'desc'+str(rank)+'\')';">
+				<td tal:content="python:ranks[rank]['rank']">rank</td>
+				<td tal:content="python:ranks[rank]['title']">titre</td>
+				<td tal:content="python:ranks[rank]['author']">auteur</td>
+				<td tal:content="python:ranks[rank]['orientation']">type</td>
+				<td tal:content="python:ranks[rank]['level']">niveau du scenario</td>
+				<td tal:content="python:ranks[rank]['score']">score</td>
+			</tr>
+			<tr>
+				<td colspan="6" class="folded">
+					<div class="hidden" id=""  tal:attributes="id python:'desc'+str(rank);">
+						<h4>Description</h4>
+						<p tal:content="python:ranks[rank]['description']"></p>
+					</div>
+				</td>
+			</tr>
+		</div>
+	</tbody>
+</table>
 
-function ietruebody(){
-return (document.compatMode && document.compatMode!="BackCompat")? document.documentElement : document.body
-}
-
-function ddrivetip(thetext, thecolor, thewidth){
-if (ns6||ie){
-if (typeof thewidth!="undefined") tipobj.style.width=thewidth+"px"
-if (typeof thecolor!="undefined" && thecolor!="") tipobj.style.backgroundColor=thecolor
-tipobj.innerHTML=thetext
-enabletip=true
-return false
-}
-}
-
-function positiontip(e){
-if (enabletip){
-var curX=(ns6)?e.pageX : event.clientX+ietruebody().scrollLeft;
-var curY=(ns6)?e.pageY : event.clientY+ietruebody().scrollTop;
-//Find out how close the mouse is to the corner of the window
-var rightedge=ie&&!window.opera? ietruebody().clientWidth-event.clientX-offsetxpoint : window.innerWidth-e.clientX-offsetxpoint-20
-var bottomedge=ie&&!window.opera? ietruebody().clientHeight-event.clientY-offsetypoint : window.innerHeight-e.clientY-offsetypoint-20
-
-var leftedge=(offsetxpoint<0)? offsetxpoint*(-1) : -1000
-
-//if the horizontal distance isn't enough to accomodate the width of the context menu
-if (rightedge<tipobj.offsetWidth)
-//move the horizontal position of the menu to the left by it's width
-tipobj.style.left=ie? ietruebody().scrollLeft+event.clientX-tipobj.offsetWidth+"px" : window.pageXOffset+e.clientX-tipobj.offsetWidth+"px"
-else if (curX<leftedge)
-tipobj.style.left="5px"
-else
-//position the horizontal position of the menu where the mouse is positioned
-tipobj.style.left=curX+offsetxpoint+"px"
-
-//same concept with the vertical position
-if (bottomedge<tipobj.offsetHeight)
-tipobj.style.top=ie? ietruebody().scrollTop+event.clientY-tipobj.offsetHeight-offsetypoint+"px" : window.pageYOffset+e.clientY-tipobj.offsetHeight-offsetypoint+"px"
-else
-tipobj.style.top=curY+offsetypoint+"px"
-tipobj.style.visibility="visible"
-}
-}
-
-function hideddrivetip(){
-if (ns6||ie){
-enabletip=false
-tipobj.style.visibility="hidden"
-tipobj.style.left="-1000px"
-tipobj.style.backgroundColor=''
-tipobj.style.width=''
-}
-}
-
-document.onmousemove=positiontip
-
-</script>
+</div>
 
 </body>
+</html>

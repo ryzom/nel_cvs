@@ -30,13 +30,13 @@ class AuthorsRanking(BaseContent):
 	global_allow = 0
 	_at_rename_after_creation = True
 
-#	actions = (
-#		{ 'id': 'view',
-#		'name': 'View',
-#		'action': 'string:${object_url}/AuthorsRanking_view',
-#		'permissions': (CMFCorePermissions.View,)
-#		},
-#	)
+	actions = (
+		{ 'id': 'view',
+		'name': 'View',
+		'action': 'string:${object_url}/AuthorsRanking_view',
+		'permissions': (CMFCorePermissions.View,)
+		},
+	)
 
 
 	## {rang : [info sur le scenario]}

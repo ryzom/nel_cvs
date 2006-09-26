@@ -14,7 +14,7 @@ except ImportError:
 from config import *
 
 ScenarioRankingSchema=BaseSchema.copy()+ Schema((
-	BooleanField('master',
+	BooleanField('masterless',
 		default = False,
 		widget=BooleanWidget(
 			description="Select for Masterless Ranking **not use for the moment**"
@@ -30,13 +30,13 @@ class ScenarioRanking(BaseContent):
 	global_allow = 0
 	_at_rename_after_creation = True
 
-#	actions = (
-#		{ 'id': 'view',
-#		'name': 'View',
-#		'action': 'string:${object_url}/ScenarioRanking_view',
-#		'permissions': (CMFCorePermissions.View,)
-#		},
-#	)
+	actions = (
+		{ 'id': 'view',
+		'name': 'View',
+		'action': 'string:${object_url}/ScenarioRanking_view',
+		'permissions': (CMFCorePermissions.View,)
+		},
+	)
 
 
 	## {rang : [info sur le scenario]}
@@ -56,10 +56,10 @@ class ScenarioRanking(BaseContent):
 	def update(self):
 		"""update Ranking"""
 		ranking_by='rrp_scored'
-		if self.getMaster():
-			master = 'am_dm'
-		else:
+		if self.getMasterless():
 			master = 'am_autonomous'
+		else:
+			master = 'am_dm'
 				
 		## SQL Request
 		try:

@@ -38,13 +38,13 @@ class RingRanking(BaseFolder):
 		   'ScenarioMasteredRanking',]
 
 
-#	actions = (
-#		{ 'id': 'view',
-#		'name': 'view',
-#		'action': 'string:${object_url}/RingRanking_view',
-#		'permissions': (CMFCorePermissions.View,)
-#		},
-#	)
+	actions = (
+		{ 'id': 'view',
+		'name': 'view',
+		'action': 'string:${object_url}/RingRanking_view',
+		'permissions': (CMFCorePermissions.View,)
+		},
+	)
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'initializeArchetype')
 	def initializeArchetype(self, **kwargs):
@@ -62,13 +62,13 @@ class RingRanking(BaseFolder):
 			self.invokeFactory('ScenarioRanking',id='ScenarioMasteredRanking')
 			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking')
 			obj.setTitle('ScenarioMasteredRanking')
-			obj.setMaster(True)
+			obj.setMasterless(False)
 
 		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking'):
 			self.invokeFactory('ScenarioRanking',id='ScenarioMasterlessRanking')
 			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking')
 			obj.setTitle('ScenarioMasterlessRanking')
-			obj.setMaster(False)
+			obj.setMasterless(True)
 
 		if not hasattr(self.aq_inner.aq_explicit, 'AuthorsRanking'):
 			self.invokeFactory('AuthorsRanking',id='AuthorsRanking')

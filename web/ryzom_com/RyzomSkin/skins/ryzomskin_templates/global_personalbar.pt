@@ -7,7 +7,9 @@
 
 <div metal:define-macro="personal_bar"
       tal:define="display_actions python:user_actions[:-1]+global_actions+user_actions[-1:];
-                  getIconFor nocall:putils/getIconFor;"
+                  getIconFor nocall:putils/getIconFor;
+                  boundLanguages here/portal_languages/getLanguageBindings;
+                  lang python:boundLanguages[0];"
       tal:omit-tag="">
 
 <h5 class="hiddenStructure" i18n:translate="heading_personal_tools">Personal tools</h5>
@@ -23,18 +25,29 @@
              John
         </span>
     </a></li>
-    <li tal:define="boundLanguages here/portal_languages/getLanguageBindings;
-                    lang python:boundLanguages[0];"
-        tal:condition="python: not mtool.isAnonymousUser()">
+    <li tal:condition="python: not mtool.isAnonymousUser()">
         <a href=""
-           tal:attributes="href python: 'https://secure.nevrax.com/payment_profile/?language='+lang;"
+           tal:attributes="href python:'https://secure.nevrax.com/payment_profile/?language='+lang;"
            i18n:domain='RyzomSkin' i18n:translate=''>
            My Account
         </a>
     </li>
     <li tal:condition="python: mtool.isAnonymousUser()">
         <a href=""
+           tal:condition="python: 'en' in lang"
            tal:attributes="href string:${portal_url}/newcomer/registration/registration"
+           i18n:domain='RyzomSkin' i18n:translate=''>
+           Subscribe
+        </a>
+        <a href=""
+           tal:condition="python: 'fr' in lang"
+           tal:attributes="href string:${portal_url}/nouveaux-venus/inscription/inscription"
+           i18n:domain='RyzomSkin' i18n:translate=''>
+           Subscribe
+        </a>
+        <a href=""
+           tal:condition="python: 'de' in lang"
+           tal:attributes="href string:${portal_url}/neuling-s-inn/anmeldung/anmeldung"
            i18n:domain='RyzomSkin' i18n:translate=''>
            Subscribe
         </a>

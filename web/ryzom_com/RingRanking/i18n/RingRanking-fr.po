@@ -28,38 +28,38 @@ msgstr "Enter a description for the ranks"
 
 #: defined in RingRanking_view
 msgid "RingRanking_link_Scenario_am_dm"
-msgstr "Mastered scenarios ranking"
+msgstr "Classement des scénarios animés"
 
 msgid "RingRanking_link_Scenario_am_autonomous"
-msgstr "Masterless scenarios ranking"
+msgstr "Classement des scénarios autonomes"
 
 msgid "RingRanking_link_Author"
-msgstr "Authors ranking"
+msgstr "Classement des auteurs"
 
 msgid "RingRanking_link_AM"
-msgstr "Adventure Masters ranking"
+msgstr "Classement des Adventure Masters"
 
 #: defined in ScenarioRanking_view
 msgid "RingRanking_title_am_autonomous"
-msgstr "Best masterless scenarios ranking"
+msgstr "Le classement des meilleurs scénarios autonomes"
 
 msgid "RingRanking_title_am_dm"
-msgstr "Best mastered scenarios ranking"
+msgstr "Le classement des meilleurs scénarios animés"
 
 msgid "RingRanking_rank"
-msgstr "Rank"
+msgstr "Rang"
 
 msgid "RingRanking_title"
-msgstr "Title"
+msgstr "Titre"
 
 msgid "RingRanking_author"
-msgstr "Author"
+msgstr "Auteur"
 
 msgid "RingRanking_orientation"
 msgstr "Orientation"
 
 msgid "RingRanking_level"
-msgstr "Level"
+msgstr "Niveau"
 
 msgid "RingRanking_score"
 msgstr "Score"
@@ -68,10 +68,10 @@ msgid "RingRanking_description"
 msgstr "Description"
 
 msgid "am_dm"
-msgstr "Mastered"
+msgstr "Animé"
 
 msgid "am_autonomous"
-msgstr "Masterless"
+msgstr "Autonome"
 
 msgid "sl_a"
 msgstr "01-20"
@@ -107,18 +107,17 @@ msgid "so_guild_training"
 msgstr "Guild Training"
 
 msgid "so_other"
-msgstr "Other"
+msgstr "Autre"
 
 #: defined in AuthorRanking_view
 msgid "RingRanking_title_author"
-msgstr "Best scenario Authors ranking"
+msgstr "Le classement des meilleurs auteurs de scénarios"
 
 msgid "RingRanking_title_adventuremaster"
-msgstr "Best Adventure Masters ranking"
+msgstr "Le classement des meilleurs Adventure Masters"
 
 msgid "RingRanking_name"
-msgstr "Name"
+msgstr "Nom"
 
 msgid "RingRanking_guild"
-msgstr "Guild"
-
+msgstr "Guilde"

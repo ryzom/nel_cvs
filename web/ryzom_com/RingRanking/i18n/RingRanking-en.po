@@ -27,6 +27,18 @@ msgstr ""
 msgid "RingRanking_schema_desc"
 msgstr ""
 
+#: defined in RingRanking_view
+msgid "RingRanking_link_Scenario_am_dm"
+msgstr "Classement des sc&ecute;narios controll&ecute; par un Adventure Master"
+
+msgid "RingRanking_link_Scenario_am_autonomous"
+msgstr "Classement des sc&ecute;narios Autonomes"
+
+msgid "RingRanking_link_Author"
+msgstr "Classement des Auteurs"
+
+msgid "RingRanking_link_AM"
+msgstr "Classement des Adventures Master"
 
 #: defined in ScenarioRanking_view
 msgid "RingRanking_title_am_autonomous"
@@ -61,9 +73,6 @@ msgstr "Mastered"
 
 msgid "am_autonomous"
 msgstr "Masterless"
-
-msgid "sl_a"
-msgstr "01-20"
 
 msgid "sl_a"
 msgstr "01-20"

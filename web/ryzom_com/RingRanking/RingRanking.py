@@ -55,13 +55,13 @@ class RingRanking(BaseFolder):
 		   'ScenarioMasteredRanking',]
 
 
-#	actions = (
-#		{ 'id': 'view',
-#		'name': 'view',
-#		'action': 'string:${object_url}/RingRanking_view',
-#		'permissions': (CMFCorePermissions.View,)
-#		},
-#	)
+	actions = (
+		{ 'id': 'view',
+		'name': 'view',
+		'action': 'string:${object_url}/RingRanking_view',
+		'permissions': (CMFCorePermissions.View,)
+		},
+	)
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'initializeArchetype')
 	def initializeArchetype(self, **kwargs):
@@ -93,6 +93,7 @@ class RingRanking(BaseFolder):
 			obj.setAM(True)
 
 
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setLang')
 	def setLang(self, value, **kwargs):
 		"""set language use for content's sql request"""
 		self.getField('lang').set(self, value, **kwargs)

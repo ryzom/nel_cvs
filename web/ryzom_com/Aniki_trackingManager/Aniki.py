@@ -45,7 +45,7 @@ class Aniki(BaseFolder):
 		BaseFolder.initializeArchetype(self, **kwargs)
 
 	security.declareProtected(CMFCorePermissions.View, 'redirect')
-	def redirect(self, idPub):
+	def redirect(self, idPub,REQUEST):
 		"""This method will redirect to the URL"""
 		path = '/'.join(self.getPhysicalPath())
 		results = self.portal_catalog(
@@ -53,6 +53,8 @@ class Aniki(BaseFolder):
 			path={'query':path, 'level': 0},
 			id=idPub,
 			)
-		results[0].getObject().goto()
+		for result in results:
+			result.getObject().goto(REQUEST)
+
 
 registerType(Aniki, PROJECTNAME)

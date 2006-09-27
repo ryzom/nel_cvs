@@ -32,6 +32,7 @@ class Surveillant(BaseContent):
 	schema = surveillantSchema
 	meta_type = portal_type = 'Surveillant'
 	global_allow = 0
+	_at_rename_after_creation = True # renomme le titre en identificateur si possible
 
 	iterateur = int(0) # objet nous permmettant le decompte de click
 
@@ -46,17 +47,20 @@ class Surveillant(BaseContent):
 	#def __init__(self, id):
 	#	self.iterateur = 0
 	
+	def getIterateur(self):
+		"""get the number of access"""
+		return self.iterateur
 	
-	
-	def goto(self):
+	def goto(self,REQUEST):
 		"""Go the url"""
 		self.iterateur += 1
-		redirect()
+		self.redirect(REQUEST)
 		
-	def redirect(self):
+	def redirect(self,REQUEST):
 		"""Makes a redirection"""
-		request = container.REQUEST
-		RESPONSE =  request.RESPONSE
-		RESPONSE.redirect(self.getUrlRedirection())
+#		request = container.REQUEST
+#		RESPONSE =  request.RESPONSE
+#		RESPONSE.redirect(self.getUrlRedirection())
+		REQUEST['RESPONSE'].redirect(self.getUrlRedirection())
 		
 registerType(Surveillant, PROJECTNAME)

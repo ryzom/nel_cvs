@@ -55,5 +55,4 @@ class Aniki(BaseFolder):
 			)
 		results[0].getObject().goto()
 
-registerType(Aniki, PROJECTNAME)								
-								
+registerType(Aniki, PROJECTNAME)

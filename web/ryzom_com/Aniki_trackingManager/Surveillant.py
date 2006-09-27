@@ -43,7 +43,7 @@ class Surveillant(BaseContent):
 #		},
 	)
 	
-	def __init__(self):
+	def __init__(self, id):
 		self.iterateur = 0
 	
 	def goto(self):

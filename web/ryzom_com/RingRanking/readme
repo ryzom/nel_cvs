@@ -68,5 +68,5 @@ portal_maintenance.
      - schema ===> necessaire uniquement pour le schéma du conteneur ===> ok
 - filtrage par langues des auteurs ===> ok
 - filtrage par langues des scénarios ===> lorsque j'aurais les identificateurs de chaque langue
-- (option feignass) premiere maj automatique
-
+- batcher les résultats
+- outil de recherche ?

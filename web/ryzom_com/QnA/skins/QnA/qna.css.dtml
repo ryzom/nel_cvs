@@ -6,11 +6,15 @@
 
 #qna_author_link {text-align: right}
 
-.QnA_choice_post:hover {border:red 1px solid;}
-.QnA_choice_post {border:transparent 1px solid;}
+.QnA_choice_post:hover {background-color:#444444;}
 
-/*.QnA_choice_checkpost {border:#123456 1px solid;}*/
-
+     .hidden{
+     	display:none;
+     }
+     
+     .notHidden {
+     	display:block;
+     }
 
 /* </dtml-with> */
 

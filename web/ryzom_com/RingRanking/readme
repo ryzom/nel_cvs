@@ -59,7 +59,7 @@ portal_maintenance.
 - ajout automatique dans portal_maintenance ===> ok
 - les pages de vues
      - scenario ===> ok
-     - auteur
+     - auteur ===> ok
      - conteneur
 - i18nisation du produit
 - filtrage par langues des auteurs ===> ok

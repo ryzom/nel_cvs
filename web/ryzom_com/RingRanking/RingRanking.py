@@ -44,13 +44,13 @@ class RingRanking(BaseFolder):
 		   'ScenarioMasteredRanking',]
 
 
-	actions = (
-		{ 'id': 'view',
-		'name': 'view',
-		'action': 'string:${object_url}/RingRanking_view',
-		'permissions': (CMFCorePermissions.View,)
-		},
-	)
+#	actions = (
+#		{ 'id': 'view',
+#		'name': 'view',
+#		'action': 'string:${object_url}/RingRanking_view',
+#		'permissions': (CMFCorePermissions.View,)
+#		},
+#	)
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'initializeArchetype')
 	def initializeArchetype(self, **kwargs):

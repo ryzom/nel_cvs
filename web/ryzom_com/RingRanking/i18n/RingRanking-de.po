@@ -16,6 +16,18 @@ msgstr ""
 "Domain: RingRanking\n"
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
+
+#: defined in schema
+msgid "RingRanking_schema_lang"
+msgstr ""
+
+msgid "RingRanking_schema_label_desc"
+msgstr ""
+
+msgid "RingRanking_schema_desc"
+msgstr ""
+
+
 #: defined in ScenarioRanking_view
 msgid "RingRanking_title_am_autonomous"
 msgstr "Le classement des meilleurs sc&eacute;narios autonomes"

@@ -21,6 +21,17 @@ RingRankingSchema=BaseFolderSchema.copy()+ Schema((
 		vocabulary=['en','fr','de'],
 		widget=SelectionWidget(
 			description="Choose a language",
+			description_msgid="RingRanking_schema_lang",
+			i18n_domain="RingRanking",
+		),
+	),
+	TextField('description',
+		widget=TextAreaWidget(
+			label='Summary Description',
+			label_msgid="RingRanking_schema_label_desc",
+			description='description',
+			description_msgid="RingRanking_schema_desc",
+			i18n_domain="RingRanking",
 		),
 	),
 ))

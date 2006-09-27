@@ -60,9 +60,13 @@ portal_maintenance.
 - les pages de vues
      - scenario ===> ok
      - auteur ===> ok
-     - conteneur
+     - conteneur ===> (on garde la vue par defaut pour le moment)
 - i18nisation du produit
+     - author ===> ok
+     - scenario ===> ok
+     - conteneur ===> non necessaire
+     - schema ===> necessaire uniquement pour le schéma du conteneur ===> ok
 - filtrage par langues des auteurs ===> ok
-- filtrage par langue des scénarios
+- filtrage par langues des scénarios ===> lorsque j'aurais les identificateurs de chaque langue
 - (option feignass) premiere maj automatique
 

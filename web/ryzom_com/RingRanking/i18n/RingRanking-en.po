@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RingRanking\n"
 "POT-Creation-Date: 2006-09-18 12:13+0000\n"
-"PO-Revision-Date: 2006-09-18 18:15+0100\n"
+"PO-Revision-Date: 2006-09-27 11:59+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -16,51 +16,50 @@ msgstr ""
 "Domain: RingRanking\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
-
 #: defined in schema
 msgid "RingRanking_schema_lang"
-msgstr ""
+msgstr "Select a language"
 
 msgid "RingRanking_schema_label_desc"
-msgstr ""
+msgstr "Text"
 
 msgid "RingRanking_schema_desc"
-msgstr ""
+msgstr "Enter a description for the ranks"
 
 #: defined in RingRanking_view
 msgid "RingRanking_link_Scenario_am_dm"
-msgstr "Classement des sc&ecute;narios controll&ecute; par un Adventure Master"
+msgstr "Classement des scénarios animés"
 
 msgid "RingRanking_link_Scenario_am_autonomous"
-msgstr "Classement des sc&ecute;narios Autonomes"
+msgstr "Classement des scénarios autonomes"
 
 msgid "RingRanking_link_Author"
-msgstr "Classement des Auteurs"
+msgstr "Classement des auteurs"
 
 msgid "RingRanking_link_AM"
-msgstr "Classement des Adventures Master"
+msgstr "Classement des Adventure Masters"
 
 #: defined in ScenarioRanking_view
 msgid "RingRanking_title_am_autonomous"
-msgstr "Le classement des meilleurs sc&eacute;narios autonomes"
+msgstr "Le classement des meilleurs scénarios autonomes"
 
 msgid "RingRanking_title_am_dm"
-msgstr "Le classement des meilleurs sc&eacute;narios avec maitre du jeu"
+msgstr "Le classement des meilleurs scénarios animés"
 
 msgid "RingRanking_rank"
-msgstr "Rank"
+msgstr "Rang"
 
 msgid "RingRanking_title"
-msgstr "Title"
+msgstr "Titre"
 
 msgid "RingRanking_author"
-msgstr "Author"
+msgstr "Auteur"
 
 msgid "RingRanking_orientation"
 msgstr "Orientation"
 
 msgid "RingRanking_level"
-msgstr "Level"
+msgstr "Niveau"
 
 msgid "RingRanking_score"
 msgstr "Score"
@@ -69,10 +68,10 @@ msgid "RingRanking_description"
 msgstr "Description"
 
 msgid "am_dm"
-msgstr "Mastered"
+msgstr "Animé"
 
 msgid "am_autonomous"
-msgstr "Masterless"
+msgstr "Autonome"
 
 msgid "sl_a"
 msgstr "01-20"
@@ -108,17 +107,18 @@ msgid "so_guild_training"
 msgstr "Guild Training"
 
 msgid "so_other"
-msgstr "Other"
+msgstr "Autre"
 
 #: defined in AuthorRanking_view
 msgid "RingRanking_title_author"
-msgstr "Le classement des meilleurs auteurs de sc&eacute;narios"
+msgstr "Le classement des meilleurs auteurs de scénarios"
 
 msgid "RingRanking_title_adventuremaster"
-msgstr "Le classement des meilleurs Adventure Master"
+msgstr "Le classement des meilleurs Adventure Masters"
 
 msgid "RingRanking_name"
-msgstr "Name"
+msgstr "Nom"
 
 msgid "RingRanking_guild"
-msgstr "Guild"
+msgstr "Guilde"
+

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RingRanking\n"
 "POT-Creation-Date: 2006-09-18 12:13+0000\n"
-"PO-Revision-Date: 2006-09-18 18:15+0100\n"
+"PO-Revision-Date: 2006-09-27 11:56+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -18,33 +18,33 @@ msgstr ""
 
 #: defined in schema
 msgid "RingRanking_schema_lang"
-msgstr "Choississez une langue"
+msgstr "Select a language"
 
 msgid "RingRanking_schema_label_desc"
-msgstr "Texte"
+msgstr "Text"
 
 msgid "RingRanking_schema_desc"
-msgstr "Entrer une petite description des rangs"
+msgstr "Enter a description for the ranks"
 
 #: defined in RingRanking_view
 msgid "RingRanking_link_Scenario_am_dm"
-msgstr "Classement des sc&ecute;narios controll&ecute; par un Adventure Master"
+msgstr "Mastered scenarios ranking"
 
 msgid "RingRanking_link_Scenario_am_autonomous"
-msgstr "Classement des sc&ecute;narios Autonomes"
+msgstr "Masterless scenarios ranking"
 
 msgid "RingRanking_link_Author"
-msgstr "Classement des Auteurs"
+msgstr "Authors ranking"
 
 msgid "RingRanking_link_AM"
-msgstr "Classement des Adventures Master"
+msgstr "Adventure Masters ranking"
 
 #: defined in ScenarioRanking_view
 msgid "RingRanking_title_am_autonomous"
-msgstr "Le classement des meilleurs sc&eacute;narios autonomes"
+msgstr "Best masterless scenarios ranking"
 
 msgid "RingRanking_title_am_dm"
-msgstr "Le classement des meilleurs sc&eacute;narios avec maitre du jeu"
+msgstr "Best mastered scenarios ranking"
 
 msgid "RingRanking_rank"
 msgstr "Rank"
@@ -111,13 +111,14 @@ msgstr "Other"
 
 #: defined in AuthorRanking_view
 msgid "RingRanking_title_author"
-msgstr "Le classement des meilleurs auteurs de sc&eacute;narios"
+msgstr "Best scenario Authors ranking"
 
 msgid "RingRanking_title_adventuremaster"
-msgstr "Le classement des meilleurs Adventure Master"
+msgstr "Best Adventure Masters ranking"
 
 msgid "RingRanking_name"
 msgstr "Name"
 
 msgid "RingRanking_guild"
 msgstr "Guild"
+

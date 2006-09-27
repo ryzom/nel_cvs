@@ -4,15 +4,14 @@ from Products.CMFCore import utils
 from Products.CMFCore.DirectoryView import registerDirectory
 from config import *
 
-AddRingRanking = 'Add RingRanking object'
-setDefaultRoles( AddRingRanking,( 'Manager'))
+AddAniki = 'Add Aniki object'
+setDefaultRoles( AddAniki,( 'Manager'))
 
 registerDirectory(SKINS_DIR, GLOBALS)
 
-def initialize(context):
-	import RingRanking
-	import AuthorsRanking
-	import ScenarioRanking
+def initialize(context):	
+	import Aniki
+	import Surveillant
 
 	content_types, constructors, ftis = process_types(
 		listTypes(PROJECTNAME),
@@ -21,7 +20,7 @@ def initialize(context):
 	utils.ContentInit(
 		PROJECTNAME + ' Content',
 		content_types = content_types,
-		permission = AddRingRanking,
+		permission = AddAniki,
 		extra_constructors = constructors,
 		fti = ftis,
 	).initialize(context)

@@ -26,12 +26,14 @@ surveillantSchema=BaseSchema.copy()+ Schema((
  
 surveillantSchema['id'].widget.visible = { 'view': 'visible', 'edit': 'visible',}
 
-class Surveillant(BaseContent, Integer):
+class Surveillant(BaseContent):
 	"""This object makes the redirection for one ad"""
 	security = ClassSecurityInfo()
 	schema = surveillantSchema
 	meta_type = portal_type = 'Surveillant'
 	global_allow = 0
+
+	iterateur = int(0) # objet nous permmettant le decompte de click
 
 	actions = (
 #		{ 'id': 'view',
@@ -42,13 +44,15 @@ class Surveillant(BaseContent, Integer):
 	)
 	
 	def __init__(self):
-		self = 0
+		self.iterateur = 0
 	
 	def goto(self):
-		self += 1
+		"""Go the url"""
+		self.iterateur += 1
 		redirect()
 		
 	def redirect(self):
+		"""Makes a redirection"""
 		request = container.REQUEST
 		RESPONSE =  request.RESPONSE
 		RESPONSE.redirect(self.getUrlRedirection())

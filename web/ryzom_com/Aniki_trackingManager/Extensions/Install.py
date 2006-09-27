@@ -3,7 +3,7 @@ from Products.CMFCore.utils import getToolByName
 
 from Products.Archetypes.public import listTypes
 from Products.Archetypes.Extensions.utils import installTypes, install_subskin
-from Products.Aniki.config import PROJECTNAME, GLOBALS
+from Products.Aniki_trackingManager.config import PROJECTNAME, GLOBALS
 from StringIO import StringIO
 
 

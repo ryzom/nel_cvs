@@ -16,6 +16,7 @@ msgstr ""
 "Domain: RingRanking\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
+#: defined in ScenarioRanking_view
 msgid "RingRanking_title_am_autonomous"
 msgstr "Le classement des meilleurs sc&eacute;narios autonomes"
 
@@ -88,15 +89,15 @@ msgstr "Guild Training"
 msgid "so_other"
 msgstr "Other"
 
+#: defined in AuthorRanking_view
+msgid "RingRanking_title_author"
+msgstr "Le classement des meilleurs auteurs de sc&eacute;narios"
 
+msgid "RingRanking_title_adventuremaster"
+msgstr "Le classement des meilleurs Adventure Master"
 
+msgid "RingRanking_name"
+msgstr "Name"
 
-
-
-
-
-
-
-
-
-
+msgid "RingRanking_guild"
+msgstr "Guild"

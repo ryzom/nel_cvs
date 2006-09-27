@@ -103,47 +103,47 @@
 
 /*css pour les icones du menu de navigation*/
 
-.menulevel0 {background: url('puce_kami_2_final.gif') no-repeat 0% 0%;}
+.menulevel0 {background: url('puce_kami_2_final.gif') no-repeat 0% 2px;}
 
-.menulevel1 {background: url('icon_puce.gif') no-repeat 0% 0%;}
+.menulevel1 {background: url('icon_puce.gif') no-repeat 0% 2px;}
 
-.news {background: url('puce_kara_2_final.gif') no-repeat 0% 0%;}
+.news {background: url('puce_kara_2_final.gif') no-repeat 0% 2px;}
 
-.chronicles {background: url('puce_drop_final.gif') no-repeat 0% 0%;}
+.chronicles {background: url('puce_drop_final.gif') no-repeat 0% 2px;}
 
-.ryzom-ring {background: url('puce_R2_final.gif') no-repeat 0% 0%;}
-.ryzom-ring-de {background: url('puce_R2_final.gif') no-repeat 0% 0%;}
-.ryzom-ring-fr {background: url('puce_R2_final.gif') no-repeat 0% 0%;}
+.ryzom-ring {background: url('puce_R2_final.gif') no-repeat 0% 2px;}
+.ryzom-ring-de {background: url('puce_R2_final.gif') no-repeat 0% 2px;}
+.ryzom-ring-fr {background: url('puce_R2_final.gif') no-repeat 0% 2px;}
 
-.newcomer {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.neuling-s-inn {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.nouveaux-venus {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
+.newcomer {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.neuling-s-inn {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.nouveaux-venus {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
 
-.multimedia {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
+.multimedia {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
 
-.game-lore {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.die-schriften {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.lore {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
+.game-lore {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.die-schriften {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.lore {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
 
-.documentation {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
-.dokumentation {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
-.documentation-fr {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
+.documentation {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
+.dokumentation {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
+.documentation-fr {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
 
-.development {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.Entwicklung {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.developpement {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
+.development {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.Entwicklung {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.developpement {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
 
-.support {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
-.support-de {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
-.support-1 {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
+.support {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
+.support-de {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
+.support-1 {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
 
-.community {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.community-de {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
-.communaute {background: url('puce_kami_final.gif') no-repeat 0% 0%;}
+.community {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.community-de {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
+.communaute {background: url('puce_kami_final.gif') no-repeat 0% 2px;}
 
-.forum-en {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
-.forum-de {background: url('puce_kara_final.gif') no-repeat 0% 0%;}
-.forum-fr {background: url('puce_kara_final.gif') no-repeat 0% 0%;
+.forum-en {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
+.forum-de {background: url('puce_kara_final.gif') no-repeat 0% 2px;}
+.forum-fr {background: url('puce_kara_final.gif') no-repeat 0% 2px;
 }
 /**/
 

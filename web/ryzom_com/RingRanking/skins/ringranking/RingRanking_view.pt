@@ -1,56 +1,54 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
       lang="en-US"
-      i18n:domain="QnA"
+      i18n:domain="RingRanking"
       metal:use-macro="here/main_template/macros/master">
 
 <metal:block fill-slot="css_slot">
    <style type="text/css" media="screen"
      tal:content="string:@import url(${portal_url}/css/RingRanking.css);">
    </style>
-
 </metal:block>
 
+<!--
 <metal:block fill-slot="javascript_head_slot">
 	<script type="text/javascript">
 		// <![CDATA[
 		// ]]>
 	</script>
 </metal:block>
+-->
 
 <body>
-
-	<div metal:fill-slot="main" 
-	     tal:define="errors python:request.get('errors', {});
-	                 Iterator python:modules['Products.CMFPlone'].IndexIterator;
-	                 tabindex python:Iterator()">
-		<h1>Ring ranking</h1>
-		<p>Retrouvez ici le classement des meilleurs sc&eacute;narios, joueurs et MJ</p>
-		<p>Acc&egrave;s aux diff&eacute;rentes rubriques:
+	<div metal:fill-slot="main">
+		<h1 tal:content="here/Title_or_Id">Ring ranking</h1>
+		<p tal:content="here/getDescription">Classement des Meilleurs Sc&ecute;narios, auteurs et AMs</p>
+                <p>
 			<ul>
 				<li>
-					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasteredRanking/view">
-						Classement des scénarios avec MJ
+					<a href=""
+						tal:attributes="href string:${here/absolute_url}/ScenarioMasteredRanking"
+						i18n:translate="RingRanking_link_Scenario_am_dm">
 					</a>
 				</li>
 				<li>
-					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasterlessRanking/view">
-						Classement des scénarios sans MJ
+					<a href=""
+						tal:attributes="href string:${here/absolute_url}/ScenarioMasterlessRanking"
+						i18n:translate="RingRanking_link_Scenario_am_autonomous">
 					</a>
 				</li>
-<!-- 				<li>
-					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasterlessRanking/view">
-						Classement des MJ
+ 				<li>
+					<a href=""
+						tal:attributes="href string:${here/absolute_url}/AuthorsRanking"
+						i18n:translate="RingRanking_link_Author">
 					</a>
 				</li>
 				<li>
-					<a href="" tal:attribute="href string:${here/absolute_url}/ScenarioMasterlessRanking/view">
-						Classement des auteurs
+					<a href="" tal:attributes="href string:${here/absolute_url}/AMRanking"
+						i18n:translate="RingRanking_link_AM">
 					</a>
-				</li> -->
-				
+				</li>
 			</ul>
 		</p>
-	</div>        
-
+	</div>
 </body>
 </html>

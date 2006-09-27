@@ -20,6 +20,13 @@ ScenarioRankingSchema=BaseSchema.copy()+ Schema((
 			description="Select for Masterless Ranking **not use for the moment**"
 		),
 	),
+	LinesField('lang',
+		required=True,
+		vocabulary=['en','fr','de'],
+		widget=SelectionWidget(
+			description="Choose a language",
+		),
+	),
 ))
 
 class ScenarioRanking(BaseContent):
@@ -56,11 +63,14 @@ class ScenarioRanking(BaseContent):
 	def update(self):
 		"""update Ranking"""
 		ranking_by='rrp_scored'
+		lang=self.getLang()
+
+
 		if self.getMasterless():
 			master = 'am_autonomous'
 		else:
-			master = 'am_dm'
-				
+			master = 'am_dm'				
+
 		## SQL Request
 		try:
 			request = self.zsql.SQL_ScenarioRanking(ranking_by=ranking_by,master=master)
@@ -97,6 +107,7 @@ class ScenarioRanking(BaseContent):
 				'level':row[7],
 				'average_time':average_time,
 				}
+			#ajouter un tri par langue ici lorsque ce sera implementer
 			result.update({rank:info})
 		return result
 

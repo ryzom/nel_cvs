@@ -20,6 +20,13 @@ AuthorsRankingSchema=BaseSchema.copy()+ Schema((
 			description="Select for Animator Ranking **not use for the moment**"
 		),
 	),
+	LinesField('lang',
+		required=True,
+		vocabulary=['en','fr','de'],
+		widget=SelectionWidget(
+			description="Choose a language",
+		),
+	),
 ))
 
 class AuthorsRanking(BaseContent):
@@ -33,7 +40,7 @@ class AuthorsRanking(BaseContent):
 	actions = (
 		{ 'id': 'view',
 		'name': 'View',
-		'action': 'string:${object_url}/AuthorsRanking_view',
+		'action': 'string:${object_url}/AuthorRanking_view',
 		'permissions': (CMFCorePermissions.View,)
 		},
 	)
@@ -51,10 +58,21 @@ class AuthorsRanking(BaseContent):
 		"""set the ranking's list"""
 		self.Ranking = d
 
+	security.declareProtected(CMFCorePermissions.View, 'isAdventureMaster')
+	def isAdventureMaster(self):
+		"""return if the rank is for Adventure Master"""
+		return self.getAM()
+
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
 	def update(self):
 		"""update Ranking"""
+		lng=self.getLang()
+		lang = 'lang_en'
+		if 'fr' in lng:
+			lang = 'lang_fr'
+		elif 'de' in lng:
+			lang = 'lang_de'
 
 		if self.getAM():
 			ranking_by = 'rrp_am'
@@ -62,7 +80,7 @@ class AuthorsRanking(BaseContent):
 			ranking_by = 'rrp_author'		
 		## SQL Request		
 		try:
-			request = self.zsql.SQL_AuthorsRanking(ranking_by=ranking_by)
+			request = self.zsql.SQL_AuthorsRanking(ranking_by=ranking_by,language=lang)
 		except:
 			return 'Ranking Update Failed'
 		
@@ -93,15 +111,18 @@ class AuthorsRanking(BaseContent):
 				#this SQL return one row of one column
 				pioneer = self.zsql.SQL_GetPrivileges(user_id=row[2])[0][0]			
 			except:
-				pioneer = 0
+				pioneer = ''
+			if 'PIONEER' in pioneer:
+				pioneer = 'Pioneer'
 			
 			#create information
 			info = {'rank':rank,
 				'name':row[1],
 				'guild':guild,
 				'pioneer':pioneer,
-				'score_am':row[3],
-				'score_author':row[3],
+				'score_am':row[4],
+				'score_author':row[6],
+				'language':row[7],
 				}
 			#update dictionnarie
 			result.update({rank:info})

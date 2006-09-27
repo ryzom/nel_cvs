@@ -15,7 +15,15 @@ from config import *
 
 #Ajouter un formulaire pour modifier le titre des objets generer a la crÃ©ation.
 
-RingRankingSchema=BaseFolderSchema.copy()+ Schema(())
+RingRankingSchema=BaseFolderSchema.copy()+ Schema((
+	LinesField('lang',
+		required=True,
+		vocabulary=['en','fr','de'],
+		widget=SelectionWidget(
+			description="Choose a language",
+		),
+	),
+))
  
  
    
@@ -25,10 +33,8 @@ class RingRanking(BaseFolder):
 	security = ClassSecurityInfo()
 	schema = RingRankingSchema
 	archetype_name = meta_type = 'RingRanking'
-	allowed_content_types = ['AuthorsRanking',
-				 'OwnersRanking',
-				 'ScenarioRanking',
-				 'AMRanking',]
+	allowed_content_types = ['AuthorsRanking',				 
+				 'ScenarioRanking',]
 	_at_rename_after_creation = True
 
 	#name (title & id) of the content created
@@ -50,13 +56,6 @@ class RingRanking(BaseFolder):
 	def initializeArchetype(self, **kwargs):
 		"""use automatically at creation"""
 		BaseFolder.initializeArchetype(self, **kwargs)
-
-#		for name in self.allowed_content_types:
-#			# Create a 'name' category
-#			if not hasattr(self.aq_inner.aq_explicit, name):
-#				self.invokeFactory(name,id=name)
-#				obj = getattr(self.aq_inner.aq_explicit, name)
-#				obj.setTitle(name)
 
 		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking'):
 			self.invokeFactory('ScenarioRanking',id='ScenarioMasteredRanking')
@@ -82,11 +81,13 @@ class RingRanking(BaseFolder):
 			obj.setTitle('AMRanking')
 			obj.setAM(True)
 
-#		if not hasattr(self.aq_inner.aq_explicit, 'AMRanking'):
-#			self.invokeFactory('AMRanking',id='AMRanking')
-#			obj = getattr(self.aq_inner.aq_explicit, 'AMRanking')
-#			obj.setTitle('AMRanking')
 
+	def setLang(self, value, **kwargs):
+		"""set language use for content's sql request"""
+		self.getField('lang').set(self, value, **kwargs)
+		for name in self.content:
+			obj = getattr(self.aq_inner.aq_explicit, name)
+			obj.setLang(value)
 
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateAllRank')

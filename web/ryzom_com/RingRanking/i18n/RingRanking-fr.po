@@ -17,11 +17,32 @@ msgstr ""
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
 
-msgid "scenario_mastered"
+msgid "RingRanking_title_am_autonomous"
 msgstr "Le classement des meilleurs sc&eacute;narios autonomes"
 
-msgid "scenario_masterless"
+msgid "RingRanking_title_am_dm"
 msgstr "Le classement des meilleurs sc&eacute;narios avec maitre du jeu"
+
+msgid "RingRanking_rank"
+msgstr "Rang"
+
+msgid "RingRanking_title"
+msgstr "Titre"
+
+msgid "RingRanking_author"
+msgstr "Auteur"
+
+msgid "RingRanking_orientation"
+msgstr "Orientation"
+
+msgid "RingRanking_level"
+msgstr "Niveau"
+
+msgid "RingRanking_score"
+msgstr "Score"
+
+msgid "RingRanking_description"
+msgstr "Description"
 
 msgid "am_dm"
 msgstr "Mastered"

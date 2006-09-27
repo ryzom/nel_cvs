@@ -16,11 +16,32 @@ msgstr ""
 "Domain: RingRanking\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
-msgid "scenario_mastered"
+msgid "RingRanking_title_am_autonomous"
 msgstr "Le classement des meilleurs sc&eacute;narios autonomes"
 
-msgid "scenario_masterless"
+msgid "RingRanking_title_am_dm"
 msgstr "Le classement des meilleurs sc&eacute;narios avec maitre du jeu"
+
+msgid "RingRanking_rank"
+msgstr "Rank"
+
+msgid "RingRanking_title"
+msgstr "Title"
+
+msgid "RingRanking_author"
+msgstr "Author"
+
+msgid "RingRanking_orientation"
+msgstr "Orientation"
+
+msgid "RingRanking_level"
+msgstr "Level"
+
+msgid "RingRanking_score"
+msgstr "Score"
+
+msgid "RingRanking_description"
+msgstr "Description"
 
 msgid "am_dm"
 msgstr "Mastered"

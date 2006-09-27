@@ -26,7 +26,7 @@ class Aniki(BaseFolder):
 	"""Aniki handles the Surveillant wich watch all the ads"""
 
 	security = ClassSecurityInfo()
-	schema = RingRankingSchema
+	schema = AnikiSchema
 	archetype_name = meta_type = 'Aniki'
 	allowed_content_types = ['Surveillant',]
 	_at_rename_after_creation = True # renomme le titre en identificateur si possible

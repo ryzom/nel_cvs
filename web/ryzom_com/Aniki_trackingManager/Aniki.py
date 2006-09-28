@@ -56,5 +56,14 @@ class Aniki(BaseFolder):
 		for result in results:
 			result.getObject().goto(REQUEST)
 
+	security.declareProtected(CMFCorePermissions.View, 'getSurveillants')
+	def getSurveillants(self):
+		"""This method returns a list of the surveillants"""
+		path = '/'.join(self.getPhysicalPath())
+		results = self.portal_catalog(
+			meta_type=['Surveillant',],
+			path={'query':path, 'level': 0},
+			)
+		return results
 
 registerType(Aniki, PROJECTNAME)

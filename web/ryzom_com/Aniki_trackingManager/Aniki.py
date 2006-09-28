@@ -34,7 +34,7 @@ class Aniki(BaseFolder):
 	actions = (
 		{ 'id': 'view',
 		'name': 'view',
-		'action': 'string:${object_url}/Aniki_view',
+		'action': 'string:${object_url}/aniki_view',
 		'permissions': (CMFCorePermissions.View,)
 		},
 	)

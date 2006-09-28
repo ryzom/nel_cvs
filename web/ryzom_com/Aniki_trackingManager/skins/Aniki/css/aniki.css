@@ -12,6 +12,8 @@ table#score tbody tr{
 	height: 15px;
 }
 
+
+
 table#score tbody tr td,
 table#score tbody tr th  {
 	padding: 0px 5px 0px 5px;
@@ -21,7 +23,7 @@ table#score tbody tr th  {
 table#score tbody tr th {
 	border:0;
 	height:20px;
-	background-image: url("css/bgTablo2.png");
+	background-image: url("css/bgTablo3.png");
 	color: #FFC30E;
 }
 

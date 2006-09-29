@@ -47,6 +47,7 @@ class Surveillant(BaseContent):
 	#def __init__(self, id):
 	#	self.iterateur = 0
 	
+	security.declareProtected(CMFCorePermissions.View, 'getIterateur')
 	def getIterateur(self):
 		"""get the number of access"""
 		return self.iterateur

@@ -1,0 +1,56 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"
+	i18n:domain="RingRanking"
+	metal:use-macro="here/main_template/macros/master">
+
+<metal:block fill-slot="css_slot">
+	<style type="text/css" media="screen"
+		tal:content="string:@import url(${portal_url}/css/aniki.css);">
+   </style>
+
+</metal:block>
+
+<metal:block fill-slot="javascript_head_slot">
+	<script src="" type="text/javascript" 
+		tal:attributes="src string:${portal_url}/js/ajax.js"></script>
+</metal:block>
+
+<body>
+
+<div metal:fill-slot="main"
+	tal:define="errors python:request.get('errors', {});
+	                 Iterator python:modules['Products.CMFPlone'].IndexIterator;
+	                 tabindex python:Iterator()">
+
+<h1 tal:content="here/title"></h1>
+<p>liste des pubs pour cette campagne:</p>
+
+<table tal:define="capoZ here/getSurveillants" id="score" border="0"
+	cellpadding="0" cellspacing="0">
+	<tbody>
+		<tr>
+			<th>Nom</th>
+			<th>Nombre de clicks</th>
+		</tr>
+		<div tal:omit-tag="" tal:repeat="capo capoZ">
+			<tr onclick=""
+				tal:attributes='onclick string:sendRequestAndChangeContent("${capo/Title}", "${capo/Title}/getDescription")'>
+				<td tal:content="python:capo.Title">rank</td>
+				<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
+			</tr>
+			<tr onclick=""
+				tal:attributes='onclick string:hide("${capo/Title}")' 
+				style="height:0px; padding:0px; margin:0px;">	
+				<td colspan="2" class="folded">
+					<div class="hidden" 
+						id="" tal:attributes="id string:${capo/Title}">
+					</div>
+				</td>
+			</tr>
+		</div>
+	</tbody>
+</table>
+
+</div>
+
+</body>
+</html>

@@ -1,26 +1,50 @@
-var GLOBAL_ID_TO_MOD = '';
+/*Script permettant d'ajaxifier le produit Aniki 'a tracking manager'*/
 
-function MyHttpObject(id){
-	this.callback = function changeContentURL(idDom){
+function changeContentOf(idDom, newContent){
+	element = document.getElementById(idDom);
+	/*element.style = "";*/
+	element.innerHTML = newContent;
+}
+
+function hideOrNot(idElement){
+	if(!idElement) return false;
+	
+	var toHide = document.getElementById(idElement);
+	
+	if(toHide.className=='hidden'){
+		toHide.className='notHidden';
+	}
+	else{
+		toHide.className='hidden';
+	}
+}
+
+function hide(idElement){
+	if(!idElement) return false;
+	var toHide = document.getElementById(idElement);
+	toHide.className='hidden';
+}
+
+function unHide(idElement){
+	if(!idElement) return false;
+	var toHide = document.getElementById(idElement);
+	toHide.className='notHidden';
+}
+
+function changeContentURL(idDom){
 	if (xmlhttp.readyState == 4){
 		if (xmlhttp.status == 200){
-			changeContentOf(GLOBAL_ID_TO_MOD, xmlhttp.responseText);
+			changeContentOf(idDom, xmlhttp.responseText);
 		}
 	}
 }
 
-function changeContentOf(idDom, newContent){
-	element = document.getElementById(idDom);
-	element.innerHTML = newContent;
-}
-	this.id = id;
-	
-
+function myXmlHttp(id, xmlHttp){
+	this.xmlhttp = xmlHttp;
+	this.func = new Function('if (this.xmlhttp.readyState == 4){ if (this.xmlhttp.status == 200){ changeContentOf('+id+', this.xmlhttp.responseText);} }');
 }
 
-
-
-function getHTTPObject(func){
+function getHTTPObject(){
 	var xmlhttp = false;
 	
 	/* Compilation conditionnelle d'IE */
@@ -53,13 +77,11 @@ function getHTTPObject(func){
 		}
 	}
 	
-	if (xmlhttp){
-		/* on définit ce qui doit se passer quand la page répondra */
-		xmlhttp.onreadystatechange = func();
-	}
+
 	return xmlhttp;
 }
 
+/*Layout d'une fonction de callback classique*/
 function example(){
 	/*Verifie si l'etat est bien 4 (fini)*/
 	if (xmlhttp.readyState == 4){
@@ -74,9 +96,27 @@ function example(){
 	}
 }
 
-
-
 function sendRequestAndChangeContent(idDom, url){
 	var httpTruc = getHTTPObject();
-	
+	if (httpTruc){
+		unHide(idDom);
+		httpTruc.onreadystatechange = function(){
+			changeContentOf(idDom, "chargement...");
+			if (httpTruc.readyState == 4){ 
+				if (httpTruc.status == 200){
+					changeContentOf(idDom, httpTruc.responseText);
+				} 
+			}
+		}
+		try {
+			httpTruc.open("GET", url, true);
+		}
+		catch(e){
+			changeContentOf(idDom, 'erreur de chargement !!!');
+			return false;
+		}
+		
+		
+		httpTruc.send(null);
+	}
 }

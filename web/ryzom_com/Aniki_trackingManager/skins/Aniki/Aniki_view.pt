@@ -31,7 +31,7 @@
 			<th>Nom</th>
 			<th>Nombre de clicks</th>
 		</tr>
-		<div tal:omit-tag="" tal:repeat="capo capoZ" tal:define="n repeat/capo/index">
+		<div tal:omit-tag="" tal:repeat="capo capoZ" tal:define="n repeat/index">
 			<tr onclick=""
 				tal:attributes='onclick string:sendRequestAndChangeContent("${capo/Title}", "${capo/Title}/getDescription");
 								class python:"parite"+str(n%2);'>

@@ -65,8 +65,9 @@ class AuthorsRanking(BaseContent):
 
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
-	def update(self):
+	def update(self,limit=10):
 		"""update Ranking"""
+		limit=int(limit)
 		lng=self.getLang()
 		lang = 'lang_en'
 		if 'fr' in lng:
@@ -84,8 +85,13 @@ class AuthorsRanking(BaseContent):
 		except:
 			return 'Ranking Update Failed'
 		
+		if len(request) > limit:
+			req = request.dictionaries()[0:limit]
+		else:
+			req = request
+		
 		## Format Result of the request
-		formatted_request=self.FormatRequest(request[0:10])
+		formatted_request=self.FormatRequest(req)
 		## store Result formatted
 		self.setRanking(formatted_request)
 		return 'AuthorsRanking Update Success'
@@ -102,14 +108,14 @@ class AuthorsRanking(BaseContent):
 			#get the guild name
 			try:
 				#this SQL return one row of one column
-				guild = self.zsql.SQL_GuildName(guild_id=row[3])[0][0]
+				guild = self.zsql.SQL_GuildName(guild_id=row['guild_id'])[0][0]
 			except:
 				guild = ''
 
 			#get if characters's users is pioneer			
 			try:
 				#this SQL return one row of one column
-				pioneer = self.zsql.SQL_GetPrivileges(user_id=row[2])[0][0]			
+				pioneer = self.zsql.SQL_GetPrivileges(user_id=row['user_id'])[0][0]			
 			except:
 				pioneer = ''
 			if 'PIONEER' in pioneer:
@@ -117,12 +123,12 @@ class AuthorsRanking(BaseContent):
 			
 			#create information
 			info = {'rank':rank,
-				'name':row[1],
+				'name':row['char_name'],
 				'guild':guild,
 				'pioneer':pioneer,
-				'score_am':row[4],
-				'score_author':row[6],
-				'language':row[7],
+				'score_am':row['rrp_am'],
+				'score_author':row['rrp_author'],
+				'language':row['lang'],
 				}
 			#update dictionnarie
 			result.update({rank:info})

@@ -39,7 +39,7 @@
 <h1 tal:condition="here/getMasterless" i18n:translate="RingRanking_title_am_autonomous">Le classement des meilleurs sc&eacute;narios autonomes</h1>
 <h1 tal:condition="not:here/getMasterless" i18n:translate="RingRanking_title_am_dm">Le classement des meilleurs sc&eacute;narios avec maitre du jeu</h1>
 
-<table tal:define="ranks here/getRanking" id="score" border="0"
+<table tal:define="ranks python:here.getRanking()" id="score" border="0"
 	cellpadding="0" cellspacing="0">
 	<tbody>
 		<tr>

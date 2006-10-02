@@ -60,12 +60,12 @@ class ScenarioRanking(BaseContent):
 
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
-	def update(self):
+	def update(self,limit=11):
 		"""update Ranking"""
 		ranking_by='rrp_scored'
 		lang=self.getLang()
-
-
+		limit = int(limit)
+		req = []
 		if self.getMasterless():
 			master = 'am_autonomous'
 		else:
@@ -77,8 +77,13 @@ class ScenarioRanking(BaseContent):
 		except:
 			return 'ScenarioRanking Update Failed'
 
+		if len(request) > limit:
+			req=request.dictionaries()[0:limit]
+		else:
+			req = request
+
 		## Format Result of the request
-		formatted_request=self.FormatRequest(request[0:10])
+		formatted_request=self.FormatRequest(req)
 		## store Result formatted
 		self.setRanking(formatted_request)
 		return 'ScenarioRanking Update Success'
@@ -98,13 +103,13 @@ class ScenarioRanking(BaseContent):
 			except:
 				average_time = 'no stats'
 			info = {'rank':rank,
-				'title':row[0],
-				'description':row[1],
-				'author':row[2],
-				'score':row[3],
-				'language':row[5],
-				'orientation':row[6],
-				'level':row[7],
+				'title':row['title'],
+				'description':row['description'],
+				'author':row['author'],
+				'score':row['rrp_total'],
+				'language':row['language'],
+				'orientation':row['orientation'],
+				'level':row['level'],
 				'average_time':average_time,
 				}
 			#ajouter un tri par langue ici lorsque ce sera implementer

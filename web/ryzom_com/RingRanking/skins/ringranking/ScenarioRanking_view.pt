@@ -4,7 +4,7 @@
 
 <metal:block fill-slot="css_slot">
 	<style type="text/css" media="screen"
-		tal:content="string:@import url(${portal_url}/css/RingRanking.css);">
+		tal:content="string:@import url(${portal_url}/RingRanking.css);">
    </style>
 
 </metal:block>
@@ -67,6 +67,8 @@
 					<div class="hidden" id=""  tal:attributes="id python:'desc'+str(rank);">
 						<h4 i18n:translate="RingRanking_description">Description</h4>
 						<p tal:content="python:ranks[rank]['description']"></p>
+                        <h4 i18n:translate="RingRanking_average_time">Average Time</h4>
+						<p tal:content="python:ranks[rank]['average_time']"></p>
 					</div>
 				</td>
 			</tr>

@@ -63,7 +63,7 @@ class Aniki(BaseFolder):
 		results = self.portal_catalog(
 			meta_type=['Surveillant',],
 			path={'query':path, 'level': 0},
-			sort_on = 'title',
+			sort_on = 'sortable_title',
 			)
 		return results
 

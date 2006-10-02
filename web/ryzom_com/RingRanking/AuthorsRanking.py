@@ -85,7 +85,7 @@ class AuthorsRanking(BaseContent):
 			return 'Ranking Update Failed'
 		
 		## Format Result of the request
-		formatted_request=self.FormatRequest(request)
+		formatted_request=self.FormatRequest(request[0:10])
 		## store Result formatted
 		self.setRanking(formatted_request)
 		return 'AuthorsRanking Update Success'

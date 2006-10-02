@@ -10,24 +10,12 @@
 </metal:block>
 
 <metal:block fill-slot="javascript_head_slot">
+	<script src="" type="text/javascript" 
+		tal:attributes="src string:${portal_url}/js/ajax.js"></script>
+	
 	<script type="text/javascript">
 		// <![CDATA[
-			//prend en parametre l'id de l'objet a cacher/decouvrir
-			//resultat: cache/decouvre l'objet au meme niveau dont la classe est hideable
-			function hideOrNot(idElement){
-				if(!idElement) return false;
-				
-				var toHide = document.getElementById(idElement);
-				
-				if(toHide.className=='hidden'){
-					toHide.className='notHidden';
-				}
-				else{
-					toHide.className='hidden';
-				}
-			}
-			
-			window.onload = hideAll("edit_form");
+
 		// ]]>
 	</script>
 </metal:block>

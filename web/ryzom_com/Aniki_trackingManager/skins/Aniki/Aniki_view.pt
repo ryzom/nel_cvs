@@ -31,10 +31,10 @@
 			<th>Nom</th>
 			<th>Nombre de clicks</th>
 		</tr>
-		<div tal:omit-tag="" tal:repeat="capo capoZ">
+		<div tal:omit-tag="" tal:repeat="capo capoZ" tal:define="n repeat/capo/index">
 			<tr onclick=""
 				tal:attributes='onclick string:sendRequestAndChangeContent("${capo/Title}", "${capo/Title}/getDescription");
-								class python:"parite"+str((repeat.capo.index)%2);'>
+								class python:"parite"+str(n%2);'>
 				<td tal:content="python:capo.Title">rank</td>
 				<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
 			</tr>

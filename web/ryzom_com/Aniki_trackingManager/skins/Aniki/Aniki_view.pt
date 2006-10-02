@@ -33,7 +33,8 @@
 		</tr>
 		<div tal:omit-tag="" tal:repeat="capo capoZ">
 			<tr onclick=""
-				tal:attributes='onclick string:sendRequestAndChangeContent("${capo/Title}", "${capo/Title}/getDescription")'>
+				tal:attributes='onclick string:sendRequestAndChangeContent("${capo/Title}", "${capo/Title}/getDescription");
+								class python:"parite"+str((repeat.item.index)%2);'>
 				<td tal:content="python:capo.Title">rank</td>
 				<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
 			</tr>

@@ -20,9 +20,9 @@
 
 <body>
 	<div metal:fill-slot="main">
-		<h1 tal:content="here/Title_or_Id">Ring ranking</h1>
+		<h1 tal:content="here/title_or_id">Ring ranking</h1>
 		<p tal:content="here/getDescription">Classement des Meilleurs Sc&ecute;narios, auteurs et AMs</p>
-                <p>
+                
 			<ul>
 				<li>
 					<a href=""
@@ -48,7 +48,7 @@
 					</a>
 				</li>
 			</ul>
-		</p>
+		
 	</div>
 </body>
 </html>

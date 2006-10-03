@@ -16,15 +16,15 @@ from config import *
 #Ajouter un formulaire pour modifier le titre des objets generer a la crÃ©ation.
 
 RingRankingSchema=BaseFolderSchema.copy()+ Schema((
-	LinesField('lang',
-		required=True,
-		vocabulary=['en','fr','de'],
-		widget=SelectionWidget(
-			description="Choose a language",
-			description_msgid="RingRanking_schema_lang",
-			i18n_domain="RingRanking",
-		),
-	),
+#	LinesField('lang',
+#		required=True,
+#		vocabulary=['en','fr','de'],
+#		widget=SelectionWidget(
+#			description="Choose a language",
+#			description_msgid="RingRanking_schema_lang",
+#			i18n_domain="RingRanking",
+#		),
+#	),
 	TextField('description',
 		widget=TextAreaWidget(
 			label='Summary Description',
@@ -93,13 +93,13 @@ class RingRanking(BaseFolder):
 			obj.setAM(True)
 
 
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setLang')
-	def setLang(self, value, **kwargs):
-		"""set language use for content's sql request"""
-		self.getField('lang').set(self, value, **kwargs)
-		for name in self.content:
-			obj = getattr(self.aq_inner.aq_explicit, name)
-			obj.setLang(value)
+#	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setLang')
+#	def setLang(self, value, **kwargs):
+#		"""set language use for content's sql request"""
+#		self.getField('lang').set(self, value, **kwargs)
+#		for name in self.content:
+#			obj = getattr(self.aq_inner.aq_explicit, name)
+#			obj.setLang(value)
 
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateAllRank')

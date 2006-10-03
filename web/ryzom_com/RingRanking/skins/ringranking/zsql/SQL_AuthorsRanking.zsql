@@ -1,5 +1,5 @@
 <dtml-comment>
-arguments: ranking_by language
+arguments: ranking_by
 connection_id:r2linux03
 title:Session: get Authors ranking
 </dtml-comment>
@@ -12,7 +12,6 @@ select c.char_id,
        r.lang
 from characters c,ring_users r
 where c.user_id = r.user_id
-  and r.lang = <dtml-sqlvar language type="string">
 order by <dtml-sqlvar ranking_by type="string"> desc
 
 

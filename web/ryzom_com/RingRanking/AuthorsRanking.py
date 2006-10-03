@@ -20,13 +20,13 @@ AuthorsRankingSchema=BaseSchema.copy()+ Schema((
 			description="Select for Animator Ranking **not use for the moment**"
 		),
 	),
-	LinesField('lang',
-		required=True,
-		vocabulary=['en','fr','de'],
-		widget=SelectionWidget(
-			description="Choose a language",
-		),
-	),
+#	LinesField('lang',
+#		required=True,
+#		vocabulary=['en','fr','de'],
+#		widget=SelectionWidget(
+#			description="Choose a language",
+#		),
+#	),
 ))
 
 class AuthorsRanking(BaseContent):
@@ -49,9 +49,20 @@ class AuthorsRanking(BaseContent):
 	## {rang : [info sur le scenario]}
 	Ranking={}
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
-	def getRanking(self):
-		"""return the ranking's list"""
-		return self.Ranking
+	def getRanking(self,langs=()):
+		"""return the ranking's list, filter by language passed in a tuple like ('lang_en','lang_fr','lang_de')"""
+		if not langs :
+			return self.Ranking
+
+		filter_ranking = {}
+		ranking = self.Ranking
+		keys = ranking.keys()
+		for key in keys:
+			if ranking[key]['language'] in langs:
+				filter_ranking.update({key:ranking[key]})
+		return filter_ranking
+
+
 	
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
 	def setRanking(self,d):
@@ -68,12 +79,12 @@ class AuthorsRanking(BaseContent):
 	def update(self,limit=10):
 		"""update Ranking"""
 		limit=int(limit)
-		lng=self.getLang()
-		lang = 'lang_en'
-		if 'fr' in lng:
-			lang = 'lang_fr'
-		elif 'de' in lng:
-			lang = 'lang_de'
+#		lng=self.getLang()
+#		lang = 'lang_en'
+#		if 'fr' in lng:
+#			lang = 'lang_fr'
+#		elif 'de' in lng:
+#			lang = 'lang_de'
 
 		if self.getAM():
 			ranking_by = 'rrp_am'
@@ -81,7 +92,7 @@ class AuthorsRanking(BaseContent):
 			ranking_by = 'rrp_author'		
 		## SQL Request		
 		try:
-			request = self.zsql.SQL_AuthorsRanking(ranking_by=ranking_by,language=lang)
+			request = self.zsql.SQL_AuthorsRanking(ranking_by=ranking_by)
 		except:
 			return 'Ranking Update Failed'
 		

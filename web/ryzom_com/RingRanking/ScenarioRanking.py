@@ -20,13 +20,13 @@ ScenarioRankingSchema=BaseSchema.copy()+ Schema((
 			description="Select for Masterless Ranking **not use for the moment**"
 		),
 	),
-	LinesField('lang',
-		required=True,
-		vocabulary=['en','fr','de'],
-		widget=SelectionWidget(
-			description="Choose a language",
-		),
-	),
+#	LinesField('lang',
+#		required=True,
+#		vocabulary=['en','fr','de'],
+#		widget=SelectionWidget(
+#			description="Choose a language",
+#		),
+#	),
 ))
 
 class ScenarioRanking(BaseContent):

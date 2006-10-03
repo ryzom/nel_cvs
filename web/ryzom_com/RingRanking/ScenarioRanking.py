@@ -45,7 +45,26 @@ class ScenarioRanking(BaseContent):
 		},
 	)
 
+	## existing language
+	existingLanguage = ()
+	security.declareProtected(CMFCorePermissions.View, 'getExistingLanguage')
+	def getExistingLanguage(self):
+		"""return a tuple with different language used for scenario"""
+		return self.existingLanguage
 
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setExistingLanguage')
+	def setExistingLanguage(self):
+		"""set the list of language used in scenario"""
+		langs = ()
+		try:
+			request = self.zsql.SQL_ScenarioExistingLanguage()
+		except:
+			request = []
+		for row in request.dictionaries():
+			langs+=(row['language'],)
+		self.existingLanguage = langs
+
+		
 	## {rang : [info sur le scenario]}
 	Ranking={}
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
@@ -72,7 +91,6 @@ class ScenarioRanking(BaseContent):
 	def update(self,limit=10):
 		"""update Ranking"""
 		ranking_by='rrp_scored'
-		lang=self.getLang()
 		limit = int(limit)
 		req = []
 		if self.getMasterless():
@@ -95,6 +113,8 @@ class ScenarioRanking(BaseContent):
 		formatted_request=self.FormatRequest(req)
 		## store Result formatted
 		self.setRanking(formatted_request)
+		##store language
+		self.setExistingLanguage()
 		return 'ScenarioRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
@@ -108,7 +128,7 @@ class ScenarioRanking(BaseContent):
 			average_time = 'no stats'
 			try:
 				#this SQL return one row of one column
-				average_time = self.zsql.SQL_AverageScenarioTime(scenario_id=row[8])[0][0]
+				average_time = self.zsql.SQL_AverageScenarioTime(scenario_id=row['id'])[0][0]
 			except:
 				average_time = 'no stats'
 			info = {'rank':rank,
@@ -120,8 +140,7 @@ class ScenarioRanking(BaseContent):
 				'orientation':row['orientation'],
 				'level':row['level'],
 				'average_time':average_time,
-				}
-			#ajouter un tri par langue ici lorsque ce sera implementer
+				}			
 			result.update({rank:info})
 		return result
 

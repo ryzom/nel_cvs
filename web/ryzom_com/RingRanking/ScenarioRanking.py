@@ -49,9 +49,18 @@ class ScenarioRanking(BaseContent):
 	## {rang : [info sur le scenario]}
 	Ranking={}
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
-	def getRanking(self):
-		"""return the ranking's list"""
-		return self.Ranking
+	def getRanking(self,langs=()):
+		"""return the ranking's list, filter by language passed in a tuple like ('en','fr','de')"""
+		if not langs :
+			return self.Ranking
+
+		filter_ranking = {}
+		ranking = self.Ranking
+		keys = ranking.keys()
+		for key in keys:
+			if ranking[key]['language'] in langs:
+				filter_ranking.update({key:ranking[key]})
+		return filter_ranking
 	
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
 	def setRanking(self,d):

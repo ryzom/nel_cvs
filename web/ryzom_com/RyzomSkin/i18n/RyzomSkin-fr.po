@@ -25,11 +25,21 @@ msgstr "Vous avez entrer une adress e-mail invalide."
 msgid "please_correct_the_errors_shown"
 msgstr ""
 
-msgid "all_news_topic"
+#translation for the weblog############
+
+msgid "all pays"
+msgstr "Tous"
+
+msgid "pays"
+msgstr "Pays"
+
+msgid "all news topic"
 msgstr "Toutes les rubriques"
 
-msgid "trier_par_rubrique"
+msgid "trier par rubrique"
 msgstr "Trier par rubrique"
+
+#######################################
 
 msgid "box_last_modified"
 msgstr "Dernière modification : "
@@ -426,4 +436,3 @@ msgstr "Septembre"
 #: datetime name of a month, format %b
 msgid "month_sep_abbr"
 msgstr "Sep"
-

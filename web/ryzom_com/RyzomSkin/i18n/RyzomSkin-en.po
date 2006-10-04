@@ -25,11 +25,21 @@ msgstr "You entered an invalid email address."
 msgid "please_correct_the_errors_shown"
 msgstr "please correct the errors shown"
 
-msgid "all_news_topic"
+#translation for the weblog############
+
+msgid "all pays"
+msgstr "All"
+
+msgid "pays"
+msgstr "Countries"
+
+msgid "all news topic"
 msgstr "All topics"
 
-msgid "trier_par_rubrique"
+msgid "trier par rubrique"
 msgstr "Choose a topic"
+
+########################################
 
 msgid "box_last_modified"
 msgstr "Last Modified : "
@@ -464,4 +474,3 @@ msgstr "Wed"
 #: datetime
 msgid "weekday_wed_short"
 msgstr "We"
-

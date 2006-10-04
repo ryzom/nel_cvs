@@ -28,9 +28,10 @@
           &mdash;
         </tal:name>
 
-<tal:created_or_effective define="item_created here/CreationDate;
-                                  item_effective here/EffectiveDate;
-                                  date python:test(item_effective != '',item_effective,item_created)">                            
+<tal:created_or_effective define="item_created here/CreationDate | nothing;
+                                  item_effective here/EffectiveDate | nothing;
+                                  date python:test(item_effective and item_effective != '' and item_effective != 'None',item_effective,item_created);
+                                  ">                            
    <span i18n:domain="RyzomSkin" i18n:translate="box_created"></span>
    <span tal:replace="python:here.toLocalizedTime(date,long_format=1)">
       August 16, 2001 at 23:35:59

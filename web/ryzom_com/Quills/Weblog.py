@@ -54,6 +54,22 @@ WeblogSchema = BaseFolderSchema + Schema((
             description_msgid="help_description",
             i18n_domain="plone"),
         ),
+        
+   	TextField('menuDescription',
+        searchable=0,
+        default="all news topic",
+		widget=TextAreaWidget(
+			label='Menu',
+			description="""The string that will be display to present the menu""",),
+		),
+		
+	TextField('menuFirstItem',
+        searchable=0,
+        default="trier par rubrique",
+		widget=TextAreaWidget(
+			label='Menu',
+			description="""The string that will be display in the fast topic changing menu""",),
+		),
 
     ### 
     ## Configuration Options

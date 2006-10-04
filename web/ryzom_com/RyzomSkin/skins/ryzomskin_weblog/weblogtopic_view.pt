@@ -31,7 +31,7 @@
 	
 	<option value="parent"
 		tal:attributes="value string:${parent/absolute_url}"
-		i18n:domain="RyzomSkin" i18n:translate="" tal:content="menuFirstItem">Toutes
+		i18n:domain="RyzomSkin" i18n:translate="" tal:content="here/getMenuFirstItem">Toutes
 	les rubriques</option>
 	
 	<tal:loop repeat="topic here/getAvailableTopics">

@@ -63,7 +63,7 @@
    tal:content="here/getMenuDescription">Trier par rubrique</strong>
     <select onChange="document.location=this.options[this.selectedIndex].value" tal:define="parent python:here.quills_tool.getParentWeblog(here)">
       <option value="#" i18n:domain="RyzomSkin" i18n:translate="" 
-      	tal:content="menuFirstItem">All</option>
+      	tal:content="here/getMenuFirstItem">All</option>
       <tal:loop repeat="topic here/getAvailableTopics">
       	<option value="lien" tal:attributes="value string:${parent/absolute_url}/${topic/id}" 
                                tal:content="topic/title_or_id">topic</option>

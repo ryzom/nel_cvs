@@ -19,9 +19,9 @@
 """
 This module implements generic functions for subscriptions
 """
-__version__ = "$Revision: 1.6 $"
+__version__ = "$Revision: 1.7 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/SubscriptionTool.py,v $
-# $Id: SubscriptionTool.py,v 1.6 2006/05/23 09:20:26 bernard Exp $
+# $Id: SubscriptionTool.py,v 1.7 2006/10/04 09:19:27 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 # Python imports
@@ -553,12 +553,11 @@ class SubscriptionTool(UniqueObject, BaseFolder):
         if subscription:
             message = 'psm_subscriptions_updated'
         else:
+            # We don't want results earlier than the subscription creation
+            kw['last_send'] = DateTime()
             # Archetypes can set kwargs on creation, we edit() it after
             subscriber.invokeFactory(ptype, id)
             subscription = getattr(subscriber, id)
-
-            # We don't want results earlier than the subscription creation
-            kw['last_send'] = subscription.created()
 
             if subscription:
                 if ISubscription.isImplementedBy(subscription):
@@ -750,13 +749,12 @@ A change related to your subscription to "%(subscription_title)s" was found:
                     # /!\ Be careful: brains are LazyMap but not list or tuple.
                     if brains:
                        mail = self.mailing_by_user(now, subscription, user, brains)
-                       if not str(mail) == "nomail":
-                          Log(LOG_DEBUG, 'mail sent', mail)
-                          if preview:
-                             mails.append(mail)
-                          else:
-                             if self.sendMail(mail):
-                                is_one_mail_sent = True
+                       Log(LOG_DEBUG, 'mail sent', mail)
+                       if preview:
+                           mails.append(mail)
+                       else:
+                           if self.sendMail(mail):
+                               is_one_mail_sent = True
 
             Log(LOG_DEBUG, 'update last send date: ', is_one_mail_sent)
             if is_one_mail_sent:
@@ -774,23 +772,13 @@ A change related to your subscription to "%(subscription_title)s" was found:
         """
         validation=True
 
-        last_send = subscription.getLast_send()
-
-        if last_send == subscription.created():
-            # If the subscription was just added (the last send date equals
-            # the creation date), the periodicity is not taken into account
-            # at all.
-            pass
-        else:
-            # After the first sending, the periodicity is making sure that
-            # nothing is sent again that was sent before.
-
-            #CHANGED: for periodicity == 5 minutes
-            #periodicity = float(self.getPeriodicity())/1440.0
-            periodicity = float(5)/1440.0
-            # Be careful, last_send can be 'None'
-            if last_send and now - last_send < periodicity:
-                validation = False
+        #CHANGED: for periodicity == 5 minutes
+        #periodicity = float(self.getPeriodicity())/1440.0
+        periodicity = float(5)/1440.0
+        # Be careful, last_send can be 'None'
+        if subscription.getLast_send() and \
+           now - subscription.getLast_send() < periodicity:
+            validation = False
 
         if user.getId()=="Anonymous User":
             # Check if anonymous has an email
@@ -820,10 +808,7 @@ A change related to your subscription to "%(subscription_title)s" was found:
         info = self.mailing_by_user_info(now, user, subscription, brains)
         mail = self.getHeaders(info)
         mail += "\n\n"
-        body = self.mailing_by_user_body(subscription, brains, user)
-        if "nomail" in body:
-           return "nomail"
-	mail += body
+        mail += self.mailing_by_user_body(subscription, brains, user)
         return mail
 
     security.declarePrivate("mailing_by_user_headers")
@@ -836,25 +821,15 @@ A change related to your subscription to "%(subscription_title)s" was found:
 
         if user.getId()=="Anonymous User":
             mail_to = user.getProperty('email')
-            #How to get the language for anonymous ?
-            lang = user.getProperty('language')            
         else:
             member = mtool.getMemberById(user.getId())
             mail_to = member.getProperty('email')
-            #Get the language of the subscriber
-            lang = member.getProperty('language')
+
 
         charset = ptool.site_properties.getProperty('default_charset', 'utf-8')
-        
-        
-        subjects = "[Ryzom-News] "
-        #number of news with the same of the news_**'s language user
-        nb_news = len(brains)
-        for brain in brains:
-           obj = brain.getObject()
-           if 'news_' in str(member) and obj.getLanguage() != lang:
-              nb_news -= 1
 
+        subjects = "[Ryzom-News] "
+        nb_news = len(brains)
 
         if nb_news > 1:
             subjects += "("+str(nb_news)+" news)"
@@ -876,61 +851,36 @@ A change related to your subscription to "%(subscription_title)s" was found:
     def mailing_by_user_body(self, subscription, brains, user):
         """Render the mail body for the subscription and the brains.
         """
-        #Get the user's language
-        mtool = getToolByName(self, 'portal_membership')
-        if user.getId()=="Anonymous User":
-	    member = ''
-            #How to get the language for anonymous ?
-            lang = user.getProperty('language')
-        else:
-            member = mtool.getMemberById(user.getId())            
-            #Get the language of the subscriber
-            lang = member.getProperty('language')
 
-	portal_path = getToolByName(self, 'portal_url').getPortalPath()
+        portal_path = getToolByName(self, 'portal_url').getPortalPath()
         portal_path_length = len(portal_path)
         base_url = self.getBaseUrl()
         content = ''
         Log(LOG_DEBUG, 'subscription brains', brains)
         for brain in brains:
-            #content += "    "
-            #content += str(brain.Title or brain.getId)
-            #content += " :\n"
-            #if base_url == '':
-            #    content += str(brain.getURL())
-            #else:
-            #    content += base_url
-            #    content += str(brain.getURL(relative=1)[portal_path_length:])
-            #content += "\n\n"
-
             obj = brain.getObject()
-            #add the news only if the object's language is the same of the news_'s language (for other user it work's normally)
-            if ('news_' in str(member) and obj.getLanguage() == lang) or (not 'news_' in str(member)):
-               title = "  "
-               title += str(brain.Title or brain.getId)
-               title += " :\n"
-               if base_url == '':
-                  url = str(brain.getURL())
-               else:
-                  url = base_url
-                  url += str(brain.getURL(relative=1)[portal_path_length:])            
-               try:
-                  summary = str(obj.description)+'\n'
-               except:
-                  summary = ''
-               try:
-                  topic = "["+str(obj.getEntryCategories()[0])+"]"
-               except:
-                  topic = ''
-               content += topic+title
-               content += "\n"
-               content += summary
-               content += " Read more : "
-	       content += url
-	       content += "\n\n"
-        #if the content was completely filtered
-        if content=='':
-           content = "nomail"
+            title = "  "
+            title += str(brain.Title or brain.getId)
+            title += " :\n"
+            if base_url == '':
+               url = str(brain.getURL())
+            else:
+               url = base_url
+               url += str(brain.getURL(relative=1)[portal_path_length:])            
+            try:
+               summary = str(obj.description)+'\n'
+            except:
+               summary = ''
+            try:
+               topic = "["+str(obj.getEntryCategories()[0])+"]"
+            except:
+               topic = ''
+            content += topic+title
+            content += "\n"
+            content += summary
+            content += " Read more : "
+            content += url
+            content += "\n\n"
         Log(LOG_DEBUG, 'subscription content', content)
         template = self.getSubscriptionTemplate(subscription)
         body =  template % {'subscription_title': subscription.TitleOrId(),
@@ -956,7 +906,7 @@ A change related to your subscription to "%(subscription_title)s" was found:
         portal = getToolByName(self, 'portal_url').getPortalObject()
         portal_path = getToolByName(self, 'portal_url').getPortalPath()
         portal_path_length = len(portal_path)
-        base_url = self.getBaseUrl()        
+        base_url = self.getBaseUrl()
         if base_url == '':
             content_info += str(content.absolute_url()) + "\n\n"
         else:

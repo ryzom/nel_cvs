@@ -22,13 +22,11 @@ function changeLang(){
 	if( formulaire.de.checked == true) res += "'de',";
 	if( formulaire.en.checked == true) res += "'en',";
 	res = document.URL+"/getRanking?langs=("+res+")";
-	alert(res);
+	// alert(res);
 	// getRanking?langs=
 	// GET http://en.web-dev.nevrax.com/Members/takyon/ring-rangement/getRanking?langs=('fr','de','en',)
 	// GET http://192.168.1.184:8080/ryzom/Members/takyon/cc/ScenarioMasteredRanking/getRanking?langs=('fr',)
-	// sendRequestAndChangeContent("alacon", res);
-	
-	
+	sendRequestAndChangeContent("alacon", res);
 }
 
 		// ]]>

@@ -79,7 +79,9 @@ class ScenarioRanking(BaseContent):
 		for key in keys:
 			if ranking[key]['language'] in langs:
 				filter_ranking.update({key:ranking[key]})
-		return filter_ranking
+		if filter_ranking:
+			return filter_ranking
+		return "{}"
 	
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
 	def setRanking(self,d):

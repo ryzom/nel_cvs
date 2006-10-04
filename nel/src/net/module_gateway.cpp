@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.10 2006/06/12 09:42:54 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.11 2006/10/04 09:24:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -549,6 +549,7 @@ namespace NLNET
 		
 		virtual void onRouteAdded(CGatewayRoute *route)
 		{
+			nlassert(route != NULL);
 			// Remember the new route
 			nlassert(_Routes.find(route) == _Routes.end());
 			_Routes.insert(route);
@@ -573,6 +574,7 @@ namespace NLNET
 		/// A route is removed by a transport
 		virtual void onRouteRemoved(CGatewayRoute *route)
 		{
+			nlassert(route != NULL);
 			nlassert(_Routes.find(route) != _Routes.end());
 			// we need to remove all the proxy that come from this route
 //			CGatewayRoute::TForeignToLocalIdx::TAToBMap::const_iterator first(route->ForeignToLocalIdx.getAToBMap().begin()), last(route->ForeignToLocalIdx.getAToBMap().end());

@@ -1,7 +1,7 @@
 /** \file module_l5_transport.h
  * transport for layer 5
  *
- * $Id: module_l5_transport.cpp,v 1.2.4.4 2006/06/12 09:42:54 boucher Exp $
+ * $Id: module_l5_transport.cpp,v 1.2.4.5 2006/10/04 09:24:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -592,6 +592,7 @@ namespace NLNET
 
 	void CL5Route::sendMessage(const CMessage &message) const
 	{
+		NLNET_AUTO_DELTE_ASSERT;
 		H_AUTO(L5Route_sendMessage);
 
 		CGatewayL5Transport *trpt = static_cast<CGatewayL5Transport*>(_Transport);

@@ -3,10 +3,9 @@
 	metal:use-macro="here/main_template/macros/master">
 
 <metal:block fill-slot="css_slot">
-	<style type="text/css" media="screen"
+   <style type="text/css" media="screen"
 		tal:content="string:@import url(${portal_url}/RingRanking.css);">
    </style>
-
 </metal:block>
 
 <metal:block fill-slot="javascript_head_slot">
@@ -49,13 +48,13 @@
 			<th i18n:translate="RingRanking_score">Score</th>
 		</tr>
 		<div tal:omit-tag="" tal:repeat="rank ranks" >
-			<tr class="" tal:attributes="class python:'parite'+str(rank%2)">
-				<td tal:content="python:ranks[rank]['rank']">rank</td>
-				<td tal:content="python:ranks[rank]['name']">Nom</td>
-				<td tal:content="python:ranks[rank]['guild']">Guilde</td>
-				<td tal:content="python:ranks[rank]['score_author']" 
+			<tr class="" tal:define="number repeat/rank/number" tal:attributes="class python:'parite'+str(number%2)">
+				<td tal:content="python:rank['rank']">rank</td>
+				<td tal:content="python:rank['name']">Nom</td>
+				<td tal:content="python:rank['guild']">Guilde</td>
+				<td tal:content="python:rank['score_author']" 
 				tal:condition="not:here/getAM">Score</td>
-				<td tal:content="python:ranks[rank]['score_am']" 
+				<td tal:content="python:rank['score_am']" 
 				tal:condition="here/getAM">Score</td>				
 			</tr>
 		</div>

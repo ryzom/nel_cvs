@@ -81,6 +81,20 @@ namespace WS
 			return _Value < other._Value;
 		}
 
+		bool operator <= (const TUserRole &other) const
+		{
+			return _Value <= other._Value;
+		}
+
+		bool operator > (const TUserRole &other) const
+		{
+			return !(_Value <= other._Value);
+		}
+		bool operator >= (const TUserRole &other) const
+		{
+			return !(_Value < other._Value);
+		}
+
 		const std::string &toString() const
 		{
 			return getConversionTable().toString(_Value);

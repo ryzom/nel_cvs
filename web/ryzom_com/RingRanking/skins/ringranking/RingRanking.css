@@ -18,7 +18,7 @@ table#score tbody tr th  {
 	border-left: 1px solid black;
 }	
 
-table#score tbody tr th {
+table#score thead tr th {
 	border:0;
 	height:20px;
 	background-image: url("bgTablo2.png");

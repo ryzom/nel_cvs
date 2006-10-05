@@ -20,9 +20,9 @@ function changeLang(){
 	// fonction qui met a jour le tableau des scores
 	var res="";
 	var formulaire = document.getElementById("selectLang");
-	if( formulaire.fr.checked == true) res += "'fr',";
-	if( formulaire.de.checked == true) res += "'de',";
-	if( formulaire.en.checked == true) res += "'en',";
+	if( formulaire.fr.checked == true) res += "fr,";
+	if( formulaire.de.checked == true) res += "de,";
+	if( formulaire.en.checked == true) res += "en,";
 	res = document.URL+"/scenarioUpdate_view?langs="+res+"";
 
 	sendRequestAndChangeContent("score", res);

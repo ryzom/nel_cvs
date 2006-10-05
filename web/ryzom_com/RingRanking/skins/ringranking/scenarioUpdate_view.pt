@@ -43,7 +43,7 @@
 	</div>
 	</div>
 	
-	<div tal:omit-tag="" tal:condition="python:ranks=='[]'" tal:content="python:request.get('langs')">
+	<div tal:omit-tag="" tal:condition="python:ranks=='[]'" >
 		<tr style="height:0px; padding:0px; margin:0px;">
 			<td colspan="6">vide</td>
 		</tr>

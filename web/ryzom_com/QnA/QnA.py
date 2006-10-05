@@ -119,12 +119,9 @@ class QnA(BaseContent):
 		
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'parseTime')
 	def parseTime(self,date):
-		"""convert date to timestamp"""		
-		try:
-			result = timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))
-		#if the date is xx/xx/xxxx 00:00:00
-   		except:
-			result = timegm(time.strptime(date.split('GMT')[0], "%Y/%m/%d 00:00:00 %Z"))
+		"""convert date to timestamp"""
+		cleandate = date.split(' ')[0]+date.split(' ')[1]
+		result = timegm(time.strptime(cleandate, "%Y/%m/%d %H:%M:%S"))
 		return result
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getGroupUsers')

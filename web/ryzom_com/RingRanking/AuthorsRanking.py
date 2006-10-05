@@ -50,10 +50,10 @@ class AuthorsRanking(BaseContent):
 	Ranking=[]
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
 	def getRanking(self,langs=()):
-		"""return the ranking's list, filter by language passed in a tuple like ('lang_en','lang_fr','lang_de')"""
+		"""return the ranking's list, filter by language passed in a string like 'lang_en,lang_fr,lang_de'"""
 		if not langs :
 			return self.Ranking
-
+		langs = langs.split(',')
 		filter_ranking = []
 		ranking = self.Ranking
 		for row in ranking:
@@ -132,14 +132,22 @@ class AuthorsRanking(BaseContent):
 				pioneer = 'Pioneer'
 			
 			#create information
-			info = {'rank':rank,
-				'name':row['char_name'],
-				'guild':guild,
-				'pioneer':pioneer,
-				'score_am':row['rrp_am'],
-				'score_author':row['rrp_author'],
-				'language':row['lang'],
-				}
+			if self.isAdventureMaster():
+				info = {'rank':rank,
+					'name':row['char_name'],
+					'guild':guild,
+					'pioneer':pioneer,
+					'score':row['rrp_am'],
+					'language':row['lang'],
+					}
+			else:
+				info = {'rank':rank,
+					'name':row['char_name'],
+					'guild':guild,
+					'pioneer':pioneer,
+					'score':row['rrp_author'],
+					'language':row['lang'],
+					}
 			#update tab
 			result.append(info)
 		return result

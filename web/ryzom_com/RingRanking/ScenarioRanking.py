@@ -12,6 +12,7 @@ except ImportError:
 
 #import de fonction du produit
 from config import *
+from RankingTool import fusion
 
 ScenarioRankingSchema=BaseSchema.copy()+ Schema((
 	BooleanField('masterless',
@@ -46,7 +47,8 @@ class ScenarioRanking(BaseContent):
 	)
 
 	## existing language
-	existingLanguage = ()
+	existingLanguage = []
+
 	security.declareProtected(CMFCorePermissions.View, 'getExistingLanguage')
 	def getExistingLanguage(self):
 		"""return a tuple with different language used for scenario"""
@@ -55,24 +57,25 @@ class ScenarioRanking(BaseContent):
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setExistingLanguage')
 	def setExistingLanguage(self):
 		"""set the list of language used in scenario"""
-		langs = ()
+		langs = []
 		try:
 			request = self.zsql.SQL_ScenarioExistingLanguage()
 		except:
 			request = []
 		for row in request.dictionaries():
-			langs+=(row['language'],)
+			langs.append(row['language'])
 		self.existingLanguage = langs
 
 		
 	## {rang : [info sur le scenario]}
 	Ranking=[]
+
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
-	def getRanking(self,langs=()):
-		"""return the ranking's list, filter by language passed in a tuple like ('en','fr','de')"""
+	def getRanking(self,langs=None):
+		"""return the ranking's list, filter by language passed in a string like  "en,fr,de" )"""
 		if not langs :
 			return self.Ranking
-
+		langs = langs.split(',')
 		filter_ranking = []
 		ranking = self.Ranking
 		for row in ranking:
@@ -81,11 +84,64 @@ class ScenarioRanking(BaseContent):
 		if filter_ranking:
 			return filter_ranking
 		return "[]"
-	
+
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
 	def setRanking(self,d):
 		"""set the ranking's list"""
 		self.Ranking = d
+
+
+
+	RankingFR=[]
+	RankingEN=[]
+	RankingDE=[]
+	RankingOther=[]
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankingLang')
+	def getRankingLang(self,lang):
+		"""set the ranking's list"""
+		lang = str(lang)
+		if lang == 'fr':
+			return self.RankingFR
+		if lang == 'en':
+			return self.RankingEN
+		if lang == 'de':
+			return self.RankingDE
+		if lang == 'other':
+			return self.RankingOther
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRankingLang')
+	def setRankingLang(self,d,lang):
+		"""set the ranking's list"""
+		lang = str(lang)
+		if lang == 'fr':
+			self.RankingFR = d
+		if lang == 'en':
+			self.RankingEN = d
+		if lang == 'de':
+			self.RankingDE = d
+		if lang == 'other':
+			self.RankingOther = d
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankings')
+	def getRankings(self,langs=None,limit=10):
+		"""get ranking for each language selected and return a sorted by rank tab"""
+		## if not lang return international tab
+		if not langs :
+			return self.Ranking
+		
+		## else create a tab with all language selected
+		langs = langs.split(',')
+		limit = int(limit)
+		result = []
+		for lang in langs:
+			tab = self.getRankingLang(str(lang))
+			if len(tab) >0:
+				result = fusion(result,tab,limit)
+		if result:
+			return result
+		return "[]"
+
 
 	## stocker le rÃ©sultat de la requete SQL
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'update')
@@ -97,25 +153,45 @@ class ScenarioRanking(BaseContent):
 		if self.getMasterless():
 			master = 'am_autonomous'
 		else:
-			master = 'am_dm'				
+			master = 'am_dm'
 
 		## SQL Request
 		try:
 			request = self.zsql.SQL_ScenarioRanking(ranking_by=ranking_by,master=master)
 		except:
 			return 'ScenarioRanking Update Failed'
-
 		if len(request) > limit:
 			req=request.dictionaries()[0:limit]
 		else:
 			req = request
-
-		## Format Result of the request
 		formatted_request=self.FormatRequest(req)
-		## store Result formatted
 		self.setRanking(formatted_request)
-		##store language
 		self.setExistingLanguage()
+
+		## update Ranking FR,EN,DE
+		for lang in ['fr','en','de']:
+			try:
+				request = self.zsql.SQL_ScenarioRankingByLang(ranking_by=ranking_by,master=master,language=lang)
+			except:
+				return 'ScenarioRanking Update Failed'
+			if len(request) > limit:
+				req=request.dictionaries()[0:limit]
+			else:
+				req = request
+			formatted_request=self.FormatRequest(req)
+			self.setRankingLang(formatted_request,lang)
+
+		##update for other's language
+		try:
+			request = self.zsql.SQL_ScenarioRankingByOtherLang(ranking_by=ranking_by,master=master)
+		except:
+			return 'ScenarioRanking Update Failed'
+		if len(request) > limit:
+			req=request.dictionaries()[0:limit]
+		else:
+			req = request
+		formatted_request=self.FormatRequest(req)
+		self.setRankingLang(formatted_request,'other')
 		return 'ScenarioRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
@@ -123,7 +199,6 @@ class ScenarioRanking(BaseContent):
 		"""retourne un tableau de dictionnaire"""
 		result = []
 		rank = 0
-
 		for row in request:
 			rank+=1
 			average_time = 'no stats'

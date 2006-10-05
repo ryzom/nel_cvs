@@ -52,10 +52,7 @@
 				<td tal:content="python:rank['rank']">rank</td>
 				<td tal:content="python:rank['name']">Nom</td>
 				<td tal:content="python:rank['guild']">Guilde</td>
-				<td tal:content="python:rank['score_author']" 
-				tal:condition="not:here/getAM">Score</td>
-				<td tal:content="python:rank['score_am']" 
-				tal:condition="here/getAM">Score</td>				
+				<td tal:content="python:rank['score']">Score</td>				
 			</tr>
 		</div>
 	</tbody>

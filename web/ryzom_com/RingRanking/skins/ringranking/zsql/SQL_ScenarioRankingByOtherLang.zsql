@@ -1,0 +1,13 @@
+<dtml-comment>
+arguments: ranking_by master
+connection_id:r2linux03
+title:Session: get scenario ranking
+</dtml-comment>
+
+select distinct title,description,author,rrp_total,anim_mode,language,orientation,level,id
+from scenario
+where anim_mode = <dtml-sqlvar master type="string">
+  and language != 'fr'
+  and language != 'en'
+  and language != 'de'
+order by <dtml-sqlvar ranking_by type="string">, rrp_total desc

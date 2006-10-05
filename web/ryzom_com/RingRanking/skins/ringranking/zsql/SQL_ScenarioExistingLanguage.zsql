@@ -1,0 +1,6 @@
+<dtml-comment>
+connection_id:r2linux03
+title:Session: get different existing language
+</dtml-comment>
+
+select distinct language from scenario

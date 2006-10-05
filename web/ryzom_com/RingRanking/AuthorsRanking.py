@@ -46,23 +46,22 @@ class AuthorsRanking(BaseContent):
 	)
 
 
-	## {rang : [info sur le scenario]}
-	Ranking={}
+	## [{info sur le scenario}]
+	Ranking=[]
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
 	def getRanking(self,langs=()):
 		"""return the ranking's list, filter by language passed in a tuple like ('lang_en','lang_fr','lang_de')"""
 		if not langs :
 			return self.Ranking
 
-		filter_ranking = {}
+		filter_ranking = []
 		ranking = self.Ranking
-		keys = ranking.keys()
-		for key in keys:
-			if ranking[key]['language'] in langs:
-				filter_ranking.update({key:ranking[key]})
+		for row in ranking:
+			if row['language'] in langs:
+				filter_ranking.append(row)
 		if filter_ranking:
 			return filter_ranking
-		return "{}"
+		return "[]"
 	
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
 	def setRanking(self,d):
@@ -109,8 +108,8 @@ class AuthorsRanking(BaseContent):
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
 	def FormatRequest(self,request):
-		"""retourne un dictionnaire avec le rang comme clef"""
-		result = {}
+		"""retourne un tableau de dictionnaire"""
+		result = []
 		rank = 0
 		for row in request:
 			rank+=1
@@ -141,8 +140,8 @@ class AuthorsRanking(BaseContent):
 				'score_author':row['rrp_author'],
 				'language':row['lang'],
 				}
-			#update dictionnarie
-			result.update({rank:info})
+			#update tab
+			result.append(info)
 		return result
 
 

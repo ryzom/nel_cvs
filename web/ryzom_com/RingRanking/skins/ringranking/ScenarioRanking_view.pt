@@ -17,7 +17,7 @@
 		// <![CDATA[
 		
 function changeLang(){
-	// fonction qui va met a jour le tableau des scores
+	// fonction qui met a jour le tableau des scores
 	var res="";
 	var formulaire = document.getElementById("selectLang");
 	if( formulaire.fr.checked == true) res += "'fr',";
@@ -25,14 +25,7 @@ function changeLang(){
 	if( formulaire.en.checked == true) res += "'en',";
 	res = document.URL+"/scenarioUpdate_view?langs="+res+"";
 
-	// alert(res);
-	// getRanking?langs=
-	// GET http://en.web-dev.nevrax.com/Members/takyon/ring-rangement/getRanking?langs=('fr','de','en',)
-	// GET http://192.168.1.184:8080/ryzom/Members/takyon/cc/ScenarioMasteredRanking/getRanking?langs=('fr',)
-	
 	sendRequestAndChangeContent("score", res);
-	
-	// var monObjet = eval(res);
 }
 
 		// ]]>

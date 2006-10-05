@@ -106,6 +106,9 @@ function sendRequestAndChangeContent(idDom, url){
 				if (httpTruc.status == 200){
 					changeContentOf(idDom, httpTruc.responseText);
 				} 
+				else {
+					changeContentOf(idDom, "erreur");
+				}
 			}
 		}
 		try {

@@ -1,5 +1,5 @@
 <div i18n:domain="RingRanking"
-		tal:define="ranks python:here.getRanking(request['langs'])" tal:omit-tag="">
+		tal:define="ranks python:here.getRanking()" tal:omit-tag="">
 
 	<div tal:omit-tag="" tal:repeat="rank ranks">
 		

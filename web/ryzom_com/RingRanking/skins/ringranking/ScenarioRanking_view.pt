@@ -15,53 +15,24 @@
 
 	<script type="text/javascript">
 		// <![CDATA[
+		
 function changeLang(){
+	// fonction qui va met a jour le tableau des scores
 	var res="";
 	var formulaire = document.getElementById("selectLang");
 	if( formulaire.fr.checked == true) res += "'fr',";
 	if( formulaire.de.checked == true) res += "'de',";
 	if( formulaire.en.checked == true) res += "'en',";
-	res = document.URL+"/getRanking?langs=("+res+")";
+	res = document.URL+"/scenarioUpdate_view?langs="+res+"";
+
 	// alert(res);
 	// getRanking?langs=
 	// GET http://en.web-dev.nevrax.com/Members/takyon/ring-rangement/getRanking?langs=('fr','de','en',)
 	// GET http://192.168.1.184:8080/ryzom/Members/takyon/cc/ScenarioMasteredRanking/getRanking?langs=('fr',)
 	
-	sendRequestAndChangeContent("alacon", res);
+	sendRequestAndChangeContent("scoreBody", res);
 	
 	// var monObjet = eval(res);
-}
-
-function sendRequestAndChangeContent(idDom, url){
-	var httpTruc = getHTTPObject();
-	if (httpTruc){
-		unHide(idDom);
-		httpTruc.onreadystatechange = function(){
-			changeContentOf(idDom, "chargement...");
-			if (httpTruc.readyState == 4){ 
-				if (httpTruc.status == 200){
-					changeContentOf(idDom, httpTruc.responseText);
-				} 
-				else {
-					changeContentOf(idDom, );
-				}
-			}
-		}
-		try {
-			httpTruc.open("GET", url, true);
-		}
-		catch(e){
-			changeContentOf(idDom, 'erreur de chargement !!!');
-			return false;
-		}
-		
-		httpTruc.send(null);
-	}
-}
-
-function jsonTab2HTML(jsonText){
-	var res="";
-	
 }
 
 		// ]]>
@@ -79,11 +50,12 @@ meilleurs sc&eacute;narios autonomes</h1>
 	i18n:translate="RingRanking_title_am_dm">Le classement des
 meilleurs sc&eacute;narios avec maitre du jeu</h1>
 
-<form action="" id="selectLang"><label for="fr">FR</label> <input
-	type="checkbox" id="fr" /> <label for="en">EN</label> <input
-	type="checkbox" id="en" /> <label for="de">DE</label> <input
-	type="checkbox" id="de" /> <input type="button" value="valider"
-	name="valider" onclick="changeLang();" /></form>
+<form action="" id="selectLang">
+	<label for="fr">FR</label> <input type="checkbox" id="fr" />
+	<label for="en">EN</label> <input type="checkbox" id="en" /> 
+	<label for="de">DE</label> <input type="checkbox" id="de" /> 
+	<input type="button" value="valider" name="valider" onclick="changeLang();" />
+</form>
 
 <div id="alacon"></div>
 

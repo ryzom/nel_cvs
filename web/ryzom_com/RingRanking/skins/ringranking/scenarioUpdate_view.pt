@@ -1,7 +1,7 @@
 <div i18n:domain="RingRanking"
 		tal:define="ranks python:here.getRanking()" tal:omit-tag="">
 
-	<thead width="100%">
+
 		<tr>
 			<th i18n:translate="RingRanking_rank">Rank</th>
 			<th i18n:translate="RingRanking_title">Title</th>
@@ -10,8 +10,7 @@
 			<th i18n:translate="RingRanking_level">Level</th>
 			<th i18n:translate="RingRanking_score">Score</th>
 		</tr>
-	</thead>
-	<tbody width="100%">
+
 	<div tal:omit-tag="" tal:repeat="rank ranks">
 		
 		<tr class="" title="cliquez ici pour plus de details" onclick=""
@@ -40,6 +39,5 @@
 		</tr>
 		
 	</div>
-	</tbody>
 
 </div>

@@ -6,7 +6,11 @@ table#score {
 	width: 100%;
 }
 
-table#score tbody tr{
+table#score * {
+	width: 100%;	
+}
+
+table#score tr{
 	padding: 0;
 	margin: 0;
 	height: 15px;
@@ -18,18 +22,18 @@ table#score tbody tr th  {
 	border-left: 1px solid black;
 }	
 
-table#score thead tr th {
+table#score tr th {
 	border:0;
 	height:20px;
 	background-image: url("bgTablo2.png");
 	color: #FFC30E;
 }
 
-table#score tbody tr.parite0 {
+table#score tr.parite0 {
 	background-color: #464646;
 }
 
-table#score tbody tr:hover {
+table#score tr:hover {
 	color:black;
 	background-color: #898989;
 }

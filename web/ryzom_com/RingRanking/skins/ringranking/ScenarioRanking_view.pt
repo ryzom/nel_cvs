@@ -61,7 +61,7 @@ meilleurs sc&eacute;narios avec maitre du jeu</h1>
 
 <table tal:define="ranks python:here.getRanking()" id="score" border="0"
 	cellpadding="0" cellspacing="0">
-	<thead>
+
 		<tr>
 			<th i18n:translate="RingRanking_rank">Rank</th>
 			<th i18n:translate="RingRanking_title">Title</th>
@@ -70,8 +70,7 @@ meilleurs sc&eacute;narios avec maitre du jeu</h1>
 			<th i18n:translate="RingRanking_level">Level</th>
 			<th i18n:translate="RingRanking_score">Score</th>
 		</tr>
-	</thead>
-	<tbody id="scoreBody">
+
 		<div tal:omit-tag="" tal:repeat="rank ranks">
 		<tr class="" title="cliquez ici pour plus de details" onclick=""
 			tal:define="number repeat/rank/number"
@@ -97,7 +96,6 @@ meilleurs sc&eacute;narios avec maitre du jeu</h1>
 			</td>
 		</tr>
 		</div>
-	</tbody>
 </table>
 
 </div>

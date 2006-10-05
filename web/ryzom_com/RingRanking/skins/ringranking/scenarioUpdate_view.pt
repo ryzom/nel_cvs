@@ -11,7 +11,8 @@
 			<th i18n:translate="RingRanking_score">Score</th>
 		</tr>
 
-	<div tal:omit-tag="" tal:repeat="rank ranks" tal:condition="python:ranks!=[]">
+	<div tal:condition="python:ranks!=[]">
+	<div tal:omit-tag="" tal:repeat="rank ranks" >
 		
 		<tr class="" title="cliquez ici pour plus de details" onclick=""
 				tal:define="number repeat/rank/number"
@@ -39,7 +40,7 @@
 		</tr>
 		
 	</div>
-	
+	</div>
 	<div tal:omit-tag="" tal:repeat="rank ranks" tal:condition="python:ranks==[]">
 		<tr style="height:0px; padding:0px; margin:0px;">
 			<td colspan="6">vide</td>

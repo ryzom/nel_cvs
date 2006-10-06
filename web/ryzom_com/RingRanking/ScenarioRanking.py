@@ -135,9 +135,10 @@ class ScenarioRanking(BaseContent):
 		limit = int(limit)
 		result = []
 		for lang in langs:
-			tab = self.getRankingLang(str(lang))
-			if len(tab) >0:
-				result = fusion(result,tab,limit)
+			if lang and lang != '' and lang != ',':
+				tab = self.getRankingLang(str(lang))
+				if len(tab) >0:
+					result = fusion(result,tab,limit)
 		if result:
 			return result
 		return "[]"

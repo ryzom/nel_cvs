@@ -43,20 +43,24 @@
          tal:attributes="action string:${here/absolute_url}/qna_edit_choice" tal:define="iterator python:0">
         
          <tal:repeat tal:repeat="postkey PostList">
-            <div class="QnA_choice_post" onclick="functionForHiding" tal:attributes="onclick string:hideOrNot('hideable$postkey')" title="click to see the content of this post">
-                  <input type="checkbox"
-                         class="noborder"
-                         name="answer"
-                         value="option"
-                         tal:attributes="value postkey;
-                                         name postkey;
-                                         tabindex tabindex/next;" />
-                <h3 tal:content="python: 'Reponse de '+PostList[postkey][1]+' a '+PostList[postkey][4]+'('+PostList[postkey][3]+')'">id du post</h3>
-                
-                <span id="idOfTheHideableObject" class="notHidden" tal:attributes='id string:hideable$postkey'>
+            <div class="QnA_choice_post">
+                <input type="checkbox"
+                       class="noborder"
+                       name="answer"
+                       value="option"
+                       tal:attributes="value postkey;
+                                       name postkey;
+                                       tabindex tabindex/next;" />
+
+                   <span onclick="functionForHiding"
+                      tal:attributes="onclick string:hideOrNot('hideable$postkey')"
+                      title="click to see the content of this post">
+                   <h3 tal:content="python: 'Reponse de '+PostList[postkey][1]+' a '+PostList[postkey][4]+'('+PostList[postkey][3]+')'">id du post</h3>
+                   <span id="idOfTheHideableObject" class="notHidden" tal:attributes='id string:hideable$postkey'>
 	                <p tal:content="python: PostList[postkey][0]">date du post</p>
 	                <p tal:content="python: PostList[postkey][1]">auteur du post</p>
 	                <p tal:content="structure python: here.filtertext(PostList[postkey][2])">texte du post</p>
+                   </span>
                 </span>
            </div>
        </tal:repeat>

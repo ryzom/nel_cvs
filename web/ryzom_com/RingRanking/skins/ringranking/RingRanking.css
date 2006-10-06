@@ -1,5 +1,7 @@
 /* Feuille de style du module ringRanking*/
 
+
+/*Formatage du tableau de scores des scenarios */
 table#score {
 	background-color: #2f2f2f;
 	color: white;
@@ -16,8 +18,8 @@ table#score tr{
 	height: 15px;
 }
 
-table#score tbody tr td,
-table#score tbody tr th  {
+table#score tr td,
+table#score tr th  {
 	padding: 0px 5px 0px 5px;
 	border-left: 1px solid black;
 }	
@@ -26,6 +28,7 @@ table#score tr th {
 	border:0;
 	height:20px;
 	background-image: url("bgTablo2.png");
+	border: 0px solid black; 
 	color: #FFC30E;
 }
 
@@ -37,6 +40,10 @@ table#score tr:hover {
 	color:black;
 	background-color: #898989;
 }
+
+/************************************/
+
+/* Classes permettant le changement facile de l'etat caché a apparent */
 
 .hidden {
 	display: none;
@@ -69,6 +76,8 @@ tr td.folded div {
 	text-align: left;
 }
 
+
+/*  Classe permettant la mise en forme du formulaire de trie par langues */
 form#selectLang{
-	padding: 4px 0 4px 0;
+	padding: 6px 0 6px 0;
 }

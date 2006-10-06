@@ -117,6 +117,14 @@ WeblogSchema = BaseFolderSchema + Schema((
         schemata='configuration'
         ),
     ),
+    
+	BooleanField('commentsEnabled',
+		default = True,
+		widget=BooleanWidget(label='Enable comments of weblog entries',
+			description="""When disabled, the comments are disabled""",
+			),
+		schemata='configuration'
+		),
 
     marshall=PrimaryFieldMarshaller(),
     )

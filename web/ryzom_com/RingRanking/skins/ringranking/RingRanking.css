@@ -41,6 +41,19 @@ table#score tr:hover {
 	background-color: #898989;
 }
 
+th #rr_rank,
+td #rr_rank {
+	width:5em;
+}
+th #rr_name,
+td #rr_name {
+	width:16em;
+}
+th #rr_mainland,
+td #rr_mainland {
+	width:10em;
+}
+
 /************************************/
 
 /* Classes permettant le changement facile de l'etat caché a apparent */
@@ -81,3 +94,4 @@ tr td.folded div {
 form#selectLang{
 	padding: 6px 0 6px 0;
 }
+

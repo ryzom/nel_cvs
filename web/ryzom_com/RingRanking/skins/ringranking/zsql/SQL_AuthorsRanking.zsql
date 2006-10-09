@@ -9,7 +9,8 @@ select c.char_id,
        c.user_id,
        c.guild_id,
        c.rrp_am,c.rrp_masterless,c.rrp_author,
-       r.lang
+       r.lang,
+       c.home_mainland_session_id as mainland_id
 from characters c,ring_users r
 where c.user_id = r.user_id
 order by <dtml-sqlvar ranking_by type="string"> desc

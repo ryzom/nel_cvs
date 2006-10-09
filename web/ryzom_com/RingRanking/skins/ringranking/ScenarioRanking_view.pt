@@ -6,7 +6,6 @@
 	<style type="text/css" media="screen"
 		tal:content="string:@import url(${portal_url}/RingRanking.css);">
 	</style>
-
 </metal:block>
 
 <metal:block fill-slot="javascript_head_slot">
@@ -16,14 +15,14 @@
 	<script type="text/javascript">
 		// <![CDATA[
 		
-function changeLang(){
+function changeLang(url){
 	// fonction qui met a jour le tableau des scores
 	var res="";
 	var formulaire = document.getElementById("selectLang");
 	if( formulaire.fr.checked == true) res += "fr,";
 	if( formulaire.de.checked == true) res += "de,";
 	if( formulaire.en.checked == true) res += "en,";
-	res = document.URL+"/scenarioUpdate_view?langs="+res+"";
+	res = url+"/scenarioUpdate_view?langs="+res+"";
 
 	sendRequestAndChangeContent("score", res);
 }
@@ -34,7 +33,7 @@ function changeLang(){
 
 <body>
 
-<div metal:fill-slot="main">
+<div metal:fill-slot="main" tal:define="url python:here.absolute_url()">
 
 <h1 tal:condition="here/getMasterless"
 	i18n:translate="RingRanking_title_am_autonomous">Le classement des
@@ -47,18 +46,19 @@ meilleurs sc&eacute;narios avec maitre du jeu</h1>
 	<label for="fr">FR</label> <input type="checkbox" id="fr" />
 	<label for="en">EN</label> <input type="checkbox" id="en" /> 
 	<label for="de">DE</label> <input type="checkbox" id="de" /> 
-	<input type="button" value="valider" name="valider" onclick="changeLang();" />
+	<input type="button" value="valider" name="valider" onclick=""
+		tal:attributes="onclick string:changeLang('${url}')" />
 </form>
 
 <div id="alacon"></div>
 
-<table tal:define="ranks python:here.getRanking()" id="score" border="0"
+<table tal:define="ranks python:here.getRankings()" id="score" border="0"
 	cellpadding="0" cellspacing="0">
 
 		<tr>
-			<th i18n:translate="RingRanking_rank">Rank</th>
+			<th i18n:translate="RingRanking_rank" id="rr_rank">Rank</th>
 			<th i18n:translate="RingRanking_title">Title</th>
-			<th i18n:translate="RingRanking_author">Author</th>
+			<th i18n:translate="RingRanking_author" id="rr_name">Author</th>
 			<th i18n:translate="RingRanking_orientation">Orientation</th>
 			<th i18n:translate="RingRanking_level">Level</th>
 			<th i18n:translate="RingRanking_score">Score</th>
@@ -68,19 +68,17 @@ meilleurs sc&eacute;narios avec maitre du jeu</h1>
 		<tr class="" title="cliquez ici pour plus de details" onclick=""
 			tal:define="number repeat/rank/number"
 			tal:attributes="class python:'parite'+str(number%2);
-							onclick python:'hideOrNot(\'desc'+str(rank['rank'])+'\')';">
-			<td tal:content="python:rank['rank']">rank</td>
+					onclick python:'hideOrNot(\'desc'+str(rank['rank'])+'\')';">
+			<td tal:content="python:rank['rank']" id="rr_rank">rank</td>
 			<td tal:content="python:rank['title']">titre</td>
-			<td tal:content="python:rank['author']">auteur</td>
-			<td i18n:translate=""><span
-				tal:replace="python:rank['orientation']" /></td>
+			<td tal:content="python:rank['author']" id="rr_name">auteur</td>
+			<td i18n:translate=""><span tal:replace="python:rank['orientation']" /></td>
 			<td i18n:translate=""><span tal:replace="python:rank['level']" /></td>
 			<td tal:content="python:rank['score']">score</td>
 		</tr>
 		<tr style="height:0px; padding:0px; margin:0px;">
 			<td colspan="6" class="folded">
-			<div class="hidden" id=""
-					tal:attributes="id python:'desc'+str(rank['rank']);">
+			<div class="hidden" id="" tal:attributes="id python:'desc'+str(rank['rank']);">
 				<h4 i18n:translate="RingRanking_description">Description</h4>
 				<p tal:content="python:rank['description']"></p>
 				<h4 i18n:translate="RingRanking_average_time">Average Time</h4>

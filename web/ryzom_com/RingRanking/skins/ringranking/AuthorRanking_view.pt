@@ -15,15 +15,15 @@
 	<script type="text/javascript">
 		// <![CDATA[
 		
-function changeServer(){
+function changeServer(url){
 	// fonction qui met a jour le tableau des scores
 	var res="";
 	var formulaire = document.getElementById("selectServer");
-	if( formulaire.leanon.checked == true) res += "leanon,";
-	if( formulaire.arispotle.checked == true) res += "arispotle,";
-	if( formulaire.aniro.checked == true) res += "aniro,";
-	if( formulaire.cho.checked == true) res += "cho,";
-	res = document.URL+"/authorUpdate_view?langs="+res+"";
+	if( formulaire.leanon.checked == true) res += "Leanon,";
+	if( formulaire.arispotle.checked == true) res += "Arispotle,";
+	if( formulaire.aniro.checked == true) res += "Aniro,";
+	if( formulaire.cho.checked == true) res += "Cho,";
+	res = url+"/authorUpdate_view?langs="+res+"";
 
 	sendRequestAndChangeContent("score", res);
 }
@@ -34,7 +34,7 @@ function changeServer(){
 
 <body>
 
-<div metal:fill-slot="main">
+<div metal:fill-slot="main" tal:define="url python:here.absolute_url()">
 
 <h1 tal:condition="not:here/getAM" i18n:translate="RingRanking_title_author">Le classement des meilleurs auteurs de sc&eacute;narios</h1>
 <h1 tal:condition="here/getAM" i18n:translate="RingRanking_title_adventuremaster">Le classement des meilleurs MJ</h1>
@@ -44,24 +44,27 @@ function changeServer(){
 	<label for="arispotle">Arispotle</label> <input type="checkbox" id="arispotle" /> 
 	<label for="aniro">Aniro</label> <input type="checkbox" id="aniro" />
 	<label for="cho">Cho</label> <input type="checkbox" id="cho" />
-	<input type="button" value="valider" name="valider" onclick="changeServer();" />
+	<input type="button" value="valider" name="valider" onclick=""
+		tal:attributes="onclick string:changeServer('${url}')" />
 </form>
 
 <table tal:define="ranks here/getRanking" id="score" border="0"
 	cellpadding="0" cellspacing="0">
 	<tbody>
 		<tr>
-			<th i18n:translate="RingRanking_rank">Rank</th>
-			<th i18n:translate="RingRanking_name">Name</th>
-			<th i18n:translate="RingRanking_guild">Guild</th>
-			<th i18n:translate="RingRanking_score">Score</th>
+			<th i18n:translate="RingRanking_rank" id="rr_rank">Rank</th>
+			<th i18n:translate="RingRanking_name" id="rr_name">Name</th>
+			<th i18n:translate="RingRanking_guild" id="rr_guild">Guild</th>
+			<th i18n:translate="RingRanking_mainland" id="rr_mainland">Mainland</th>
+			<th i18n:translate="RingRanking_score" id="rr_score">Score</th>
 		</tr>
 		<div tal:omit-tag="" tal:repeat="rank ranks" >
 			<tr class="" tal:define="number repeat/rank/number" tal:attributes="class python:'parite'+str(number%2)">
-				<td tal:content="python:rank['rank']">rank</td>
-				<td tal:content="python:rank['name']">Nom</td>
-				<td tal:content="python:rank['guild']">Guilde</td>
-				<td tal:content="python:rank['score']">Score</td>				
+				<td tal:content="python:rank['rank']" id="rr_rank">rank</td>
+				<td tal:content="python:rank['name']" id="rr_name">Nom</td>
+				<td tal:content="python:rank['guild']" id="rr_guild">Guilde</td>
+				<td tal:content="python:rank['mainland']" id="rr_mainland">Score</td>
+				<td tal:content="python:rank['score']" id="rr_score">Score</td>
 			</tr>
 		</div>
 	</tbody>

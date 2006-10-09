@@ -68,6 +68,60 @@ class AuthorsRanking(BaseContent):
 		"""set the ranking's list"""
 		self.Ranking = d
 
+	RankingLeanon=[]
+	RankingArispotle=[]
+	RankingAniro=[]
+	RankingCho=[]
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankingLang')
+	def getRankingLang(self,server):
+		"""set the ranking's list"""
+		server = str(server)
+		if lang == 'Leanon':
+			return self.RankingLeanon
+		if lang == 'Arispotle':
+			return self.RankingArispotle
+		if lang == 'Aniro':
+			return self.RankingAniro
+		if lang == 'Cho':
+			return self.RankingCho
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRankingLang')
+	def setRankingServer(self,d,server):
+		"""set the ranking's list"""
+		server = str(server)
+		if lang == 'Leanon':
+			self.RankingLeanon = d
+		if lang == 'Arispotle':
+			self.RankingArispotle = d
+		if lang == 'Aniro':
+			self.RankingAniro = d
+		if lang == 'Cho':
+			self.RankingCho = d
+
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankings')
+	def getRankings(self,servers=None,limit=10):
+		"""get ranking for each language selected and return a sorted by rank tab"""
+		## if not lang return international tab
+		if not servers :
+			return self.Ranking
+		
+		## else create a tab with all language selected
+		servers = servers.split(',')
+		limit = int(limit)
+		result = []
+		for server in servers:
+			if server and server != '' and lang != ',':
+				tab = self.getRankingServer(str(server))
+				if len(tab) >0:
+					result = fusion(result,tab,limit)
+		if result:
+			return result
+		return "[]"
+
+
+
+
 	security.declareProtected(CMFCorePermissions.View, 'isAdventureMaster')
 	def isAdventureMaster(self):
 		"""return if the rank is for Adventure Master"""
@@ -115,6 +169,7 @@ class AuthorsRanking(BaseContent):
 			rank+=1
 			guild = ''
 			pioneer = 0
+			mainland = ''
 			#get the guild name
 			try:
 				#this SQL return one row of one column
@@ -130,7 +185,13 @@ class AuthorsRanking(BaseContent):
 				pioneer = ''
 			if 'PIONEER' in pioneer:
 				pioneer = 'Pioneer'
-			
+
+			#get mainland
+			try:
+				mainland = self.zsql.SQL_GetMainland(mainland_id=row['mainland_id'])[0][0]
+			except:
+				mainland = ''
+
 			#create information
 			if self.isAdventureMaster():
 				info = {'rank':rank,
@@ -139,6 +200,7 @@ class AuthorsRanking(BaseContent):
 					'pioneer':pioneer,
 					'score':row['rrp_am'],
 					'language':row['lang'],
+					'mainland':mainland,
 					}
 			else:
 				info = {'rank':rank,
@@ -147,6 +209,7 @@ class AuthorsRanking(BaseContent):
 					'pioneer':pioneer,
 					'score':row['rrp_author'],
 					'language':row['lang'],
+					'mainland':mainland,
 					}
 			#update tab
 			result.append(info)

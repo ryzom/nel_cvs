@@ -97,7 +97,7 @@ class ScenarioRanking(BaseContent):
 	RankingDE=[]
 	RankingOther=[]
 
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankingLang')
+	security.declareProtected(CMFCorePermissions.View, 'getRankingLang')
 	def getRankingLang(self,lang):
 		"""set the ranking's list"""
 		lang = str(lang)
@@ -123,7 +123,7 @@ class ScenarioRanking(BaseContent):
 		if lang == 'other':
 			self.RankingOther = d
 
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankings')
+	security.declareProtected(CMFCorePermissions.View, 'getRankings')
 	def getRankings(self,langs=None,limit=10):
 		"""get ranking for each language selected and return a sorted by rank tab"""
 		## if not lang return international tab

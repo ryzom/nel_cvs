@@ -120,7 +120,8 @@ class QnA(BaseContent):
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'parseTime')
 	def parseTime(self,date):
 		"""convert date to timestamp"""
-		cleandate = date.split(' ')[0]+date.split(' ')[1]
+		tab = date.split(' ')
+		cleandate = tab[0]+' '+tab[1].split('.')[0]
 		result = timegm(time.strptime(cleandate, "%Y/%m/%d %H:%M:%S"))
 		return result
 

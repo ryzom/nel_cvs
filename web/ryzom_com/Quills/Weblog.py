@@ -74,6 +74,13 @@ WeblogSchema = BaseFolderSchema + Schema((
     ### 
     ## Configuration Options
     ###
+    BooleanField('commentsEnabled',
+        default = True,
+        widget=BooleanWidget(label='Enable comments of weblog entries',
+                        description="When disabled, the comments are disabled",
+            ),
+        schemata='configuration'
+        ),
     BooleanField('addNewsButton',
         default = False,
         widget=BooleanWidget(label='Add a Button --Submit a News-- ?',
@@ -117,15 +124,6 @@ WeblogSchema = BaseFolderSchema + Schema((
         schemata='configuration'
         ),
     ),
-    
-	BooleanField('commentsEnabled',
-		default = True,
-		widget=BooleanWidget(label='Enable comments of weblog entries',
-			description="""When disabled, the comments are disabled""",
-			),
-		schemata='configuration'
-		),
-
     marshall=PrimaryFieldMarshaller(),
     )
 

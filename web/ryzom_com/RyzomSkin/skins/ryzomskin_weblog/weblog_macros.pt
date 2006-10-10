@@ -267,8 +267,9 @@
     <metal:block define-macro="weblog-footer">
       <ul class="weblog-footer"
         tal:define="discussion nocall:here/portal_discussion;
-        isDiscussionAllowedFor nocall:discussion/isDiscussionAllowedFor;
-        getDiscussionFor nocall:discussion/getDiscussionFor">
+		    isDiscussionAllowedFor nocall:discussion/isDiscussionAllowedFor;
+		    getDiscussionFor nocall:discussion/getDiscussionFor;
+		    parent python:here.quills_tool.getParentWeblog(entry);">
 
         <li tal:condition="python:'/chronicles' in here.absolute_url()">
           <a href=""
@@ -278,7 +279,7 @@
           </a>
         </li>
 
-        <li tal:condition="python:isDiscussionAllowedFor(entry)">
+        <li tal:condition="python:isDiscussionAllowedFor(entry) and parent.getCommentsEnabled()">
 	   &nbsp;[&nbsp;
           <a href=""
             tal:attributes="href string:${entry/absolute_url}#comments"><span
@@ -293,8 +294,14 @@
         If the author can edit the content ...
        </tal:comment>
  
-        <li tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)">
-           &nbsp;|&nbsp;&nbsp;
+        <li tal:define="commentsEnabled python:isDiscussionAllowedFor(entry) and parent.getCommentsEnabled()"
+	    tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)">
+	   <span tal:condition="commentsEnabled"
+		 tal:replace="string: |  ">
+	   </span>
+	   <span tal:condition="not: commentsEnabled"
+		 tal:replace="string: [  ">
+	   </span>
           <a href=""
             tal:attributes="href string:${entry/absolute_url}/base_edit"
             i18n:domain="RyzomSkin"
@@ -306,7 +313,7 @@
         If the author can NOT edit the content ...
        </tal:comment>
 
-        <li tal:condition="python: not here.portal_membership.checkPermission('Modify portal content', here)">
+        <li tal:condition="python: not (here.portal_membership.checkPermission('Modify portal content', here) and parent.getCommentsEnabled())">
           &nbsp;]
         </li>
 

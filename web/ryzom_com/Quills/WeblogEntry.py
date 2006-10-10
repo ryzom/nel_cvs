@@ -114,7 +114,10 @@ class WeblogEntry(BaseContent):
         },)
 
     def __init__(self, oid, **kwargs):
-        self.schema['allowDiscussion'].default = True
+	#par defaut les commentaires sont autoriser si le parent l'autorise
+	parent = self.quills_tool.getParentWeblog(self)
+	commentsEnabled = parent.getCommentsEnabled()
+        self.schema['allowDiscussion'].default = commentsEnabled
 #        self.schema['id'].widget.visible = {'edit': 'invisible'}
         BaseContent.__init__(self, oid, **kwargs)
 

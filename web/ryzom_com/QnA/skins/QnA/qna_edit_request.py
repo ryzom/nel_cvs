@@ -11,6 +11,10 @@ from Products.PythonScripts.standard import html_quote
 
 form = context.REQUEST.form
 
+try:
+	context.setId(form['title'])
+except:
+	pass
 context.setTitle(form['title'])
 context.setDescription(form['description'])
 context.setDateStart(form['dateStart'])

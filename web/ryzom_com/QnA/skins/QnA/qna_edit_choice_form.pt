@@ -33,7 +33,7 @@
    
    <!-- Maybe change this to a paragraph of explanation <span i18n:translate="QnA_check_to_add" tal:omit-tag="">Check to add this post</span> -->
    <p>Selectionnez les post que vous desirez intégré en les choisissant dans la liste</p> 
-   <a onclick='hideAll("edit_form");' >Refermer tous les posts</a>
+<!--   <a onclick='hideAll("edit_form");' >Refermer tous les posts</a> -->
    
    <form class="QnA_choice"
          name="edit_form"

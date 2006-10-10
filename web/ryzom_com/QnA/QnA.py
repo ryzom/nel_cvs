@@ -87,6 +87,30 @@ class QnA(BaseContent):
 		},
 	)
 
+#	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'renameId')
+#	def renameId(self, title):
+#		"""Renames an object like its normalized title."""
+#		plone_tool = getToolByName(self, 'plone_utils', None)
+#		old_id = self.getId()
+#		new_id = plone_tool.normalizeString(title)
+#		invalid_id = True
+#		check_id = getattr(self, 'check_id', None)
+#		if check_id is not None:
+#			invalid_id = check_id(new_id, required=1)
+#       
+#		if invalid_id:
+#			unique_id = self._findUniqueId(new_id)
+#		if unique_id is not None:
+#			if check_id is None or check_id(new_id, required=1):
+#				new_id = unique_id
+#				invalid_id = False
+#
+#		if not invalid_id:
+#			transaction.savepoint(optimistic=True)
+#			self.setId(new_id)
+#			return new_id
+#		return False
+
 
 	#PostList and accessor & mutator
 	PostList={}
@@ -155,6 +179,19 @@ class QnA(BaseContent):
 		results=self.qna(username = OfficialsNames, start = date1, end = date2)
 		return results
 
+	security.declareProtected(CMFCorePermissions.View, 'TryToUTF8')
+	def TryToUTF8(self,text):
+		"""try to clean cp1252 charset, and convert to utf8"""
+		try:
+			text=text.replace('\xc2','').decode('cp1252').encode('utf')
+		except:
+			try:
+				text=text.decode('utf').encode('latin')
+			except:
+				text=text.decode('latin')
+		return text
+	
+
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'createPostList')
 	def createPostList(self):
 		"""return the PostList in a dictionnary"""
@@ -166,16 +203,9 @@ class QnA(BaseContent):
 			post_id  = str(row[0])
 			post_date = str(row[1])
 			post_author = str(row[2])
-			post_text   = str(row[3])
-			post_title  = str(row[4])
-			#conversion du texte
-			try:
-				post_text=post_text.replace('\xc2','').decode('cp1252').encode('utf')
-			except:
-				try:
-					post_text=post_text.decode('utf').encode('latin')
-				except:
-					post_text=post_text.decode('latin')
+			post_text   = self.TryToUTF8(str(row[3]))
+			post_title  = self.TryToUTF8(str(row[4]))
+			
 			#ajout des donnÃ©es dans le dictionnaire
 			newtext = self.generate_text([post_date,post_author,post_text,post_id])
 			PostList.update({i:[post_date,post_author,newtext,post_id,post_title]})

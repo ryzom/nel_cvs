@@ -140,7 +140,7 @@ class QnA(BaseContent):
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getUsersOfficials')
 	def getUsersOfficials(self):
 		"""return Official's users"""
-		return join(self.getGroupUsers('Officials'),' ')
+		return join(self.getGroupUsers('Officials'),';')
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getSQLPostList')
 	def getSQLPostList(self):
@@ -149,7 +149,7 @@ class QnA(BaseContent):
 		date1=self.parseTime(str(self.getDateStart()))       	 	
 		date2=self.parseTime(str(self.getDateEnd()))
 		#la liste des utilisateur a rechercher par defaut
-		OfficialsNames = self.getFilter().split()
+		OfficialsNames = self.getFilter().split(';')
 		#execute la requete sql
 		results=self.qna(username = OfficialsNames, start = date1, end = date2)
 		return results

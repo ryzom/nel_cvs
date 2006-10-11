@@ -34,6 +34,16 @@ RingRankingSchema=BaseFolderSchema.copy()+ Schema((
 			i18n_domain="RingRanking",
 		),
 	),
+	IntegerField('limit',
+		default = 10,
+		widget=IntegerWidget(
+			label='Limite',
+			label_msgid="RingRanking_schema_label_limit",
+			description="Nombre d'auteur, scenario visible dans le Classement",
+			description_msgid="RingRanking_schema_limit",
+			i18n_domain="RingRanking",
+		),
+	),
 ))
  
  
@@ -105,10 +115,11 @@ class RingRanking(BaseFolder):
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'updateAllRank')
 	def updateAllRank(self):
 		"""update all ranking in the content"""
-		result = []		
+		result = []
+		limit = int(self.getLimit())
 		for name in self.content:
 			obj = getattr(self.aq_inner.aq_explicit, name)
-			result.append(obj.update())
+			result.append(obj.update(limit))
 		return result
 		
 

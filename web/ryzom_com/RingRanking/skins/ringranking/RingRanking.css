@@ -40,7 +40,7 @@ table#score tr:hover {
 	color:black;
 	background-color: #898989;
 }
-
+/* classe pour la largeur de chaque colonne*/
 th #rr_rank,
 td #rr_rank {
 	width:5em;

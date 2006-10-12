@@ -1,45 +1,28 @@
 <div i18n:domain="RingRanking"
-		tal:define="ranks python:here.getRanking(request.get('langs'))" tal:omit-tag="">
-
+		tal:define="langs python:request.get('langs');
+					limit python:request.get('limit');
+					ranks python:here.getRankings(langs,limit);
+					ranks python:here.getRanking();"
+		tal:omit-tag="">
 
 		<tr>
-			<th i18n:translate="RingRanking_rank">Rank</th>
-			<th i18n:translate="RingRanking_title">Title</th>
-			<th i18n:translate="RingRanking_author">Author</th>
-			<th i18n:translate="RingRanking_orientation">Orientation</th>
-			<th i18n:translate="RingRanking_level">Level</th>
-			<th i18n:translate="RingRanking_score">Score</th>
+			<th i18n:translate="RingRanking_rank" id="rr_rank">Rank</th>
+			<th i18n:translate="RingRanking_name" id="rr_name">Name</th>
+			<th i18n:translate="RingRanking_guild" id="rr_guild">Guild</th>
+			<th i18n:translate="RingRanking_mainland" id="rr_mainland">Mainland</th>
+			<th i18n:translate="RingRanking_score" id="rr_score">Score</th>
 		</tr>
 
 	<div tal:condition="python:ranks!='[]'" >
 		
- 	<div tal:omit-tag="" tal:repeat="rank ranks" >
-		
-		<tr class="" title="cliquez ici pour plus de details" onclick=""
-				tal:define="number repeat/rank/number"
-				tal:attributes="class python:'parite'+str(number%2);
-									onclick python:'hideOrNot(\'desc'+str(rank['rank'])+'\')';">
-			<td tal:content="python:rank['rank']">rank</td>
-			<td tal:content="python:rank['title']">titre</td>
-			<td tal:content="python:rank['author']">auteur</td>
-			<td i18n:translate=""><span
-				tal:replace="python:rank['orientation']" /></td>
-			<td i18n:translate=""><span tal:replace="python:rank['level']" /></td>
-			<td tal:content="python:rank['score']">score</td>
-		</tr>
-	
-		<tr style="height:0px; padding:0px; margin:0px;">
-			<td colspan="6" class="folded">
-			<div class="hidden" id=""
-				tal:attributes="id python:'desc'+str(rank['rank']);">
-			<h4 i18n:translate="RingRanking_description">Description</h4>
-			<p tal:content="python:rank['description']"></p>
-			<h4 i18n:translate="RingRanking_average_time">Average Time</h4>
-			<p tal:content="python:rank['average_time']"></p>
-			</div>
-			</td>
-		</tr>
-		
+ 	<div tal:omit-tag="" tal:repeat="rank ranks" >		
+			<tr class="" tal:define="number repeat/rank/number" tal:attributes="class python:'parite'+str(number%2)">
+				<td tal:content="python:rank['rank']" id="rr_rank">rank</td>
+				<td tal:content="python:rank['name']" id="rr_name">Nom</td>
+				<td tal:content="python:rank['guild']" id="rr_guild">Guilde</td>
+				<td tal:content="python:rank['mainland']" id="rr_mainland">Score</td>
+				<td tal:content="python:rank['score']" id="rr_score">Score</td>
+			</tr>		
 	</div>
 	</div>
 	

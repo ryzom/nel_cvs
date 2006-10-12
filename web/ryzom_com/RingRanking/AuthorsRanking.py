@@ -74,7 +74,7 @@ class AuthorsRanking(BaseContent):
 	RankingCho=[]
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankingLang')
-	def getRankingLang(self,server):
+	def getRankingServer(self,server):
 		"""set the ranking's list"""
 		server = str(server)
 		if lang == 'Leanon':
@@ -100,7 +100,7 @@ class AuthorsRanking(BaseContent):
 			self.RankingCho = d
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankings')
-	def getRankings(self,servers=None,limit=10):
+	def getRankings(self,server=None,limit=10):
 		"""get ranking for each language selected and return a sorted by rank tab"""
 		## if not lang return international tab
 		if not servers :
@@ -158,6 +158,9 @@ class AuthorsRanking(BaseContent):
 		formatted_request=self.FormatRequest(req)
 		## store Result formatted
 		self.setRanking(formatted_request)
+
+		## get result for each server
+		## to do...
 		return 'AuthorsRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')

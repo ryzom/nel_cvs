@@ -20,7 +20,7 @@
 		<tr class="" title="cliquez ici pour plus de details" onclick=""
 				tal:define="number repeat/rank/number"
 				tal:attributes="class python:'parite'+str(number%2);
-						onclick python:'hideOrNot(\'desc'+str(rank['rank'])+'\')';">
+								onclick python:'hideOrNot(\'desc'+str(rank['rank'])+'\')';">
 			<td tal:content="python:rank['rank']" id="rr_rank">rank</td>
 			<td tal:content="python:rank['title']">titre</td>
 			<td tal:content="python:rank['author']" id="rr_name">auteur</td>

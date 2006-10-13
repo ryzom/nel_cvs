@@ -36,7 +36,7 @@ function changeLang(url,limit){
 <div metal:fill-slot="main" tal:define="url python:here.absolute_url();
 										ranks python:here.getRankings();
 										limit python:len(ranks);">
-<div tal:content="limit" />
+
 <h1 tal:condition="here/getMasterless"
 	i18n:translate="RingRanking_title_am_autonomous">Le classement des
 meilleurs sc&eacute;narios autonomes</h1>

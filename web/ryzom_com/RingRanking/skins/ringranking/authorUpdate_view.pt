@@ -1,8 +1,7 @@
 <div i18n:domain="RingRanking"
-		tal:define="langs python:request.get('langs');
-					limit python:request.get('limit');
-					ranks python:here.getRankings(langs,limit);
-					ranks python:here.getRanking();"
+		tal:define="langs python:request.get('servers');
+			    limit python:request.get('limit');
+			    ranks python:here.getRankings(servers,limit);"
 		tal:omit-tag="">
 
 		<tr>
@@ -13,16 +12,15 @@
 			<th i18n:translate="RingRanking_score" id="rr_score">Score</th>
 		</tr>
 
-	<div tal:condition="python:ranks!='[]'" >
-		
- 	<div tal:omit-tag="" tal:repeat="rank ranks" >		
+	<div tal:condition="python:ranks!='[]'" >		
+ 	<div tal:omit-tag="" tal:repeat="rank ranks" >
 			<tr class="" tal:define="number repeat/rank/number" tal:attributes="class python:'parite'+str(number%2)">
 				<td tal:content="python:rank['rank']" id="rr_rank">rank</td>
 				<td tal:content="python:rank['name']" id="rr_name">Nom</td>
 				<td tal:content="python:rank['guild']" id="rr_guild">Guilde</td>
 				<td tal:content="python:rank['mainland']" id="rr_mainland">Score</td>
 				<td tal:content="python:rank['score']" id="rr_score">Score</td>
-			</tr>		
+			</tr>
 	</div>
 	</div>
 	
@@ -31,5 +29,4 @@
 			<td colspan="6">vide</td>
 		</tr>
 	</div>
-
 </div>

@@ -12,6 +12,7 @@ except ImportError:
 
 #import de fonction du produit
 from config import *
+from RankingTool import fusion
 
 AuthorsRankingSchema=BaseSchema.copy()+ Schema((
 	BooleanField('AM',
@@ -159,8 +160,21 @@ class AuthorsRanking(BaseContent):
 		## store Result formatted
 		self.setRanking(formatted_request)
 
-		## get result for each server
-		## to do...
+
+		for server_name in ["Leanon","Aniro","Arispotle","Cho"]:
+			server="Leanon"	
+			try:
+				request = self.zsql.SQL_AuthorsRankingByServer(ranking_by=ranking_by,server_name=server_name)
+			except:
+				return 'Ranking Update Failed'		
+			if len(request) > limit:
+				req = request.dictionaries()[0:limit]
+			else:
+				req = request
+			formatted_request=self.FormatRequest(req)
+			self.setRankingServer(formatted_request,server_name)
+
+		
 		return 'AuthorsRanking Update Success'
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')

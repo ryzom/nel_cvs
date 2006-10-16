@@ -23,6 +23,7 @@ function changeServer(url,limit){
 	if( formulaire.arispotle.checked == true) res += "Arispotle,";
 	if( formulaire.aniro.checked == true) res += "Aniro,";
 	if( formulaire.cho.checked == true) res += "Cho,";
+	if( formulaire.too.checked == true) res += "Too,";
 	res = url+"/authorUpdate_view?servers="+res+"&limit="+limit+"";
 
 	sendRequestAndChangeContent("score", res);
@@ -46,6 +47,7 @@ function changeServer(url,limit){
 	<label for="arispotle">Arispotle</label> <input type="checkbox" id="arispotle" />
 	<label for="aniro">Aniro</label> <input type="checkbox" id="aniro" />
 	<label for="cho">Cho</label> <input type="checkbox" id="cho" />
+	<label for="too">Too</label> <input type="checkbox" id="too" />
 	<input type="button" value="valider" name="valider" onclick=""
 		tal:attributes="onclick string:changeServer('${url}','${limit}')" />
 </form>

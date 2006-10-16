@@ -148,9 +148,7 @@ class AuthorsRanking(BaseContent):
 		try:
 			request = self.zsql.SQL_AuthorsRanking(ranking_by=ranking_by)
 		except:
-			return 'Author Ranking Update Failed'
-		text+="Author Ranking (all server) update success\n"
-		
+			return 'Author Ranking Update Failed'	
 		if len(request) > limit:
 			req = request.dictionaries()[0:limit]
 		else:
@@ -160,24 +158,23 @@ class AuthorsRanking(BaseContent):
 		formatted_request=self.FormatRequest(req)
 		## store Result formatted
 		self.setRanking(formatted_request)
+
+		##for other server
 		list_server = ["Leanon","Aniro","Arispotle","Cho"]
 		list_server = ["Too"]
 		for server_name in list_server:
-			#try:
-			#	request = self.zsql.SQL_AuthorsRankingByServer(ranking_by=ranking_by,server_name=server_name)
-			#except:
-			#	return text+" Ranking "+str(server_name)+" Update Failed"
-			request = self.zsql.SQL_AuthorsRankingByServer(ranking_by=ranking_by,server_name=server_name)
-			text+="general update success ("+str(server_name)+")\n"
+			try:
+				request = self.zsql.SQL_AuthorsRankingByServer(ranking_by=ranking_by,server_name=server_name)
+			except:
+				return "Ranking "+str(server_name)+" Update Failed"			
 			if len(request) > limit:
 				req = request.dictionaries()[0:limit]
 			else:
 				req = request
 			formatted_request=self.FormatRequest(req)
 			self.setRankingServer(formatted_request,server_name)
-
 		
-		return text
+		return "Author Ranking success"
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
 	def FormatRequest(self,request):

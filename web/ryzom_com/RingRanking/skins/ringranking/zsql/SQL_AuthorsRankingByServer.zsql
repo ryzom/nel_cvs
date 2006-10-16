@@ -1,5 +1,5 @@
 <dtml-comment>
-arguments: ranking_by, server_name
+arguments: ranking_by server_name
 connection_id:r2linux03
 title:Session: get Authors ranking by server
 </dtml-comment>

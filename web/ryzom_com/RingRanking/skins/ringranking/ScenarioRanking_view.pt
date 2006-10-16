@@ -22,6 +22,7 @@ function changeLang(url,limit){
 	if( formulaire.fr.checked == true) res += "fr,";
 	if( formulaire.de.checked == true) res += "de,";
 	if( formulaire.en.checked == true) res += "en,";
+	if( formulaire.other.checked == true) res += "other,";
 	res = url+"/scenarioUpdate_view?langs="+res+"&limit="+limit+"";
 
 	sendRequestAndChangeContent("score", res);
@@ -48,6 +49,7 @@ meilleurs sc&eacute;narios avec maitre du jeu</h1>
 	<label for="fr">FR</label> <input type="checkbox" id="fr" />
 	<label for="en">EN</label> <input type="checkbox" id="en" /> 
 	<label for="de">DE</label> <input type="checkbox" id="de" /> 
+	<label for="other">Other</label> <input type="checkbox" id="other" /> 
 	<input type="button" value="valider" name="valider" onclick=""
 		tal:attributes="onclick string:changeLang('${url}','${limit}')" />
 </form>

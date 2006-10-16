@@ -50,18 +50,11 @@ class AuthorsRanking(BaseContent):
 	## [{info sur le scenario}]
 	Ranking=[]
 	security.declareProtected(CMFCorePermissions.View, 'getRanking')
-	def getRanking(self,langs=()):
-		"""return the ranking's list, filter by language passed in a string like 'lang_en,lang_fr,lang_de'"""
-		if not langs :
+	def getRanking(self):
+		"""return the ranking's list"""
+		if self.Ranking:
 			return self.Ranking
-		langs = langs.split(',')
-		filter_ranking = []
-		ranking = self.Ranking
-		for row in ranking:
-			if row['language'] in langs:
-				filter_ranking.append(row)
-		if filter_ranking:
-			return filter_ranking
+
 		return "[]"
 	
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRanking')
@@ -73,35 +66,42 @@ class AuthorsRanking(BaseContent):
 	RankingArispotle=[]
 	RankingAniro=[]
 	RankingCho=[]
+	RankingToo=[]
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankingLang')
 	def getRankingServer(self,server):
 		"""set the ranking's list"""
 		server = str(server)
-		if lang == 'Leanon':
+		if server == 'Leanon':
 			return self.RankingLeanon
-		if lang == 'Arispotle':
+		if server == 'Arispotle':
 			return self.RankingArispotle
-		if lang == 'Aniro':
+		if server == 'Aniro':
 			return self.RankingAniro
-		if lang == 'Cho':
+		if server == 'Cho':
 			return self.RankingCho
+		if server == 'Too':
+			return self.RankingToo
+		return []
+ 
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRankingLang')
 	def setRankingServer(self,d,server):
 		"""set the ranking's list"""
 		server = str(server)
-		if lang == 'Leanon':
+		if server == 'Leanon':
 			self.RankingLeanon = d
-		if lang == 'Arispotle':
+		if server == 'Arispotle':
 			self.RankingArispotle = d
-		if lang == 'Aniro':
+		if server == 'Aniro':
 			self.RankingAniro = d
-		if lang == 'Cho':
+		if server == 'Cho':
 			self.RankingCho = d
+		if server == 'Too':
+			self.RankingToo = d
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankings')
-	def getRankings(self,server=None,limit=10):
+	def getRankings(self,servers=None,limit=10):
 		"""get ranking for each language selected and return a sorted by rank tab"""
 		## if not lang return international tab
 		if not servers :
@@ -112,7 +112,7 @@ class AuthorsRanking(BaseContent):
 		limit = int(limit)
 		result = []
 		for server in servers:
-			if server and server != '' and lang != ',':
+			if server and server != '' and server != ',':
 				tab = self.getRankingServer(str(server))
 				if len(tab) >0:
 					result = fusion(result,tab,limit)
@@ -139,7 +139,7 @@ class AuthorsRanking(BaseContent):
 #			lang = 'lang_fr'
 #		elif 'de' in lng:
 #			lang = 'lang_de'
-
+		text=""
 		if self.getAM():
 			ranking_by = 'rrp_am'
 		else:
@@ -148,7 +148,8 @@ class AuthorsRanking(BaseContent):
 		try:
 			request = self.zsql.SQL_AuthorsRanking(ranking_by=ranking_by)
 		except:
-			return 'Ranking Update Failed'
+			return 'Author Ranking Update Failed'
+		text+="Author Ranking (all server) update success\n"
 		
 		if len(request) > limit:
 			req = request.dictionaries()[0:limit]
@@ -159,14 +160,15 @@ class AuthorsRanking(BaseContent):
 		formatted_request=self.FormatRequest(req)
 		## store Result formatted
 		self.setRanking(formatted_request)
-
-
-		for server_name in ["Leanon","Aniro","Arispotle","Cho"]:
-			server="Leanon"	
-			try:
-				request = self.zsql.SQL_AuthorsRankingByServer(ranking_by=ranking_by,server_name=server_name)
-			except:
-				return 'Ranking Update Failed'		
+		list_server = ["Leanon","Aniro","Arispotle","Cho"]
+		list_server = ["Too"]
+		for server_name in list_server:
+			#try:
+			#	request = self.zsql.SQL_AuthorsRankingByServer(ranking_by=ranking_by,server_name=server_name)
+			#except:
+			#	return text+" Ranking "+str(server_name)+" Update Failed"
+			request = self.zsql.SQL_AuthorsRankingByServer(ranking_by=ranking_by,server_name=server_name)
+			text+="general update success ("+str(server_name)+")\n"
 			if len(request) > limit:
 				req = request.dictionaries()[0:limit]
 			else:
@@ -175,7 +177,7 @@ class AuthorsRanking(BaseContent):
 			self.setRankingServer(formatted_request,server_name)
 
 		
-		return 'AuthorsRanking Update Success'
+		return text
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'FormatRequest')
 	def FormatRequest(self,request):

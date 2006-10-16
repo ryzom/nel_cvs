@@ -109,6 +109,7 @@ class ScenarioRanking(BaseContent):
 			return self.RankingDE
 		if lang == 'other':
 			return self.RankingOther
+		return []
 
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRankingLang')
 	def setRankingLang(self,d,lang):

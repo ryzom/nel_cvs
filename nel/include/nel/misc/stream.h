@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.75.4.2 2006/01/11 15:02:09 boucher Exp $
+ * $Id: stream.h,v 1.75.4.3 2006/10/18 10:08:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,6 +275,14 @@ public:
 	if (!(_stream).isReading())			\
 		throw NLMISC::ENotInputStream();	\
 	NLMISC::IStream::unconst(_stream)._serialType(_obj);
+
+// helper macro to serialize boolean encoded as 'bool foo : 1' (they can't be referenced)
+#define nlSerialBitBool(_stream, _boolean) \
+	{ \
+		bool tmpBool = _boolean; \
+		_stream.serial(tmpBool); \
+		_boolean = tmpBool; \
+	}
 
 	/** \name Base type serialization.
 	 * Those method are a specialization of template method "void serial(T&)".

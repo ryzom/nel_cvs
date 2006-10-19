@@ -1,29 +1,32 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       i18n:domain="plone">
-<body>
+<body metal:define-macro="portlet">
 
-<div metal:define-macro="portlet">
+<div width="180" align="center" style="background-color:#5F5E57;margin:1em 0em;">
+<img src="side_top.png" alt="" />
+	<div style="width:180px;height:360px;                  
+				background-color:black;                  
+				border-radius:10px;-moz-border-radius:10px;-ie-border-radius:10px;">
 
-<object style="background-color:black;border-radius: 6px 0 0 6px;-moz-border-radius: 6px  0 0 6px;-ie-border-radius: 6px 0 0 6px;"
-        classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
-        codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0"
-        width="166" height="600"
-        id="Ryzom_Video_160x600"
-        align="right">
-   <param name="allowScriptAccess" value="sameDomain" />
-   <param name="movie" value="Ryzom_Video_160x600.swf" />
-   <param name="quality" value="high" />
-   <param name="bgcolor" value="#000000" />
-   <embed src="http://mk1.nevrax.com/data/flash/Video_160x600.swf" 
-          quality="high" bgcolor="#000000"
-          width="160" height="600" name="Ryzom_Video_160x600"
-          align="right"
-          allowScriptAccess="sameDomain"
-          type="application/x-shockwave-flash"
-          pluginspage="http://www.macromedia.com/go/getflashplayer" />
-</object>
-
+		<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
+				codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0"
+				id="Ryzom_Video_160x600">
+			<param name="allowScriptAccess" value="sameDomain" />
+			<param name="movie" value="Ryzom_Video_160x600.swf" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#000000" />
+			<embed src="http://mk1.nevrax.com/data/flash/Video_160x600.swf" 
+				   quality="high"
+				   name="Ryzom_Video_160x600"
+				   width="160" height="350"
+				   style="margin-top:5px;vertical-align:middle;"
+				   allowScriptAccess="sameDomain"
+				   type="application/x-shockwave-flash"
+				   pluginspage="http://www.macromedia.com/go/getflashplayer" />
+		</object>
+	</div>
+<img src="side_up.png" alt="" />
 </div>
 </body>
 </html>

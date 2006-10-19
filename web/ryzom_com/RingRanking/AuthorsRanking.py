@@ -68,6 +68,10 @@ class AuthorsRanking(BaseContent):
 	RankingCho=[]
 	RankingToo=[]
 
+	def getToo(self):
+		"""test"""
+		return self.RankingToo
+
 	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankingLang')
 	def getRankingServer(self,server):
 		"""set the ranking's list"""
@@ -111,10 +115,12 @@ class AuthorsRanking(BaseContent):
 		servers = servers.split(',')
 		limit = int(limit)
 		result = []
+		if len(servers) == 1:
+			return self.getRankingServer(str(servers[0]))
 		for server in servers:
 			if server and server != '' and server != ',':
 				tab = self.getRankingServer(str(server))
-				if len(tab) >0:
+				if len(tab) > 0:
 					result = fusion(result,tab,limit)
 		if result:
 			return result

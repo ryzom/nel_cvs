@@ -10,7 +10,7 @@ select c.char_id,
        c.guild_id,
        c.rrp_am,c.rrp_masterless,c.rrp_author,
        r.lang,
-       c.home_mainland_session_id,
+       c.home_mainland_session_id as mainland_id,
        s.title as mainland_title,
        s.host_shard_id
 from characters c,ring_users r,sessions s

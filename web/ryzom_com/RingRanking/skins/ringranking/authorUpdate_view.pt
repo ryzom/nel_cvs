@@ -1,5 +1,5 @@
 <div i18n:domain="RingRanking"
-		tal:define="langs python:request.get('servers');
+		tal:define="servers python:request.get('servers');
 			    limit python:request.get('limit');
 			    ranks python:here.getRankings(servers,limit);"
 		tal:omit-tag="">

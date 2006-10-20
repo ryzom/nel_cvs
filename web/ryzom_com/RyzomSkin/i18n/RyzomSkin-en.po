@@ -16,16 +16,22 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
-msgid "weblog_archive_link"
-msgstr "Older News"
-
 msgid "you_entered_an_invalid_email_address"
 msgstr "You entered an invalid email address."
 
 msgid "please_correct_the_errors_shown"
 msgstr "please correct the errors shown"
 
-#translation for the weblog############
+#translation for portlet flash freetrial
+msgid "portlet_flash_freetrial_moresvideo"
+msgstr "Watchs the Videos"
+
+msgid "portlet_flash_freetrial_morescreenshots"
+msgstr "More Screenshots"
+
+#translation for the weblog
+msgid "weblog_archive_link"
+msgstr "Older News"
 
 msgid "all pays"
 msgstr "All"

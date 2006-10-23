@@ -24,10 +24,10 @@ msgstr ""
 
 #translation for portlet flash freetrial
 msgid "portlet_flash_freetrial_moresvideo"
-msgstr "Watchs the Videos"
+msgstr "Plus de Videos"
 
 msgid "portlet_flash_freetrial_morescreenshots"
-msgstr "More Screenshots"
+msgstr "Plus de Screenshots"
 
 #translation for the weblog
 msgid "weblog_archive_link"

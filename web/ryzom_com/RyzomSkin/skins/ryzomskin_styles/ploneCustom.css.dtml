@@ -6,6 +6,27 @@ a {text-decoration: none !important;}
 a:hover {color:white;}
 img {border:0;padding:0;margin:0;}
 
+/*page dl freetrial*/
+.bpm{
+    border:0;
+    padding:0;
+    margin:0;
+}
+.serveur_td{
+    height:28px;
+    background-image: url(http://www.ryzom.com/images/cm/page_freetrial/serveur_back.png);
+    background-repeat: no-repeat;
+    background-position: right;
+    font-size:18px;
+    font-weight:bold;
+    line-height:28px;
+    text-align:left;
+}
+#free_title{
+    font-size:24px;
+    font-weight: bold;
+}
+
 /*diff from public.css & mobile.css & presentation.css*/
 a {color: &dtml-linkColor;}
 

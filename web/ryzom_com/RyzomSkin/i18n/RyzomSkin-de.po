@@ -24,7 +24,7 @@ msgstr "Please correct the errors shown"
 
 #translation for portlet flash freetrial
 msgid "portlet_flash_freetrial_moresvideo"
-msgstr "Watchs the Videos"
+msgstr "Watch the Videos"
 
 msgid "portlet_flash_freetrial_morescreenshots"
 msgstr "More Screenshots"

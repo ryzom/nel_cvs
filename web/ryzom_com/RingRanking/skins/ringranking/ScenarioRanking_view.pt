@@ -38,6 +38,8 @@ function changeLang(url,limit){
 										ranks python:here.getRankings();
 										limit python:len(ranks);">
 
+<div metal:use-macro="here/document_actions/macros/document_actions"></div>
+
 <h1 tal:condition="here/getMasterless" i18n:translate="RingRanking_title_am_autonomous">Le classement des meilleurs sc&eacute;narios autonomes</h1>
 <h1 tal:condition="not:here/getMasterless" i18n:translate="RingRanking_title_am_dm">Le classement des meilleurs sc&eacute;narios avec maitre du jeu</h1>
 

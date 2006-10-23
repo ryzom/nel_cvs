@@ -20,6 +20,9 @@
 
 <body>
 	<div metal:fill-slot="main">
+
+		<div metal:use-macro="here/document_actions/macros/document_actions"></div>
+
 		<h1 tal:content="here/title_or_id">Ring ranking</h1>
 		<p tal:content="here/getDescription">Classement des Meilleurs Sc&ecute;narios, auteurs et AMs</p>
                 

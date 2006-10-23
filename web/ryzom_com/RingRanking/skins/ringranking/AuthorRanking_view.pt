@@ -38,6 +38,9 @@ function changeServer(url,limit){
 <div metal:fill-slot="main" tal:define="url python:here.absolute_url();
 					ranks here/getRankings;
 					limit python:len(ranks);">
+
+<div metal:use-macro="here/document_actions/macros/document_actions"></div>
+
 <!--
 <h1 tal:condition="not:here/getAM" i18n:translate="RingRanking_title_author">Le classement des meilleurs auteurs de sc&eacute;narios</h1>
 <h1 tal:condition="here/getAM" i18n:translate="RingRanking_title_adventuremaster">Le classement des meilleurs MJ</h1>

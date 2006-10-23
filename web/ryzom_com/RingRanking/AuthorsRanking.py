@@ -68,11 +68,12 @@ class AuthorsRanking(BaseContent):
 	RankingCho=[]
 	RankingToo=[]
 
+	security.declareProtected(CMFCorePermissions.View, 'getToo')
 	def getToo(self):
 		"""test"""
 		return self.RankingToo
 
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankingLang')
+	security.declareProtected(CMFCorePermissions.View, 'getRankingServer')
 	def getRankingServer(self,server):
 		"""set the ranking's list"""
 		server = str(server)
@@ -89,7 +90,7 @@ class AuthorsRanking(BaseContent):
 		return []
  
 
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRankingLang')
+	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'setRankingServer')
 	def setRankingServer(self,d,server):
 		"""set the ranking's list"""
 		server = str(server)
@@ -104,7 +105,7 @@ class AuthorsRanking(BaseContent):
 		if server == 'Too':
 			self.RankingToo = d
 
-	security.declareProtected(CMFCorePermissions.ModifyPortalContent, 'getRankings')
+	security.declareProtected(CMFCorePermissions.View, 'getRankings')
 	def getRankings(self,servers=None,limit=10):
 		"""get ranking for each language selected and return a sorted by rank tab"""
 		## if not lang return international tab

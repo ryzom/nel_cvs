@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.11 2006/06/23 17:11:51 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.11.6.1 2006/10/23 09:01:39 dailyclient Exp $
  *
  */
 
@@ -1327,8 +1327,39 @@ public:
 };
 
 
+static const char* getCompleteServiceName(const IService* theService)
+{
+	static std::string s;
+	s= "welcome_service";
+
+	if (theService->haveLongArg("wsname"))
+	{
+		s+= "_"+theService->getLongArg("wsname");
+	}
+
+	if (theService->haveLongArg("fullwsname"))
+	{
+		s= theService->getLongArg("fullwsname");
+	}
+
+	return s.c_str();
+}
+
+static const char* getShortServiceName(const IService* theService)
+{
+	static std::string s;
+	s= "WS";
+
+	if (theService->haveLongArg("shortwsname"))
+	{
+		s= theService->getLongArg("shortwsname");
+	}
+	
+	return s.c_str();
+}
+
 // Service instantiation
-NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+NLNET_SERVICE_MAIN( CWelcomeService, getShortServiceName(scn), getCompleteServiceName(scn), 0, FESCallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
 
 // welcome service module

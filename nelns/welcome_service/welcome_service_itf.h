@@ -27,21 +27,31 @@ namespace WS
 			ur_player,
 			ur_editor,
 			ur_animator,
-			
-			invalid
-		};
+			/// the highest valid value in the enum
+			last_enum_item = ur_animator,
+			/// a value equal to the last enum item +1
+			end_of_enum,
 
+			/// Number of enumerated values
+			nb_enum_items = 3,
+			
+			invalid_val
+		};
+		
+		/// Index table to convert enum value to linear index table
+		static std::map<TValues, uint32>	_IndexTable;
+		
 		static const NLMISC::CStringConversion<TValues> &getConversionTable()
 		{
 			NL_BEGIN_STRING_CONVERSION_TABLE(TValues)
 				NL_STRING_CONVERSION_TABLE_ENTRY(ur_player)
 				NL_STRING_CONVERSION_TABLE_ENTRY(ur_editor)
 				NL_STRING_CONVERSION_TABLE_ENTRY(ur_animator)
-				NL_STRING_CONVERSION_TABLE_ENTRY(invalid)
+				NL_STRING_CONVERSION_TABLE_ENTRY(invalid_val)
 			};                                                                                             
 			static NLMISC::CStringConversion<TValues>                                                                
 			conversionTable(TValues_nl_string_conversion_table, sizeof(TValues_nl_string_conversion_table)   
-			/ sizeof(TValues_nl_string_conversion_table[0]),  invalid);
+			/ sizeof(TValues_nl_string_conversion_table[0]),  invalid_val);
 
 			return conversionTable;
 		}
@@ -50,8 +60,20 @@ namespace WS
 
 	public:
 		TUserRole()
-			: _Value(invalid)
+			: _Value(invalid_val)
 		{
+		
+			static bool init(false);
+			if (!init)
+			{
+				// fill the index table
+				_IndexTable.insert(std::make_pair(ur_player, 0));
+				_IndexTable.insert(std::make_pair(ur_editor, 1));
+				_IndexTable.insert(std::make_pair(ur_animator, 2));
+			
+				init = true;
+			}
+		
 		}
 		TUserRole(TValues value)
 			: _Value(value)
@@ -81,6 +103,20 @@ namespace WS
 			return _Value < other._Value;
 		}
 
+		bool operator <= (const TUserRole &other) const
+		{
+			return _Value <= other._Value;
+		}
+
+		bool operator > (const TUserRole &other) const
+		{
+			return !(_Value <= other._Value);
+		}
+		bool operator >= (const TUserRole &other) const
+		{
+			return !(_Value < other._Value);
+		}
+
 		const std::string &toString() const
 		{
 			return getConversionTable().toString(_Value);
@@ -95,6 +131,23 @@ namespace WS
 			return _Value;
 		}
 
+		// return true if the actual value of the enum is valid, otherwise false
+		bool isValid()
+		{
+			if (_Value == invalid_val)
+				return false;
+
+			// not invalid, check other enum value
+			return getConversionTable().isValid(_Value);
+		}
+
+		
+		uint32 asIndex()
+		{
+			std::map<TValues, uint32>::iterator it(_IndexTable.find(_Value));
+			nlassert(it != _IndexTable.end());
+			return it->second;
+		}
 		
 	};
 	

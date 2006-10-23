@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * OS independant time class provided system clock
  *
- * $Id: time_nl.h,v 1.11.16.1 2006/04/20 14:33:11 boucher Exp $
+ * $Id: time_nl.h,v 1.11.16.1.6.1 2006/10/23 09:01:38 dailyclient Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,9 +60,19 @@ public:
 
 	/** Return the number of second since midnight (00:00:00), January 1, 1970,
 	 * coordinated universal time, according to the system clock.
+	 * The time returned is local, ie. it has the local time ajustement, including
+	 * daylight saving if applicable.
 	 * This values is the same on all computer if computers are synchronized (with NTP for example).
 	 */
 	static uint32	getSecondsSince1970 ();
+
+	/** Return the number of second since midnight (00:00:00), January 1, 1970,
+	 * coordinated universal time, according to the system clock.
+	 * The time returned is UTC (aka GMT+0), ie it does not have the local time ajustement 
+	 * nor it have the daylight saving ajustement.
+	 * This values is the same on all computer if computers are synchronized (with NTP for example).
+	 */
+	static uint32	getSecondsSince1970UTC ();
 
 	/** Return the local time in milliseconds.
 	 * Use it only to measure time difference, the absolute value does not mean anything.

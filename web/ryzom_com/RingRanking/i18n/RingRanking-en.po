@@ -40,6 +40,9 @@ msgid "RingRanking_link_AM"
 msgstr "Adventure Masters ranking"
 
 #: defined in ScenarioRanking_view
+msgid "RingRanking_scenario_banner"
+msgstr ""
+
 msgid "RingRanking_title_am_autonomous"
 msgstr "Best masterless scenarios ranking"
 
@@ -110,6 +113,12 @@ msgid "so_other"
 msgstr "Other"
 
 #: defined in AuthorRanking_view
+msgid "RingRanking_author_banner"
+msgstr "banner_rk_authors.jpg"
+
+msgid "RingRanking_am_banner"
+msgstr "banner_rk_am.jpg"
+
 msgid "RingRanking_title_author"
 msgstr "Best scenario Authors ranking"
 

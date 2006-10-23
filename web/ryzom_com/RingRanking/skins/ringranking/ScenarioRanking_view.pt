@@ -40,11 +40,18 @@ function changeLang(url,limit){
 
 <div metal:use-macro="here/document_actions/macros/document_actions"></div>
 
+<!--
 <h1 tal:condition="here/getMasterless" i18n:translate="RingRanking_title_am_autonomous">Le classement des meilleurs sc&eacute;narios autonomes</h1>
 <h1 tal:condition="not:here/getMasterless" i18n:translate="RingRanking_title_am_dm">Le classement des meilleurs sc&eacute;narios avec maitre du jeu</h1>
+-->
 
 <div id="ringranking_banner">
-	<img src="" i18n:attributes="src RingRanking_scenario_banner" />
+	<img src="" alt=""
+         tal:condition="here/getMasterless"
+         i18n:attributes="src RingRanking_am_autonomous_banner;alt RingRanking_title_am_autonomous" />
+	<img src="" alt=""
+         tal:condition="not:here/getMasterless"
+         i18n:attributes="src RingRanking_am_dm_banner;alt RingRanking_title_am_dm" />
 </div>
 
 <form action="" id="selectLang">

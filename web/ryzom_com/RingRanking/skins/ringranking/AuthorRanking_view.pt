@@ -47,12 +47,12 @@ function changeServer(url,limit){
 -->
 
 <div id="ringranking_banner">
-	<img src=""
+	<img src="" alt=""
          tal:condition="not:here/getAM"
-         i18n:attributes="src RingRanking_author_banner" />
-	<img src=""
+         i18n:attributes="src RingRanking_author_banner;alt RingRanking_title_author" />
+	<img src="" alt=""
          tal:condition="here/getAM"
-         i18n:attributes="src RingRanking_am_banner" />
+         i18n:attributes="src RingRanking_am_banner;alt RingRanking_title_adventuremaster" />
 </div>
 
 <form action="" id="selectServer">

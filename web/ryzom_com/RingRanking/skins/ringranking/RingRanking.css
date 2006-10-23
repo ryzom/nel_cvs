@@ -1,5 +1,8 @@
 /* Feuille de style du module ringRanking*/
 
+#ringranking_banner {
+	text-align: center;
+}
 
 /*Formatage du tableau de scores des scenarios */
 table#score {

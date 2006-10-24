@@ -47,11 +47,11 @@ function changeLang(url,limit){
 
 <div id="ringranking_banner">
 	<img src="" alt=""
-         tal:condition="here/getMasterless"
-         i18n:attributes="src RingRanking_am_autonomous_banner;alt RingRanking_title_am_autonomous" />
+		tal:condition="here/getMasterless"
+		i18n:attributes="src RingRanking_am_autonomous_banner;alt RingRanking_title_am_autonomous" />
 	<img src="" alt=""
-         tal:condition="not:here/getMasterless"
-         i18n:attributes="src RingRanking_am_dm_banner;alt RingRanking_title_am_dm" />
+		tal:condition="here/getMastered"
+		i18n:attributes="src RingRanking_am_dm_banner;alt RingRanking_title_am_dm" />
 </div>
 
 <form action="" id="selectLang">

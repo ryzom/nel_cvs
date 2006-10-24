@@ -1,12 +1,12 @@
 <dtml-comment>
-arguments: ranking_by master
+arguments: ranking_by anim_mode
 connection_id:r2linux03
 title:Session: get scenario ranking
 </dtml-comment>
 
 select distinct title,description,author,rrp_total,anim_mode,language,orientation,level,id
 from scenario
-where anim_mode = <dtml-sqlvar master type="string">
+where <dtml-sqltest anim_mode type="string" multiple >
   and language != 'fr'
   and language != 'en'
   and language != 'de'

@@ -61,9 +61,10 @@ class RingRanking(BaseFolder):
 	#name (title & id) of the content created
 	content = ['AMRanking',
 		   'AuthorsRanking',
-		   'ScenarioMasterlessRanking',
-		   'ScenarioMasteredRanking',]
-
+#		   'ScenarioMasterlessRanking',
+#		   'ScenarioMasteredRanking',
+		   'ScenarioRanking',
+		]
 
 	actions = (
 		{ 'id': 'view',
@@ -78,17 +79,26 @@ class RingRanking(BaseFolder):
 		"""use automatically at creation"""
 		BaseFolder.initializeArchetype(self, **kwargs)
 
-		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking'):
-			self.invokeFactory('ScenarioRanking',id='ScenarioMasteredRanking')
-			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking')
-			obj.setTitle('ScenarioMasteredRanking')
-			obj.setMasterless(False)
+#		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking'):
+#			self.invokeFactory('ScenarioRanking',id='ScenarioMasteredRanking')
+#			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasteredRanking')
+#			obj.setTitle('ScenarioMasteredRanking')
+#			obj.setMasterless(False)
+#			obj.setMastered(True)
 
-		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking'):
-			self.invokeFactory('ScenarioRanking',id='ScenarioMasterlessRanking')
-			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking')
-			obj.setTitle('ScenarioMasterlessRanking')
+#		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking'):
+#			self.invokeFactory('ScenarioRanking',id='ScenarioMasterlessRanking')
+#			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioMasterlessRanking')
+#			obj.setTitle('ScenarioMasterlessRanking')
+#			obj.setMasterless(True)
+#			obj.setMastered(False)
+
+		if not hasattr(self.aq_inner.aq_explicit, 'ScenarioRanking'):
+			self.invokeFactory('ScenarioRanking',id='ScenarioRanking')
+			obj = getattr(self.aq_inner.aq_explicit, 'ScenarioRanking')
+			obj.setTitle('ScenarioRanking')
 			obj.setMasterless(True)
+			obj.setMastered(True)
 
 		if not hasattr(self.aq_inner.aq_explicit, 'AuthorsRanking'):
 			self.invokeFactory('AuthorsRanking',id='AuthorsRanking')

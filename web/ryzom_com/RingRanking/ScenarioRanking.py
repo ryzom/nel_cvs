@@ -21,6 +21,12 @@ ScenarioRankingSchema=BaseSchema.copy()+ Schema((
 			description="Select for Masterless Ranking **not use for the moment**"
 		),
 	),
+	BooleanField('mastered',
+		default = False,
+		widget=BooleanWidget(
+			description="Select for Mastered Ranking **not use for the moment**"
+		),
+	),
 #	LinesField('lang',
 #		required=True,
 #		vocabulary=['en','fr','de'],
@@ -152,14 +158,15 @@ class ScenarioRanking(BaseContent):
 		ranking_by='rrp_scored'
 		limit = int(limit)
 		req = []
+		anim_mode = []
 		if self.getMasterless():
-			master = 'am_autonomous'
-		else:
-			master = 'am_dm'
+			anim_mode.append('am_autonomous')
+		if self.getMastered():
+			anim_mode.append('am_dm')
 
 		## SQL Request
 		try:
-			request = self.zsql.SQL_ScenarioRanking(ranking_by=ranking_by,master=master)
+			request = self.zsql.SQL_ScenarioRanking(ranking_by=ranking_by,anim_mode=anim_mode)
 		except:
 			return 'ScenarioRanking Update Failed'
 		if len(request) > limit:
@@ -173,7 +180,7 @@ class ScenarioRanking(BaseContent):
 		## update Ranking FR,EN,DE
 		for lang in ['fr','en','de']:
 			try:
-				request = self.zsql.SQL_ScenarioRankingByLang(ranking_by=ranking_by,master=master,language=lang)
+				request = self.zsql.SQL_ScenarioRankingByLang(ranking_by=ranking_by,anim_mode=anim_mode,language=lang)
 			except:
 				return 'ScenarioRanking Update Failed'
 			if len(request) > limit:
@@ -185,7 +192,7 @@ class ScenarioRanking(BaseContent):
 
 		##update for other's language
 		try:
-			request = self.zsql.SQL_ScenarioRankingByOtherLang(ranking_by=ranking_by,master=master)
+			request = self.zsql.SQL_ScenarioRankingByOtherLang(ranking_by=ranking_by,anim_mode=anim_mode)
 		except:
 			return 'ScenarioRanking Update Failed'
 		if len(request) > limit:

@@ -395,11 +395,6 @@
     vertical-align: bottom;
 }
 
-#content {
-    padding: 5px 5px 0 5px !important;
-    margin: 0em 0em 8px 0em;
-}
-
 #content-news h1 {
     margin-bottom: 5px;
 }

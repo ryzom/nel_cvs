@@ -51,11 +51,11 @@ background-repeat: no-repeat;
 /*diff from columns*/
 #portal-column-one {
 vertical-align: top;
-width: 200px;
+width: 175px;
 }
 #portal-column-two {
 vertical-align: top;
-width: 195px;
+width: 200px;
 padding:0;
 margin:0;
 cellspacing:0;
@@ -226,7 +226,7 @@ legend {
 #visual-portal-wrapper {
   position:relative;
   top:-130px;
-  width:90%;
+  width:95%;
   margin-left:auto;
   margin-right:auto;
   padding:0;
@@ -253,10 +253,8 @@ legend {
 
 #content {
    background-color: #181818;
-   margin:0;
+   margin:0.5em;
    padding:0;
-   margin-left: 1em;
-   margin-right: 1em;
    text-align:justify;
 }
 
@@ -347,7 +345,7 @@ legend {
 }
 
 #portal-logo-trans {
-   width:90%;
+   width:95%;
    margin-left:auto;
    margin-right:auto;
    border:0;

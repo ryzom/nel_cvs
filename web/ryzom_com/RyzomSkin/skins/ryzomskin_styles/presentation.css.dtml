@@ -21,7 +21,7 @@ body {
 }
 
 #portal-column-content #content {
-    padding: 1em;
+    padding: 0em;
     margin: 0 !important;
 }
 

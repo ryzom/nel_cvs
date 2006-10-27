@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.8.6.1 2006/02/11 18:48:18 mitchell Exp $
+ * $Id: big_file.h,v 1.8.6.2 2006/10/27 12:57:06 vizerie Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -74,6 +74,12 @@ public:
 
 	// Remove all big files added
 	void removeAll ();
+	
+	/** Signal that the current thread has ended : all file handles "permanently" allocated for that thread
+	  * can be released then, preventing them from accumulating.	  
+	  */
+	void currentThreadFinished();
+
 
 	// Used by CIFile to get information about the files within the big file
 	FILE* getFile (const std::string &sFileName, uint32 &rFileSize, uint32 &rBigFileOffset, 
@@ -110,6 +116,8 @@ private:
 		uint32			allocate();
 		// Given a BNP File Id, return its FILE* handle for the current thread.
 		CHandleFile		&get(uint32 index);
+
+		void currentThreadFinished();
 
 	private:
 		// Do it this way because a few limited TDS is possible (64 on NT4)

@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.19.6.1 2006/02/11 18:48:45 mitchell Exp $
+ * $Id: big_file.cpp,v 1.19.6.2 2006/10/27 12:56:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 using namespace std;
 using namespace NLMISC;
 
+
 namespace NLMISC {
 
 //CBigFile *CBigFile::_Singleton = NULL;
@@ -53,6 +54,7 @@ uint32						CBigFile::CThreadFileArray::allocate()
 {
 	return _CurrentId++;
 }
+
 // ***************************************************************************
 CBigFile::CHandleFile		&CBigFile::CThreadFileArray::get(uint32 index)
 {
@@ -71,6 +73,30 @@ CBigFile::CHandleFile		&CBigFile::CThreadFileArray::get(uint32 index)
 	}
 
 	return (*ptr)[index];
+}
+
+
+// ***************************************************************************
+void CBigFile::currentThreadFinished()
+{
+	_ThreadFileArray.currentThreadFinished();
+}
+
+// ***************************************************************************
+void CBigFile::CThreadFileArray::currentThreadFinished()
+{
+	vector<CHandleFile>		*ptr= (vector<CHandleFile>*)_TDS.getPointer();
+	if (ptr==NULL) return;
+	for (uint k = 0; k < ptr->size(); ++k)
+	{
+		if ((*ptr)[k].File)
+		{
+			fclose((*ptr)[k].File);
+			(*ptr)[k].File = NULL;			
+		}
+	}
+	delete ptr;
+	_TDS.setPointer(NULL);
 }
 
 
@@ -112,7 +138,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	// Open the big file.
 	handle.File = fopen (sBigFileName.c_str(), "rb");
 	if (handle.File == NULL)
-		return false;
+		return false;	
 	uint32 nFileSize=CFile::getFileSize (handle.File);
 	//nlfseek64 (handle.File, 0, SEEK_END);
 	//uint32 nFileSize = ftell (handle.File);
@@ -120,7 +146,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	// Result
 	if (nlfseek64 (handle.File, nFileSize-4, SEEK_SET) != 0)
 	{
-		fclose (handle.File);
+		fclose (handle.File);		
 		handle.File = NULL;
 		return false;
 	}
@@ -128,14 +154,14 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	uint32 nOffsetFromBegining;
 	if (fread (&nOffsetFromBegining, sizeof(uint32), 1, handle.File) != 1)
 	{
-		fclose (handle.File);
+		fclose (handle.File);		
 		handle.File = NULL;
 		return false;
 	}
 
 	if (nlfseek64 (handle.File, nOffsetFromBegining, SEEK_SET) != 0)
 	{
-		fclose (handle.File);
+		fclose (handle.File);		
 		handle.File = NULL;
 		return false;
 	}
@@ -144,7 +170,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	uint32 nNbFile;
 	if (fread (&nNbFile, sizeof(uint32), 1, handle.File) != 1)
 	{
-		fclose (handle.File);
+		fclose (handle.File);		
 		handle.File = NULL;
 		return false;
 	}
@@ -155,14 +181,14 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		uint8 nStringSize;
 		if (fread (&nStringSize, 1, 1, handle.File) != 1)
 		{
-			fclose (handle.File);
+			fclose (handle.File);			
 			handle.File = NULL;
 			return false;
 		}
 
 		if (fread (FileName, 1, nStringSize, handle.File) != nStringSize)
 		{
-			fclose (handle.File);
+			fclose (handle.File);			
 			handle.File = NULL;
 			return false;
 		}
@@ -171,7 +197,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		uint32 nFileSize2;
 		if (fread (&nFileSize2, sizeof(uint32), 1, handle.File) != 1)
 		{
-			fclose (handle.File);
+			fclose (handle.File);			
 			handle.File = NULL;
 			return false;
 		}
@@ -179,7 +205,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		uint32 nFilePos;
 		if (fread (&nFilePos, sizeof(uint32), 1, handle.File) != 1)
 		{
-			fclose (handle.File);
+			fclose (handle.File);			
 			handle.File = NULL;
 			return false;
 		}
@@ -192,7 +218,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 
 	if (nlfseek64 (handle.File, 0, SEEK_SET) != 0)
 	{
-		fclose (handle.File);
+		fclose (handle.File);		
 		handle.File = NULL;
 		return false;
 	}
@@ -238,7 +264,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 
 	if (!(nOptions&BF_ALWAYS_OPENED))
 	{
-		fclose (handle.File);
+		fclose (handle.File);		
 		handle.File = NULL;
 		bnpTmp.AlwaysOpened = false;
 	}
@@ -384,7 +410,7 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 	{
 		handle.File = fopen (bnp->BigFileName.c_str(), "rb");
 		if (handle.File == NULL)
-			return NULL;
+			return NULL;		
 	}
 
 	rCacheFileOnOpen = bnp->CacheFileOnOpen;

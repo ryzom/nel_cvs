@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * TODO: File description
  *
- * $Id: task_manager.cpp,v 1.13.32.1 2006/05/05 08:44:19 berenguier Exp $
+ * $Id: task_manager.cpp,v 1.13.32.2 2006/10/27 12:56:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/task_manager.h"
+#include "nel/misc/big_file.h"
 
 using namespace std;
 
@@ -51,7 +52,7 @@ CTaskManager::CTaskManager() : _RunningTask (""), _TaskQueue (""), _DoneTaskQueu
  * Destructeur
  */
 CTaskManager::~CTaskManager()
-{
+{	
 	_ThreadRunning = false;
 	while(!_ThreadRunning)
 		nlSleep(10);
@@ -59,6 +60,10 @@ CTaskManager::~CTaskManager()
 	// There should be no remaining Tasks
 	CSynchronized<std::list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
 	nlassert(acces.value().empty());
+	_Thread->wait();
+	delete _Thread;
+	_Thread = NULL;
+
 }
 
 // Manage TaskQueue
@@ -123,6 +128,7 @@ void CTaskManager::run(void)
 			sleepTask();
 		}
 	}
+	CBigFile::getInstance().currentThreadFinished();	
 	_ThreadRunning = true;
 }
 

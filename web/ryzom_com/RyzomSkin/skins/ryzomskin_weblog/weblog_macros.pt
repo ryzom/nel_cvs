@@ -11,31 +11,10 @@
     <tal:block define="weblog python:here.superValues(['Weblog',])[0]">
         <link
                 rel="alternate"
-                type="application/atom+xml"
-                title="Atom feed"
-                i18n:attributes="title"
-                tal:attributes="href string:${weblog/absolute_url}/atom.xml" />
-
-        <link
-                rel="alternate"
-                type="application/rss+xml"
-                title="RSS 2.0 feed"
-                i18n:attributes="title"
-                tal:attributes="href string:${weblog/absolute_url}/rss.xml" />
-
-        <link
-                rel="alternate"
                 type="application/rdf+xml"
                 title="RDF 1.0 feed"
                 i18n:attributes="title"
                 tal:attributes="href string:${weblog/absolute_url}/feed.rdf" />
-
-        <link
-                rel="alternate"
-                type="application/rdf+xml"
-                title="RDF 1.1 feed"
-                i18n:attributes="title"
-                tal:attributes="href string:${weblog/absolute_url}/feed11.rdf" />
     </tal:block>
   </metal:block>
 
@@ -269,7 +248,8 @@
         tal:define="discussion nocall:here/portal_discussion;
 		    isDiscussionAllowedFor nocall:discussion/isDiscussionAllowedFor;
 		    getDiscussionFor nocall:discussion/getDiscussionFor;
-		    parent python:here.quills_tool.getParentWeblog(entry);">
+		    parent python:here.quills_tool.getParentWeblog(entry);
+		    commentsEnabled python:isDiscussionAllowedFor(entry) and parent.getCommentsEnabled();">
 
         <li tal:condition="python:'/chronicles' in here.absolute_url()">
           <a href=""
@@ -279,8 +259,8 @@
           </a>
         </li>
 
-        <li tal:condition="python:isDiscussionAllowedFor(entry) and parent.getCommentsEnabled()">
-	   &nbsp;[&nbsp;
+        <li tal:condition="commentsEnabled">
+          <span tal:replace="string: [ " />
           <a href=""
             tal:attributes="href string:${entry/absolute_url}#comments"><span
             i18n:domain="RyzomSkin"
@@ -288,33 +268,18 @@
             (<span tal:content="python:getDiscussionFor(entry).replyCount(entry)">0</span>)
           </a>
         </li>
-
-       <tal:comment replace="nothing"> 
-        Comment By Yassine,
-        If the author can edit the content ...
-       </tal:comment>
  
-        <li tal:define="commentsEnabled python:isDiscussionAllowedFor(entry) and parent.getCommentsEnabled()"
-	    tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)">
-	   <span tal:condition="commentsEnabled"
-		 tal:replace="string: |  ">
-	   </span>
-	   <span tal:condition="not: commentsEnabled"
-		 tal:replace="string: [  ">
-	   </span>
+        <li tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)">
+	  <span tal:condition="commentsEnabled" tal:replace="string: | " />
+	  <span tal:condition="not: commentsEnabled" tal:replace="string: [  " />
           <a href=""
             tal:attributes="href string:${entry/absolute_url}/base_edit"
             i18n:domain="RyzomSkin"
             i18n:translate="edit">Edit</a>&nbsp;]
         </li>
 
-       <tal:comment replace="nothing"> 
-        Comment By Yassine,
-        If the author can NOT edit the content ...
-       </tal:comment>
-
-        <li tal:condition="python: not (here.portal_membership.checkPermission('Modify portal content', here) and parent.getCommentsEnabled())">
-          &nbsp;]
+        <li tal:condition="python: not here.portal_membership.checkPermission('Modify portal content', here) and commentsEnabled">
+	    <span tal:replace="string: ]" />
         </li>
 
       </ul>

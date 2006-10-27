@@ -4,7 +4,7 @@
   i18n:domain="quills">
 
   <metal:block fill-slot="css_slot">
-    <style type="text/css" media="all"
+    <style type="text/css" media="screen"
       tal:content="string:@import url(${portal_url}/Quills.css);">
     </style>
   </metal:block>
@@ -12,31 +12,10 @@
   <metal:block fill-slot="head_slot">
         <link
                 rel="alternate"
-                type="application/atom+xml"
-                title="Atom feed"
-                i18n:attributes="title"
-                tal:attributes="href string:${here/absolute_url}/atom.xml" />
-        
-        <link
-                rel="alternate"
-                type="application/rss+xml"
-                title="RSS 2.0 feed"
-                i18n:attributes="title"
-                tal:attributes="href string:${here/absolute_url}/rss.xml" />
-        
-        <link
-                rel="alternate"
                 type="application/rdf+xml"
                 title="RDF 1.0 feed"
                 i18n:attributes="title"
                 tal:attributes="href string:${here/absolute_url}/feed.rdf" />
-
-        <link
-                rel="alternate"
-                type="application/rdf+xml"
-                title="RDF 1.1 feed"
-                i18n:attributes="title"
-                tal:attributes="href string:${here/absolute_url}/feed11.rdf" />
   </metal:block>
 
   <body>

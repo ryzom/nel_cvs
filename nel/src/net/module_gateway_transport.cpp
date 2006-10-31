@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.8 2006/07/12 14:37:22 boucher Exp $
+ * $Id: module_gateway_transport.cpp,v 1.9 2006/10/31 16:10:51 blanchard Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -379,6 +379,7 @@ namespace NLNET
 	void CL3ServerRoute::sendMessage(const CMessage &message) const
 	{
 		H_AUTO(L3SRoute_sendMessage);
+		NLNET_AUTO_DELTE_ASSERT;
 
 		CGatewayL3ServerTransport *trpt = static_cast<CGatewayL3ServerTransport*>(_Transport);
 
@@ -421,6 +422,7 @@ namespace NLNET
 
 		void sendMessage(const CMessage &message) const
 		{
+			NLNET_AUTO_DELTE_ASSERT;
 			H_AUTO(L3CRoute_sendMessage);
 			if (CallbackClient.connected())
 			{

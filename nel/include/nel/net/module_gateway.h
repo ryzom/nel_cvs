@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.8 2006/01/10 17:38:47 boucher Exp $
+ * $Id: module_gateway.h,v 1.9 2006/10/31 16:10:51 blanchard Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -369,6 +369,11 @@ namespace NLNET
 	class CGatewayRoute
 	{
 	protected:
+#ifdef NL_DEBUG
+		/// A debug flag that trigger an assert if true and something delete this object.
+		mutable bool		_AssertOnDelete;
+		friend struct		CAutoAssertSetter;
+#endif
 		/// The transport that manage this route
 		IGatewayTransport	*_Transport;
 	public:
@@ -415,18 +420,47 @@ namespace NLNET
 
 		/// constructor, must provide the transport
 		CGatewayRoute(IGatewayTransport *transport)
-			: _Transport(transport),
-			NextMessageType(CModuleMessageHeaderCodec::mt_invalid)
+			:	_Transport(transport),
+				NextMessageType(CModuleMessageHeaderCodec::mt_invalid)
 		{
+#ifdef NL_DEBUG
+			_AssertOnDelete = false;
+#endif
 		}
 
-		virtual ~CGatewayRoute() {}
+		virtual ~CGatewayRoute() 
+		{
+#ifdef NL_DEBUG
+			nlassert(!_AssertOnDelete);
+#endif
+		}
 
 		/// Return the transport that hold this route
 		IGatewayTransport *getTransport() { return _Transport; };
 		/// Send a message via the route
 		virtual void sendMessage(const CMessage &message) const =0;
 	};
+	
+#ifdef NL_DEBUG
+	struct CAutoAssertSetter
+	{
+		const CGatewayRoute	&GatewayRoute;
+		CAutoAssertSetter(const CGatewayRoute &gwr)
+			:	GatewayRoute(gwr)
+		{
+			GatewayRoute._AssertOnDelete = true;
+		}
+
+		~CAutoAssertSetter()
+		{
+			GatewayRoute._AssertOnDelete = false;
+		}
+	};
+
+ #define NLNET_AUTO_DELTE_ASSERT	CAutoAssertSetter __autoDeleteAssert(static_cast<const CGatewayRoute&>(*this))
+#else
+ #define NLNET_AUTO_DELTE_ASSERT
+#endif
 
 
 	class CGatewaySecurity

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.33 2006/05/31 12:15:00 boucher Exp $
+ * $Id: naming_service.cpp,v 1.34 2006/10/31 16:10:51 blanchard Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1068,10 +1068,40 @@ private:
 };
 
 
+static const char* getCompleteServiceName(const IService* theService)
+{
+	static std::string s;
+	s= "naming_service";
+
+	if (theService->haveLongArg("nsname"))
+	{
+		s+= "_"+theService->getLongArg("nsname");
+	}
+
+	if (theService->haveLongArg("fullnsname"))
+	{
+		s= theService->getLongArg("fullnsname");
+	}
+
+	return s.c_str();
+}
+
+static const char* getShortServiceName(const IService* theService)
+{
+	static std::string s;
+	s= "NS";
+
+	if (theService->haveLongArg("shortnsname"))
+	{
+		s= theService->getLongArg("shortnsname");
+	}
+	
+	return s.c_str();
+}
 //
 /// Naming Service
 //
-NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 0, EmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS)
+NLNET_SERVICE_MAIN( CNamingService, getShortServiceName(scn), getCompleteServiceName(scn), 0, EmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS)
 
 
 //

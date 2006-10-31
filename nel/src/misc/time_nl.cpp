@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.20 2006/05/31 12:03:17 boucher Exp $
+ * $Id: time_nl.cpp,v 1.21 2006/10/31 16:10:51 blanchard Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,21 @@ uint32 CTime::getSecondsSince1970 ()
 	return (uint32) time (NULL);
 }
 
+/** Return the number of second since midnight (00:00:00), January 1, 1970,
+ * coordinated universal time, according to the system clock.
+ * The time returned is UTC (aka GMT+0), ie it does not have the local time ajustement 
+ * nor it have the daylight saving ajustement.
+ * This values is the same on all computer if computers are synchronized (with NTP for example).
+ */
+uint32	CTime::getSecondsSince1970UTC ()
+{
+	// get the local time
+	time_t nowLocal = time(NULL);
+	// convert it to GMT time (UTC)
+	struct tm * timeinfo;
+	timeinfo = gmtime(&nowLocal);
+	return mktime(timeinfo);
+}
 
 /* Return the local time in milliseconds.
  * Use it only to measure time difference, the absolute value does not mean anything.
@@ -247,7 +262,7 @@ std::string	CTime::getHumanRelativeTime(sint32 nbSeconds)
 	const uint32 oneDay = oneHour * 24;
 	const uint32 oneWeek = oneDay * 7;
 	const uint32 oneMonth = oneDay * 30; // aprox, a more precise value is 30.416666... but no matter
-	const uint32 oneYear = oneDay * 365;
+	const uint32 oneYear = oneDay * 365; // aprox, a more precise value is 365.26.. who care?
 
 	uint32 year, month, week, day, hour, minute;
 	year = month = week = day = hour = minute = 0;

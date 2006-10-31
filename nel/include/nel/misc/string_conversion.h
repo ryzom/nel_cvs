@@ -1,6 +1,6 @@
 /** \file string_conversion.h
  *
- * $Id: string_conversion.h,v 1.6 2005/09/19 09:47:04 boucher Exp $
+ * $Id: string_conversion.h,v 1.7 2006/10/31 16:10:51 blanchard Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -108,6 +108,9 @@ public:
 
 	// nb of pairs in the map
 	inline uint16 getNbPairs() const { return _String2DestType.size(); }
+
+	// Check a value against the list a value, return true if the value exist in the container
+	bool isValid(const DestType &value) const;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	typedef std::map<std::string, TDestType, TPred> TString2DestType;
@@ -208,6 +211,17 @@ const std::string &CStringConversion<DestType, Pred>::toString(const DestType &v
 		return it->second;
 	}
 }
+
+
+//=================================================================================================================
+template <class DestType, class Pred>
+bool CStringConversion<DestType, Pred>::isValid(const DestType &value) const
+{
+	typename TDestType2String::const_iterator it = _DestType2String.find(value);
+
+	return it != _DestType2String.end();
+}
+
 
 } // NLMISC
 

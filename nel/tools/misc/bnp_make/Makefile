@@ -22,7 +22,9 @@ LDFLAGS      = -L$(HOME)/install/release/lib \
 				-L/usr/local/lib \
 				-lnelmisc \
 				-lstlport \
-				-lpthread
+				-lpthread \
+				-ldl \
+				-lrt
 
 #############################################################################
 # The bit that changes each time we cut paste and hack this file :o)

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.34 2006/02/24 17:29:27 guignot Exp $
+ * $Id: smart_ptr.h,v 1.35 2006/10/31 16:10:51 blanchard Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -345,6 +345,23 @@ public:
 
 
 	// No need to do any operator==. Leave the work to cast  operator T*(void).
+
+	// serial using serialPloyPtr
+	void serialPolyPtr(NLMISC::IStream &f) throw(NLMISC::EStream ) 
+	{ 
+		T*	obj= NULL;
+		if(f.isReading())
+		{
+			f.serialPolyPtr(obj);
+			// assign correctly (NB: obj may be NULL)
+			*this= obj;
+		}
+		else
+		{
+			obj= Ptr;
+			f.serialPolyPtr(obj);
+		}
+	}
 };
 
 template <class T> 

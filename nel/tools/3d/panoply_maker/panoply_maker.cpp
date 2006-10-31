@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.21 2003/11/27 10:20:37 corvazier Exp $
+ * $Id: panoply_maker.cpp,v 1.22 2006/10/31 16:10:51 blanchard Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -50,7 +50,7 @@ string	HlsInfoDir= "hlsInfo/";
 // ========================================================================================================
 // This tool is for creating various colored texture from a base texture.
 // Parts of a base texture can have hue, contrast, luminosity shifting etc.
-// Each part is defined by a mask. The red component of it is considered as an alpha value (not the alpha, because it is more fast to create a grey texture with photoshop..)
+// Each part is defined by a mask. The red component of it is considered as an alpha value (not the alpha, because it is faster to create a grey texture with photoshop..)
 // The result is serialized in tga files.
 // ========================================================================================================
 // why this tool ? : it is useful to create various colored cloth and skin textures

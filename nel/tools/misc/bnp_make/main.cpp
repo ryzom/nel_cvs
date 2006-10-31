@@ -446,7 +446,7 @@ int main (int nNbArg, char **ppArgs)
 			return -1;
 
 		for (i = 0; i < gBNPHeader.Files.size(); ++i)
-			printf ("%s\n", gBNPHeader.Files[i].Name);
+			printf ("%s\n", gBNPHeader.Files[i].Name.c_str());
 
 		return 1;
 	}

@@ -1,7 +1,0 @@
-    <div metal:define-macro="portlet" tal:omit-tag="">
-        <tal:block>
-            <dl class="portlet">                
-                <dd class="portletItemSingle odd" tal:content="structure here/getText">Content</dd>
-            </dl>
-        </tal:block>
-    </div>

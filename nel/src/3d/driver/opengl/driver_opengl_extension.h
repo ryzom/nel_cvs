@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.40 2004/09/09 18:04:41 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.40.36.1 2006/11/02 17:56:20 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,9 @@ struct	CGlExtensions
 	bool    EXTVertexShader;
 	bool	NVTextureShader;
 	bool    NVOcclusionQuery;
+	bool	NVTextureRectangle;
+	bool	FrameBufferObject;
+	bool	PackedDepthStencil;
 	// true if NVVertexProgram and if we know that VP is emulated
 	bool	NVVertexProgramEmulated;
 	bool	EXTSecondaryColor;
@@ -608,6 +611,20 @@ extern PFNWGLGETSWAPINTERVALEXTPROC	wglGetSwapIntervalEXT;
 
 // WGL_ARB_extensions_string
 extern PFNWGFGETEXTENSIONSSTRINGARB			wglGetExtensionsStringARB;
+
+// GL_EXT_framebuffer_object
+extern NEL_PFNGLISRENDERBUFFEREXTPROC			nglIsRenderbufferEXT;
+extern NEL_PFNGLISFRAMEBUFFEREXTPROC			nglIsFramebufferEXT;
+extern NEL_PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC	nglCheckFramebufferStatusEXT;
+extern NEL_PFNGLGENFRAMEBUFFERSEXTPROC			nglGenFramebuffersEXT;
+extern NEL_PFNGLBINDFRAMEBUFFEREXTPROC			nglBindFramebufferEXT;
+extern NEL_PFNGLFRAMEBUFFERTEXTURE2DEXTPROC		nglFramebufferTexture2DEXT;
+extern NEL_PFNGLGENRENDERBUFFERSEXTPROC			nglGenRenderbuffersEXT;
+extern NEL_PFNGLBINDRENDERBUFFEREXTPROC			nglBindRenderbufferEXT;
+extern NEL_PFNGLRENDERBUFFERSTORAGEEXTPROC		nglRenderbufferStorageEXT;
+extern NEL_PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC	nglFramebufferRenderbufferEXT;
+extern NEL_PFNGLDELETERENDERBUFFERSEXTPROC		nglDeleteRenderbuffersEXT;
+extern NEL_PFNGLDELETEFRAMEBUFFERSEXTPROC		nglDeleteFramebuffersEXT;
 
 #endif
 

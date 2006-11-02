@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * TODO: File description
  *
- * $Id: driver_user.cpp,v 1.55.6.4 2006/02/11 18:44:35 mitchell Exp $
+ * $Id: driver_user.cpp,v 1.55.6.5 2006/11/02 17:57:52 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -273,6 +273,11 @@ bool			CDriverUser::setDisplay(const CMode &mode, bool show)
 		_MatText.initUnlit();
 		_MatText.setZFunc(UMaterial::always);
 		_MatText.setZWrite(false);
+		_MatStretchText.attach (&_MatTextStretchInternal);
+		_MatStretchText.initUnlit();
+		_MatStretchText.setZFunc(UMaterial::always);
+		_MatStretchText.setZWrite(false);
+		_MatTextStretchInternal.setDoubleSided(true);
 
 		// Done
 		return true;
@@ -322,6 +327,7 @@ void			CDriverUser::release()
 	// 2D Material.
 	_MatFlat.initUnlit();
 	_MatText.initUnlit();
+	_MatStretchText.initUnlit();
 
 	// delete Texture, mat ... list.
 	_Textures.clear();
@@ -1796,6 +1802,15 @@ bool CDriverUser::supportMADOperator() const
 }
 
 // ***************************************************************************
+bool CDriverUser::supportBloomEffect() const
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+
+	return _Driver->supportBloomEffect();
+}
+
+// ***************************************************************************
 
 void CDriverUser::startBench (bool wantStandardDeviation, bool quick, bool reset)
 {
@@ -1919,6 +1934,63 @@ uint64 CDriverUser::getSwapBufferCounter()
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER
 	return _Driver->getSwapBufferCounter();
+}
+
+// ***************************************************************************
+bool CDriverUser::stretchRect(UScene * scene, ITexture * srcText, NLMISC::CRect &srcRect, 
+		ITexture * destText, NLMISC::CRect &destRect)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+
+	if(!_Driver->stretchRect(srcText, srcRect, destText, destRect))
+	{
+		setRenderTarget(destText, 0, 0, destRect.Width, destRect.Height);
+
+		// init quad
+		NLMISC::CQuadUV		quad;
+		quad.V0 = CVector(0.f, 0.f,	0.5f);
+		quad.V1 = CVector(1.f,	0.f,	0.5f);
+		quad.V2 = CVector(1.f,	1.f,	0.5f);
+		quad.V3 = CVector(0.f,	1.f,	0.5f);
+		float newU = _Driver->isTextureRectangle(srcText) ? (float)srcRect.Width : 1.f;
+		float newV = _Driver->isTextureRectangle(srcText) ? (float)srcRect.Height : 1.f;
+		quad.Uv0 = CUV(0.0f,	0.0f);
+		quad.Uv1 = CUV(newU,	0.0f);
+		quad.Uv2 = CUV(newU,	newV);
+		quad.Uv3 = CUV(0.0f,	newV);
+
+		// init material
+		_MatTextStretchInternal.setTexture(0, srcText);
+
+		// display
+		UCamera	pCam = scene->getCam();
+		setMatrixMode2D11();
+		drawQuad(quad, _MatStretchText);
+		setMatrixMode3D(pCam);
+
+		_MatTextStretchInternal.setTexture(0, NULL);
+		setRenderTarget(NULL, 0, 0, 0, 0);
+	}
+
+	return true;
+}
+
+// ***************************************************************************
+bool CDriverUser::setRenderTarget(ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
+{
+	if(tex!=NULL)
+	{
+		setRenderTarget(NULL);
+	}
+
+	bool result = _Driver->setRenderTarget(tex, x, y, width, height, mipmapLevel, cubeFace);
+
+	CViewport currentViewport;
+	_Driver->getViewport(currentViewport);
+	setViewport(currentViewport);
+	
+	return result;
 }
 
 } // NL3D

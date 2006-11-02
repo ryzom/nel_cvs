@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * TODO: File description
  *
- * $Id: u_driver.h,v 1.55.6.3 2006/01/18 18:57:24 vizerie Exp $
+ * $Id: u_driver.h,v 1.55.6.4 2006/11/02 17:58:54 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -768,6 +768,9 @@ public:
 
 	// see if the tex env operator CMaterial::Mad is supported
 	virtual	bool				supportMADOperator() const = 0;
+
+	// check if bloom effect is supported
+	virtual bool				supportBloomEffect() const = 0;
 
 	/// \name Bench
 	// @{

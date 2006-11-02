@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.80.4.1 2006/01/23 17:25:25 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.80.4.2 2006/11/02 17:57:21 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ namespace NL3D
 
 
 // ***************************************************************************
-CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl) : ITextureDrvInfos(drv, it)
+CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl, bool isRectangleTexture) : ITextureDrvInfos(drv, it)
 {
 	H_AUTO_OGL(CTextureDrvInfosGL_CTextureDrvInfosGL)
 	// The id is auto created here.
@@ -70,6 +70,10 @@ CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDri
 
 	// Nb: at Driver dtor, all tex infos are deleted, so _Driver is always valid.
 	_Driver= drvGl;
+
+	TextureMode = isRectangleTexture?GL_TEXTURE_RECTANGLE_NV:GL_TEXTURE_2D;
+	
+	InitFBO = false;
 }
 // ***************************************************************************
 CTextureDrvInfosGL::~CTextureDrvInfosGL()
@@ -83,9 +87,92 @@ CTextureDrvInfosGL::~CTextureDrvInfosGL()
 
 	// release in TextureUsed.
 	_Driver->_TextureUsed.erase (this);
+
+	if(InitFBO)
+	{
+		nglDeleteFramebuffersEXT(1, &FBOId);	
+		nglDeleteRenderbuffersEXT(1, &DepthStencilFBOId);	
+	}
 }
 
+// ***************************************************************************
+bool CTextureDrvInfosGL::initFrameBufferObject(ITexture * tex)
+{
+	if(!InitFBO)
+	{
+		// generate IDs
+		nglGenFramebuffersEXT(1, &FBOId);
+		nglGenRenderbuffersEXT(1, &DepthStencilFBOId);
 
+		// initialize FBO
+		nglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FBOId); 
+		nglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
+								  TextureMode, ID, 0);
+
+		// attach depth/stencil render to FBO
+		nglBindRenderbufferEXT(GL_RENDERBUFFER_EXT, DepthStencilFBOId);
+		nglRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, tex->getWidth(), tex->getHeight());
+		nglFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+									 GL_RENDERBUFFER_EXT, DepthStencilFBOId);
+		nglFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+									 GL_RENDERBUFFER_EXT, DepthStencilFBOId);
+
+		// verify le statut
+		GLenum status;
+		status = (GLenum) nglCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+		switch(status) {
+			case GL_FRAMEBUFFER_COMPLETE_EXT:
+				InitFBO = true;
+				break;
+			case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+				nlwarning("Unsupported framebuffer format\n");
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+				nlwarning("Framebuffer incomplete, missing attachment\n");
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT:
+				nlwarning("Framebuffer incomplete, duplicate attachment\n");
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+				nlwarning("Framebuffer incomplete, attached images must have same dimensions\n");
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+				nlwarning("Framebuffer incomplete, attached images must have same format\n");
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+				nlwarning("Framebuffer incomplete, missing draw buffer\n");
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+				nlwarning("Framebuffer incomplete, missing read buffer\n");
+				break;
+			default:
+				nlassert(0);
+		}
+	}
+
+	return InitFBO;
+}
+
+// ***************************************************************************
+bool CTextureDrvInfosGL::activeFrameBufferObject(ITexture * tex)
+{
+	if(tex)
+	{
+		if(initFrameBufferObject(tex))
+		{
+			glBindTexture(TextureMode, 0);
+			nglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FBOId);
+		}
+		else
+			return false;
+	}
+	else
+	{
+		nglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	}
+
+	return true;
+}
 
 // ***************************************************************************
 // Get the glText mirror of an existing setuped texture.
@@ -395,9 +482,13 @@ void CDriverGL::bindTextureWithMode(ITexture &tex)
 	}
 	else
 	{
-		_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
+		CDriverGLStates::TTextureMode textureMode= CDriverGLStates::Texture2D;
+		if(gltext->TextureMode == GL_TEXTURE_RECTANGLE_NV)
+			textureMode = CDriverGLStates::TextureRect;
+
+		_DriverGLStates.setTextureMode(textureMode);
 		// Bind this texture
-		glBindTexture(GL_TEXTURE_2D, gltext->ID);
+		glBindTexture(gltext->TextureMode, gltext->ID);
 	}
 }
 
@@ -425,10 +516,10 @@ void CDriverGL::setupTextureBasicParameters(ITexture &tex)
 	}
 	else
 	{
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
+		glTexParameteri(gltext->TextureMode,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+		glTexParameteri(gltext->TextureMode,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
+		glTexParameteri(gltext->TextureMode,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
+		glTexParameteri(gltext->TextureMode,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 	}
 	//
 	tex.clearFilterOrWrapModeTouched();
@@ -522,8 +613,8 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 				// insert into driver map. (so it is deleted when driver is deleted).
 				itTex= (rTexDrvInfos.insert(make_pair(name, (ITextureDrvInfos*)NULL))).first;
 				// create and set iterator, for future deletion.
-				itTex->second= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(this, itTex, this);
-
+				itTex->second= tex.TextureDrvShare->DrvTexture = new CTextureDrvInfosGL(this, itTex, this, isTextureRectangle(&tex));
+				
 				// need to load ALL this texture.
 				mustLoadAll= true;
 			}
@@ -551,8 +642,8 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 			// Must create it. Create auto a GL id (in constructor).
 			// Do not insert into the map. This un-shared texture will be deleted at deletion of the texture.
 			// Inform ITextureDrvInfos by passing NULL _Driver.
-			tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(NULL, ItTexDrvInfoPtrMap(), this);
-
+			tex.TextureDrvShare->DrvTexture = new CTextureDrvInfosGL(NULL, ItTexDrvInfoPtrMap(), this, isTextureRectangle(&tex));
+			
 			// need to load ALL this texture.
 			mustLoadAll= true;
 		}
@@ -701,7 +792,8 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 								//nglCompressedTexImage2DARB (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, 
 								//							tex.getWidth(i),tex.getHeight(i), 0, size, NULL);
 								NEL_MEASURE_UPLOAD_TIME_START
-								glTexImage2D (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, tex.getWidth(i), tex.getHeight(i), 
+
+								glTexImage2D (gltext->TextureMode, i-decalMipMapResize, glfmt, tex.getWidth(i), tex.getHeight(i), 
 												0, glSrcFmt, glSrcType, NULL);
 								NEL_MEASURE_UPLOAD_TIME_END
 							}
@@ -750,14 +842,14 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 							if (bUpload)
 							{	
 								NEL_MEASURE_UPLOAD_TIME_START
-								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt, glSrcType, ptr);
+								glTexImage2D (gltext->TextureMode, i, glfmt, w, h, 0,glSrcFmt, glSrcType, ptr);
 								NEL_MEASURE_UPLOAD_TIME_END
 								bAllUploaded = true;
 							}
 							else
 							{	
 								NEL_MEASURE_UPLOAD_TIME_START
-								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt, glSrcType, NULL);								
+								glTexImage2D (gltext->TextureMode, i, glfmt, w, h, 0,glSrcFmt, glSrcType, NULL);								
 								NEL_MEASURE_UPLOAD_TIME_END
 							}
 							// profiling: count TextureMemory usage.
@@ -911,9 +1003,13 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 
 	// system of "backup the previous binded texture" seems to not work with some drivers....
 	_DriverGLStates.activeTextureARB (0);
-	_DriverGLStates.setTextureMode (CDriverGLStates::Texture2D);
+	CDriverGLStates::TTextureMode textureMode= CDriverGLStates::Texture2D;
+	if(gltext->TextureMode == GL_TEXTURE_RECTANGLE_NV)
+		textureMode = CDriverGLStates::TextureRect;
+
+	_DriverGLStates.setTextureMode (textureMode);
 	// Bind this texture, for reload...
-	glBindTexture (GL_TEXTURE_2D, gltext->ID);
+	glBindTexture (gltext->TextureMode, gltext->ID);
 
 	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
 	
@@ -1086,7 +1182,10 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 			else
 			{
 				// setup texture mode, after activeTextureARB()
-				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);	
+				CDriverGLStates::TTextureMode textureMode= CDriverGLStates::Texture2D;
+				if(gltext->TextureMode == GL_TEXTURE_RECTANGLE_NV)
+					textureMode = CDriverGLStates::TextureRect;
+				_DriverGLStates.setTextureMode(/*CDriverGLStates::Texture2D*/textureMode);	
 
 				// Activate texture...
 				//======================
@@ -1098,7 +1197,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 					_CurrentTextureInfoGL[stage]= gltext;
 
 					// setup this texture
-					glBindTexture(GL_TEXTURE_2D, gltext->ID);								
+					glBindTexture(gltext->TextureMode, gltext->ID);								
 
 
 					// Change parameters of texture, if necessary.
@@ -1106,25 +1205,23 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 					if(gltext->WrapS!= tex->getWrapS())
 					{
 						gltext->WrapS= tex->getWrapS();
-						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+						glTexParameteri(gltext->TextureMode,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
 					}
 					if(gltext->WrapT!= tex->getWrapT())
 					{
 						gltext->WrapT= tex->getWrapT();
-						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
+						glTexParameteri(gltext->TextureMode,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
 					}
 					if(gltext->MagFilter!= tex->getMagFilter())
 					{
 						gltext->MagFilter= tex->getMagFilter();
-						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
+						glTexParameteri(gltext->TextureMode,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
 					}
 					if(gltext->MinFilter!= tex->getMinFilter())
 					{
 						gltext->MinFilter= tex->getMinFilter();					
-						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
-					}
-					
-						
+						glTexParameteri(gltext->TextureMode,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
+					}		
 				}
 			}
 		}
@@ -1707,39 +1804,69 @@ uint CDriverGL::getTextureHandle(const ITexture &tex)
 bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
 {
 	H_AUTO_OGL(CDriverGL_setRenderTarget )
+
 	// Check the texture is a render target
 	if (tex)
 		nlassertex (tex->getRenderTarget(), ("The texture must be a render target. Call ITexture::setRenderTarget(true)."));
 
-	// Have a previous texture ?
-	if (_TextureTarget && (_TextureTarget != tex || _TextureTargetCubeFace != cubeFace) && _TextureTargetUpload)
+	if(tex==NULL && _RenderTargetFBO)
 	{
-		// Flush it
-		copyFrameBufferToTexture (_TextureTarget, _TextureTargetLevel, _TextureTargetX, _TextureTargetY, 0,
-			0, _TextureTargetWidth, _TextureTargetHeight, _TextureTargetCubeFace);
+		activeFrameBufferObject(NULL);
+		setupViewport(_OldViewport);
+		_OldViewport = _CurrViewport;
+
+		_RenderTargetFBO = false;
+		return;
 	}
-
-	// Backup the texture
-	_TextureTarget = tex;
-
-	// Set a new texture as render target ?
-	if (tex)
+	else if(tex && tex->isBloomTexture() && supportBloomEffect() /*&& activeFrameBufferObject(tex)*/)
 	{
-		// Backup the parameters
-		_TextureTargetLevel = mipmapLevel;
-		_TextureTargetX = x;
-		_TextureTargetY = y;
-		_TextureTargetWidth = width;
-		_TextureTargetHeight = height;
-		_TextureTargetUpload = true;
-		_TextureTargetCubeFace = cubeFace;
+		uint32 w, h;
+		getWindowSize(w, h);
+		
+		getViewport(_OldViewport);
+		CViewport newVP;
+		newVP.init(0, 0, ((float)width/(float)w), ((float)height/(float)h));
+		setupViewport(newVP);
+
+		_RenderTargetFBO = true;
+
+		activeFrameBufferObject(tex);
 	}
+	else
+	{
+		// Have a previous texture ?
+		if (_TextureTarget && (_TextureTarget != tex || _TextureTargetCubeFace != cubeFace) && _TextureTargetUpload)
+		{
+			// Flush it
+			copyFrameBufferToTexture (_TextureTarget, _TextureTargetLevel, _TextureTargetX, _TextureTargetY, 0,
+				0, _TextureTargetWidth, _TextureTargetHeight, _TextureTargetCubeFace);
+		}
 
-	// Update the viewport
-	setupViewport (_CurrViewport);		
+		// Backup the texture
+		_TextureTarget = tex;
 
-	// Update the scissor
-	setupScissor (_CurrScissor);		
+		// Set a new texture as render target ?
+		if (tex)
+		{
+			// Backup the parameters
+			_TextureTargetLevel = mipmapLevel;
+			_TextureTargetX = x;
+			_TextureTargetY = y;
+			_TextureTargetWidth = width;
+			_TextureTargetHeight = height;
+			_TextureTargetUpload = true;
+			_TextureTargetCubeFace = cubeFace;
+		}
+
+		// Update the viewport
+		setupViewport (_CurrViewport);		
+
+		// Update the scissor
+		setupScissor (_CurrScissor);
+
+		_RenderTargetFBO = false;
+		_OldViewport = _CurrViewport;
+	}
 
 	return true;
 }

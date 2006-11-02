@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.188.6.1 2006/01/23 17:25:25 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.188.6.2 2006/11/02 17:56:04 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,6 +156,16 @@ public:
 	// This is the owner driver.
 	CDriverGL				*_Driver;
 
+	// enum to use for this texture (GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_NV..)
+	GLenum					TextureMode;
+	
+	// FBO Id
+	GLuint					FBOId;
+
+	// depth stencil FBO id
+	GLuint					DepthStencilFBOId;
+
+	bool					InitFBO;
 
 	// The current wrap modes assigned to the texture.
 	ITexture::TWrapMode		WrapS;
@@ -164,11 +174,14 @@ public:
 	ITexture::TMinFilter	MinFilter;
 
 	// The gl id is auto created here.
-	CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl);
+	CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl, bool isRectangleTexture);
 	// The gl id is auto deleted here.
 	~CTextureDrvInfosGL();
 	// For Debug info. return the memory cost of this texture
 	virtual uint	getTextureMemoryUsed() const {return TextureMemory;}
+
+	bool					initFrameBufferObject(ITexture * tex); 
+	bool					activeFrameBufferObject(ITexture * tex);
 };
 
 
@@ -504,6 +517,17 @@ public:
 
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);
 
+
+
+
+
+	virtual bool			stretchRect(ITexture * srcText, NLMISC::CRect &srcRect, ITexture * destText, NLMISC::CRect &destRect);
+	// return true if driver support Bloom effect.
+	virtual	bool			supportBloomEffect() const;
+	virtual bool			activeFrameBufferObject(ITexture * tex);
+	virtual	bool			initBloomEffect() const {return true;}
+	
+
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);
 		
 	virtual bool			setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, 
@@ -609,6 +633,11 @@ public:
 	virtual bool			supportOcclusionQuery() const;	
 	virtual IOcclusionQuery *createOcclusionQuery();	
 	virtual void			deleteOcclusionQuery(IOcclusionQuery *oq);
+
+	// Test wether this device supports the frame buffer object mecanism
+	virtual bool			supportTextureRectangle() const;
+	virtual bool			supportFrameBufferObject() const;
+	virtual bool			supportPackedDepthStencil() const;
 
 	virtual uint64			getSwapBufferCounter() const { return _SwapBufferCounter; }	
 	
@@ -729,6 +758,11 @@ private:
 	// current viewport and scissor
 	CViewport				_CurrViewport;
 	CScissor				_CurrScissor;
+
+	// viewport before call to setRenderTarget, if BFO extension is supported
+	CViewport				_OldViewport;
+
+	bool					_RenderTargetFBO;
 
 
 	// Num lights return by GL_MAX_LIGHTS
@@ -866,6 +900,8 @@ private:
 													 uint32 height,
 													 uint   cubeFace = 0
 													);
+	// is this texture a rectangle texture ?
+	virtual bool			isTextureRectangle(ITexture * tex) const;
 
 	/// \name Material multipass.
 	/**	NB: setupMaterial() must be called before thoses methods.

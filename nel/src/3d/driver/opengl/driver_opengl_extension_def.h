@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.25 2004/06/29 15:53:52 besson Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.25.40.1 2006/11/02 17:56:20 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -292,7 +292,6 @@ typedef void (APIENTRY * PFNGLVERTEXATTRIBS4FVNVPROC) (GLuint index, GLsizei cou
 typedef void (APIENTRY * PFNGLVERTEXATTRIBS4SVNVPROC) (GLuint index, GLsizei count, const GLshort *v);
 typedef void (APIENTRY * PFNGLVERTEXATTRIBS4UBVNVPROC) (GLuint index, GLsizei count, const GLubyte *v);
 #endif	/* GL_NV_vertex_program */
-
 
 #ifndef WGL_ARB_pixel_format
 #define WGL_ARB_pixel_format 1
@@ -1486,6 +1485,64 @@ typedef GLvoid (APIENTRY *NEL_PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC)(GLenum tar
 typedef GLvoid (APIENTRY *NEL_PFNGLGETPROGRAMIVARBPROC)(GLenum target, GLenum pname, int *params);
 typedef GLvoid (APIENTRY *NEL_PFNGLGETPROGRAMSTRINGARBPROC)(GLenum target, GLenum pname, GLvoid *string);
 typedef GLboolean (APIENTRY *NEL_PFNGLISPROGRAMARBPROC)(GLuint program);
+
+
+// GL_NV_texture_rectangle
+//==================================
+#ifndef GL_NV_texture_rectangle
+#define GL_NV_texture_rectangle 1
+
+#define GL_TEXTURE_RECTANGLE_NV           0x84F5
+#define GL_TEXTURE_BINDING_RECTANGLE_NV   0x84F6
+#define GL_PROXY_TEXTURE_RECTANGLE_NV     0x84F7
+#define GL_MAX_RECTANGLE_TEXTURE_SIZE_NV  0x84F8
+
+#endif
+
+// GL_EXT_framebuffer_object
+//==================================
+#ifndef GL_EXT_framebuffer_object
+#define GL_EXT_framebuffer_object 1
+
+typedef GLboolean (APIENTRY * NEL_PFNGLISRENDERBUFFEREXTPROC) (GLuint renderbuffer);
+typedef GLboolean (APIENTRY * NEL_PFNGLISFRAMEBUFFEREXTPROC) (GLuint framebuffer);
+typedef GLenum (APIENTRY * NEL_PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC) (GLenum pname);
+typedef GLvoid (APIENTRY * NEL_PFNGLGENFRAMEBUFFERSEXTPROC) (GLsizei n, GLuint *framebuffers);
+typedef GLvoid (APIENTRY * NEL_PFNGLBINDFRAMEBUFFEREXTPROC) (GLenum target, GLuint framebuffer);
+typedef GLvoid (APIENTRY * NEL_PFNGLFRAMEBUFFERTEXTURE2DEXTPROC) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+typedef GLvoid (APIENTRY * NEL_PFNGLGENRENDERBUFFERSEXTPROC) (GLsizei n, GLuint *renderbuffers);
+typedef GLvoid (APIENTRY * NEL_PFNGLBINDRENDERBUFFEREXTPROC) (GLenum target, GLuint renderbuffer);
+typedef GLvoid (APIENTRY * NEL_PFNGLRENDERBUFFERSTORAGEEXTPROC) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+typedef GLvoid (APIENTRY * NEL_PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+typedef GLvoid (APIENTRY * NEL_PFNGLDELETERENDERBUFFERSEXTPROC) (GLsizei n, const GLuint *renderbuffers);
+typedef GLvoid (APIENTRY * NEL_PFNGLDELETEFRAMEBUFFERSEXTPROC) (GLsizei n, const GLuint *framebuffers);
+
+#define GL_FRAMEBUFFER_COMPLETE_EXT							0x8CD5
+#define GL_FRAMEBUFFER_UNSUPPORTED_EXT						0x8CDD
+#define GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT	0x8CD7
+#define GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT	0x8CD8
+#define GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT			0x8CD9
+#define GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT				0x8CDA
+#define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT			0x8CDB
+#define GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT			0x8CDC
+#define GL_COLOR_ATTACHMENT0_EXT							0x8CE0
+#define GL_DEPTH_ATTACHMENT_EXT								0x8D00
+#define GL_STENCIL_ATTACHMENT_EXT							0x8D20
+#define GL_FRAMEBUFFER_EXT									0x8D40
+#define GL_RENDERBUFFER_EXT									0x8D41
+
+#endif
+
+
+#ifndef GL_EXT_packed_depth_stencil
+#define GL_EXT_packed_depth_stencil         1
+
+#define GL_DEPTH_STENCIL_EXT                0x84F9
+#define GL_UNSIGNED_INT_24_8_EXT            0x84FA
+#define GL_DEPTH24_STENCIL8_EXT             0x88F0
+#define GL_TEXTURE_STENCIL_SIZE_EXT         0x88F1
+
+#endif /* GL_EXT_packed_depth_stencil */
 
 
 

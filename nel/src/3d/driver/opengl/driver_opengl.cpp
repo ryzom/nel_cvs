@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.234.6.3 2006/03/10 14:21:40 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.234.6.4 2006/11/02 17:55:46 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -252,6 +252,7 @@ CDriverGL::CDriverGL()
 	_CurrentFogColor[2]= 0;
 	_CurrentFogColor[3]= 0;
 
+	_RenderTargetFBO = false;
 
 	_LightSetupDirty= false;
 	_ModelViewMatrixDirty= false;
@@ -407,6 +408,50 @@ bool CDriverGL::init (uint windowIcon)
 
 #endif
 	return true;
+}
+
+// ***************************************************************************
+bool CDriverGL::stretchRect(ITexture * srcText, NLMISC::CRect &srcRect, ITexture * destText, NLMISC::CRect &destRect)
+{
+	H_AUTO_OGL(CDriverGL_stretchRect)
+	
+	return false;
+}
+
+// ***************************************************************************
+
+bool CDriverGL::supportBloomEffect() const
+{
+	return (isVertexProgramSupported() && supportFrameBufferObject() && supportPackedDepthStencil() && supportTextureRectangle());
+}
+
+// ***************************************************************************
+
+bool CDriverGL::isTextureRectangle(ITexture * tex) const
+{
+	return (supportTextureRectangle() && tex->isBloomTexture() && tex->mipMapOff()
+			&& (!isPowerOf2(tex->getWidth()) || !isPowerOf2(tex->getHeight())));
+}
+
+// ***************************************************************************
+
+bool CDriverGL::activeFrameBufferObject(ITexture * tex) 
+{
+	if(supportFrameBufferObject() && supportPackedDepthStencil())
+	{
+		if(tex)
+		{
+			CTextureDrvInfosGL*	gltext = (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex->TextureDrvShare->DrvTexture);
+			return gltext->activeFrameBufferObject(tex);
+		}
+		else
+		{
+			nglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // --------------------------------------------------
@@ -1151,7 +1196,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		_UserLightEnable[i]= false;
 
 	// init _DriverGLStates
-	_DriverGLStates.init(_Extensions.ARBTextureCubeMap, _MaxDriverLight);
+	_DriverGLStates.init(_Extensions.ARBTextureCubeMap, _Extensions.NVTextureRectangle, _MaxDriverLight);
 
 
 	// Init OpenGL/Driver defaults.
@@ -2458,6 +2503,7 @@ bool CDriverGL::fillBuffer (CBitmap &bitmap)
 	return true;
 }
 
+// ***************************************************************************
 
 
 
@@ -2481,7 +2527,11 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 	CTextureDrvInfosGL*	gltext = (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex->TextureDrvShare->DrvTexture);
 	_DriverGLStates.activeTextureARB(0);
 	// setup texture mode, after activeTextureARB()
-	_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
+	CDriverGLStates::TTextureMode textureMode= CDriverGLStates::Texture2D;
+	if(gltext->TextureMode == GL_TEXTURE_RECTANGLE_NV)
+		textureMode = CDriverGLStates::TextureRect;
+
+	_DriverGLStates.setTextureMode(textureMode);
 	if (tex->isTextureCube())
 	{
 		glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);
@@ -2489,8 +2539,8 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 	}
 	else
 	{
-		glBindTexture(GL_TEXTURE_2D, gltext->ID);	
-		glCopyTexSubImage2D(GL_TEXTURE_2D, level, offsetx, offsety, x, y, width, height);	
+		glBindTexture(gltext->TextureMode, gltext->ID);	
+		glCopyTexSubImage2D(gltext->TextureMode, level, offsetx, offsety, x, y, width, height);	
 	}
 	// disable texturing.
 	_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
@@ -3899,8 +3949,10 @@ void CDriverGL::checkTextureOn() const
 		dgs.activeTextureARB(k);
 		GLboolean flag2D;
 		GLboolean flagCM;
+		GLboolean flagTR;
 		glGetBooleanv(GL_TEXTURE_2D, &flag2D);
 		glGetBooleanv(GL_TEXTURE_CUBE_MAP_ARB, &flagCM);
+		glGetBooleanv(GL_TEXTURE_RECTANGLE_NV, &flagTR);
 		switch(dgs.getTextureMode())
 		{
 			case CDriverGLStates::TextureDisabled:
@@ -3909,6 +3961,10 @@ void CDriverGL::checkTextureOn() const
 			break;
 			case CDriverGLStates::Texture2D:
 				nlassert(flag2D);
+				nlassert(!flagCM);
+			break;
+			case CDriverGLStates::TextureRect:
+				nlassert(flagTR);
 				nlassert(!flagCM);
 			break;
 			case CDriverGLStates::TextureCubeMap:
@@ -3927,6 +3983,27 @@ bool CDriverGL::supportOcclusionQuery() const
 {
 	H_AUTO_OGL(CDriverGL_supportOcclusionQuery)
 	return _Extensions.NVOcclusionQuery;
+}
+
+// ***************************************************************************
+bool CDriverGL::supportTextureRectangle() const
+{
+	H_AUTO_OGL(CDriverGL_supportTextureRectangle)
+	return _Extensions.NVTextureRectangle;
+}
+
+// ***************************************************************************
+bool CDriverGL::supportPackedDepthStencil() const
+{
+	H_AUTO_OGL(CDriverGL_supportPackedDepthStencil)
+	return _Extensions.PackedDepthStencil;
+}
+
+// ***************************************************************************
+bool CDriverGL::supportFrameBufferObject() const
+{
+	H_AUTO_OGL(CDriverGL_supportFrameBufferObject)
+	return _Extensions.FrameBufferObject;
 }
 
 // ***************************************************************************

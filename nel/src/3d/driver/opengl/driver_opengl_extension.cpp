@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.52 2005/07/08 12:48:31 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.52.6.1 2006/11/02 17:56:20 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -420,6 +420,21 @@ NEL_PFNGLBEGINOCCLUSIONQUERYNVPROC nglBeginOcclusionQueryNV;
 NEL_PFNGLENDOCCLUSIONQUERYNVPROC nglEndOcclusionQueryNV;
 NEL_PFNGLGETOCCLUSIONQUERYIVNVPROC nglGetOcclusionQueryivNV;
 NEL_PFNGLGETOCCLUSIONQUERYUIVNVPROC nglGetOcclusionQueryuivNV;
+
+// GL_EXT_framebuffer_object
+//=====================
+NEL_PFNGLISRENDERBUFFEREXTPROC			nglIsRenderbufferEXT;
+NEL_PFNGLISFRAMEBUFFEREXTPROC			nglIsFramebufferEXT;
+NEL_PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC	nglCheckFramebufferStatusEXT;
+NEL_PFNGLGENFRAMEBUFFERSEXTPROC			nglGenFramebuffersEXT;
+NEL_PFNGLBINDFRAMEBUFFEREXTPROC			nglBindFramebufferEXT;
+NEL_PFNGLFRAMEBUFFERTEXTURE2DEXTPROC	nglFramebufferTexture2DEXT;
+NEL_PFNGLGENRENDERBUFFERSEXTPROC		nglGenRenderbuffersEXT;
+NEL_PFNGLBINDRENDERBUFFEREXTPROC		nglBindRenderbufferEXT;
+NEL_PFNGLRENDERBUFFERSTORAGEEXTPROC		nglRenderbufferStorageEXT;
+NEL_PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC	nglFramebufferRenderbufferEXT;
+NEL_PFNGLDELETERENDERBUFFERSEXTPROC		nglDeleteRenderbuffersEXT;
+NEL_PFNGLDELETEFRAMEBUFFERSEXTPROC		nglDeleteFramebuffersEXT;
 
 
 
@@ -1153,6 +1168,46 @@ static bool	setupNVOcclusionQuery(const char	*glext)
 	return true;	
 }
 
+
+// ***************************************************************************
+static bool	setupNVTextureRectangle(const char	*glext)
+{
+	H_AUTO_OGL(setupNVTextureRectangle)
+	if(strstr(glext, "GL_NV_texture_rectangle")==NULL)
+		return false;	
+}
+
+// ***************************************************************************
+static bool	setupFrameBufferObject(const char	*glext)
+{
+	H_AUTO_OGL(setupFrameBufferObject)
+	if(strstr(glext, "GL_EXT_framebuffer_object")==NULL)
+		return false;	
+
+	if (!(nglIsRenderbufferEXT= (NEL_PFNGLISRENDERBUFFEREXTPROC)nelglGetProcAddress("glIsRenderbufferEXT"))) return false;
+	if (!(nglIsFramebufferEXT= (NEL_PFNGLISFRAMEBUFFEREXTPROC)nelglGetProcAddress("glIsFramebufferEXT"))) return false;
+	if (!(nglCheckFramebufferStatusEXT= (NEL_PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)nelglGetProcAddress("glCheckFramebufferStatusEXT"))) return false;
+	if (!(nglGenFramebuffersEXT= (NEL_PFNGLGENFRAMEBUFFERSEXTPROC)nelglGetProcAddress("glGenFramebuffersEXT"))) return false;
+	if (!(nglBindFramebufferEXT= (NEL_PFNGLBINDFRAMEBUFFEREXTPROC)nelglGetProcAddress("glBindFramebufferEXT"))) return false;
+	if (!(nglFramebufferTexture2DEXT= (NEL_PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)nelglGetProcAddress("glFramebufferTexture2DEXT"))) return false;
+	if (!(nglGenRenderbuffersEXT= (NEL_PFNGLGENRENDERBUFFERSEXTPROC)nelglGetProcAddress("glGenRenderbuffersEXT"))) return false;
+	if (!(nglBindRenderbufferEXT= (NEL_PFNGLBINDRENDERBUFFEREXTPROC)nelglGetProcAddress("glBindRenderbufferEXT"))) return false;
+	if (!(nglRenderbufferStorageEXT= (NEL_PFNGLRENDERBUFFERSTORAGEEXTPROC)nelglGetProcAddress("glRenderbufferStorageEXT"))) return false;
+	if (!(nglFramebufferRenderbufferEXT= (NEL_PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC)nelglGetProcAddress("glFramebufferRenderbufferEXT"))) return false;
+	if (!(nglDeleteRenderbuffersEXT= (NEL_PFNGLDELETERENDERBUFFERSEXTPROC)nelglGetProcAddress("glDeleteRenderbuffersEXT"))) return false;
+	if (!(nglDeleteFramebuffersEXT= (NEL_PFNGLDELETEFRAMEBUFFERSEXTPROC)nelglGetProcAddress("glDeleteFramebuffersEXT"))) return false;
+
+	return true;	
+}
+
+// ***************************************************************************
+static bool	setupPackedDepthStencil(const char	*glext)
+{
+	H_AUTO_OGL(setupPackedDepthStencil)
+	if(strstr(glext, "GL_EXT_packed_depth_stencil")==NULL)
+		return false;	
+}
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -1273,6 +1328,15 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check NV_occlusion_query
 	ext.NVOcclusionQuery = setupNVOcclusionQuery(glext);
+
+	// Check GL_NV_texture_rectangle
+	ext.NVTextureRectangle = setupNVTextureRectangle(glext);
+
+	// Check GL_EXT_framebuffer_object
+	ext.FrameBufferObject = setupFrameBufferObject(glext);
+
+	// Check GL_EXT_packed_depth_stencil
+	ext.PackedDepthStencil = setupPackedDepthStencil(glext);
 
 	// ATI extensions
 	// -------------

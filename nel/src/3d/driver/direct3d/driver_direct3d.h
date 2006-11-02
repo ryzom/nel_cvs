@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.44 2005/09/16 09:38:08 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.44.4.1 2006/11/02 17:55:11 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -823,6 +823,16 @@ public:
 	// todo hulud d3d buffers
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) {};
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);	// Only 32 bits back buffer supported
+	
+	// return true if driver support Bloom effect.
+	virtual	bool			supportBloomEffect() const;
+	
+	virtual bool			stretchRect (ITexture * srcText, NLMISC::CRect &srcRect, ITexture * destText, NLMISC::CRect &destRect);	// Only 32 bits back buffer supported
+	virtual bool			isTextureRectangle(ITexture * tex) const {return false;}
+	IDirect3DSurface9*		getSurfaceTexture(ITexture * text);
+	void					getDirect3DRect(NLMISC::CRect &rect, RECT & d3dRect);
+	virtual	bool			initBloomEffect() const {return false;}
+	
 	// todo hulud d3d buffers
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) {};
 	virtual bool			setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace);

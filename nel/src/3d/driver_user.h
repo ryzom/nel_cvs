@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * TODO: File description
  *
- * $Id: driver_user.h,v 1.51.6.3 2006/01/18 18:57:25 vizerie Exp $
+ * $Id: driver_user.h,v 1.51.6.4 2006/11/02 17:58:19 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,8 +113,10 @@ protected:
 	// For security, texture are initUnlit() at init()/release().
 	UMaterial				_MatFlat;
 	UMaterial				_MatText;
+	UMaterial				_MatStretchText;
 	CMaterial				_MatFlatInternal;
 	CMaterial				_MatTextInternal;
+	CMaterial				_MatTextStretchInternal;
 
 
 	// StaticInit
@@ -509,6 +511,8 @@ public:
 
 	virtual	bool				supportMADOperator() const;
 
+	virtual	bool				supportBloomEffect() const;
+
 	/// \name Bench
 	// @{
 	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true);
@@ -525,7 +529,20 @@ public:
 
 	virtual uint64	getSwapBufferCounter();
 
+	virtual bool stretchRect(UScene * scene, ITexture * srcText, NLMISC::CRect &srcRect, 
+		ITexture * destText, NLMISC::CRect &destRect);
+
+	virtual bool setRenderTarget(ITexture *tex, 
+		uint32 x = 0, 
+		uint32 y = 0, 
+		uint32 width = 0, 
+		uint32 height = 0, 
+		uint32 mipmapLevel = 0, 
+		uint32 cubeFace = 0);
+
+
 public:
+
 	/// \name Accessor for CSeneUser.
 	// @{
 	IDriver		*getDriver()

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.34.4.5 2006/06/21 16:27:47 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.34.4.6 2006/11/02 17:54:55 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2641,6 +2641,94 @@ void CDriverD3D::getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect)
 			surface->Release();
 		}
 	}
+}
+
+// ***************************************************************************
+
+IDirect3DSurface9 * CDriverD3D::getSurfaceTexture(ITexture * text)
+{
+	if(!text)
+	{
+		if(!_BackBuffer)
+		{
+			updateRenderVariables ();
+			_DeviceInterface->GetRenderTarget (0, &_BackBuffer);
+		}
+		nlassert(_BackBuffer);
+		return _BackBuffer;
+	}
+
+	if(text->TextureDrvShare==NULL || text->TextureDrvShare->DrvTexture.getPtr()==NULL)
+	{
+		text->setRenderTarget(true);
+		setupTexture(*text);
+	}
+	CTextureDrvInfosD3D* rdvInfosD3D = (NLMISC::safe_cast<CTextureDrvInfosD3D*>(text->TextureDrvShare->DrvTexture.getPtr()));
+	IDirect3DTexture9 * texture = rdvInfosD3D->Texture2d;
+	nlassert(texture)
+
+	IDirect3DSurface9 * surface;
+	HRESULT hr = texture->GetSurfaceLevel(0, &surface);
+	nlassert(hr==D3D_OK);
+	
+	return surface;
+}
+
+void CDriverD3D::getDirect3DRect(NLMISC::CRect &rect, RECT & d3dRect)
+{
+	d3dRect.left = rect.left();
+	d3dRect.top = rect.top();
+	d3dRect.right = rect.right();
+	d3dRect.bottom = rect.bottom();
+
+	uint32 w, h;
+	getWindowSize(w, h);
+
+	if(d3dRect.top>(sint32)h)
+		d3dRect.top = h;
+
+	if(d3dRect.right>(sint32)w)
+		d3dRect.right = w;
+
+	if(d3dRect.bottom<0)
+		d3dRect.bottom = 0;
+
+	if(d3dRect.left<0)
+		d3dRect.left = 0;
+}
+
+bool CDriverD3D::stretchRect(ITexture * srcText, NLMISC::CRect &srcRect, ITexture * destText, NLMISC::CRect &destRect)
+{
+	H_AUTO_D3D(CDriverD3D_stretchRect);
+	if (_DeviceInterface)
+	{
+		IDirect3DSurface9 * srcSurface = getSurfaceTexture(srcText);
+		IDirect3DSurface9 * destSurface = getSurfaceTexture(destText);
+		
+		D3DTEXTUREFILTERTYPE filterType = D3DTEXF_LINEAR;
+		//TODO TEST
+		
+		//if(CheckDeviceFormat(???)!=D3D_OK)
+		//{
+		//	filterType = D3DTEXF_NONE;
+		//}
+		
+
+		RECT srcD3DRect;
+		RECT destD3DRect;
+		getDirect3DRect(srcRect, srcD3DRect);
+		getDirect3DRect(destRect, destD3DRect);
+
+		HRESULT hr = _DeviceInterface->StretchRect(srcSurface, &srcD3DRect, destSurface, &destD3DRect, filterType);
+		return (hr==D3D_OK);
+	}
+}
+
+// ***************************************************************************
+
+bool CDriverD3D::supportBloomEffect() const
+{
+	return isVertexProgramSupported();
 }
 
 // ***************************************************************************

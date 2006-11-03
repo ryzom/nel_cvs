@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * TODO: File description
  *
- * $Id: driver_user.h,v 1.51.6.4 2006/11/02 17:58:19 legallo Exp $
+ * $Id: driver_user.h,v 1.51.6.5 2006/11/03 13:53:10 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -529,10 +529,11 @@ public:
 
 	virtual uint64	getSwapBufferCounter();
 
-	virtual bool stretchRect(UScene * scene, ITexture * srcText, NLMISC::CRect &srcRect, 
-		ITexture * destText, NLMISC::CRect &destRect);
+	// copy the first texture in a second one of different dimensions
+	virtual bool stretchRect(UScene * scene, class UTexture & srcUText, NLMISC::CRect &srcRect, 
+		class UTexture & destUText, NLMISC::CRect &destRect);
 
-	virtual bool setRenderTarget(ITexture *tex, 
+	virtual bool setRenderTarget(class UTexture & uTex, 
 		uint32 x = 0, 
 		uint32 y = 0, 
 		uint32 width = 0, 

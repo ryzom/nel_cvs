@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.188.6.2 2006/11/02 17:56:04 legallo Exp $
+ * $Id: driver_opengl.h,v 1.188.6.3 2006/11/03 13:53:10 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -517,17 +517,16 @@ public:
 
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);
 
-
-
-
-
+	// copy the first texture in a second one of different dimensions
 	virtual bool			stretchRect(ITexture * srcText, NLMISC::CRect &srcRect, ITexture * destText, NLMISC::CRect &destRect);
+	
 	// return true if driver support Bloom effect.
 	virtual	bool			supportBloomEffect() const;
-	virtual bool			activeFrameBufferObject(ITexture * tex);
+
 	virtual	bool			initBloomEffect() const {return true;}
 	
-
+	virtual bool			activeFrameBufferObject(ITexture * tex);
+	
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);
 		
 	virtual bool			setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, 

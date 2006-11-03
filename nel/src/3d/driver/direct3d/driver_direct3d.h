@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.44.4.1 2006/11/02 17:55:11 legallo Exp $
+ * $Id: driver_direct3d.h,v 1.44.4.2 2006/11/03 13:53:10 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -827,6 +827,7 @@ public:
 	// return true if driver support Bloom effect.
 	virtual	bool			supportBloomEffect() const;
 	
+	// copy the first texture in a second one of different dimensions
 	virtual bool			stretchRect (ITexture * srcText, NLMISC::CRect &srcRect, ITexture * destText, NLMISC::CRect &destRect);	// Only 32 bits back buffer supported
 	virtual bool			isTextureRectangle(ITexture * tex) const {return false;}
 	IDirect3DSurface9*		getSurfaceTexture(ITexture * text);

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * TODO: File description
  *
- * $Id: driver_user.cpp,v 1.55.6.5 2006/11/02 17:57:52 legallo Exp $
+ * $Id: driver_user.cpp,v 1.55.6.6 2006/11/03 13:53:10 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1937,15 +1937,19 @@ uint64 CDriverUser::getSwapBufferCounter()
 }
 
 // ***************************************************************************
-bool CDriverUser::stretchRect(UScene * scene, ITexture * srcText, NLMISC::CRect &srcRect, 
-		ITexture * destText, NLMISC::CRect &destRect)
+
+bool CDriverUser::stretchRect(UScene * scene, class UTexture & srcUText, NLMISC::CRect &srcRect, 
+		class UTexture & destUText, NLMISC::CRect &destRect)
 {
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER
 
+	ITexture * srcText = (dynamic_cast<CTextureUser *>(&srcUText))->getITexture();
+	ITexture * destText = (dynamic_cast<CTextureUser *>(&destUText))->getITexture();
+
 	if(!_Driver->stretchRect(srcText, srcRect, destText, destRect))
 	{
-		setRenderTarget(destText, 0, 0, destRect.Width, destRect.Height);
+		setRenderTarget(destUText, 0, 0, destRect.Width, destRect.Height);
 
 		// init quad
 		NLMISC::CQuadUV		quad;
@@ -1970,18 +1974,20 @@ bool CDriverUser::stretchRect(UScene * scene, ITexture * srcText, NLMISC::CRect 
 		setMatrixMode3D(pCam);
 
 		_MatTextStretchInternal.setTexture(0, NULL);
-		setRenderTarget(NULL, 0, 0, 0, 0);
+		setRenderTarget(CTextureUser(), 0, 0, 0, 0);
 	}
 
 	return true;
 }
 
 // ***************************************************************************
-bool CDriverUser::setRenderTarget(ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
+bool CDriverUser::setRenderTarget(class UTexture & uTex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
 {
+	ITexture * tex = (dynamic_cast<CTextureUser *>(&uTex))->getITexture();
+
 	if(tex!=NULL)
 	{
-		setRenderTarget(NULL);
+		setRenderTarget(CTextureUser());
 	}
 
 	bool result = _Driver->setRenderTarget(tex, x, y, width, height, mipmapLevel, cubeFace);

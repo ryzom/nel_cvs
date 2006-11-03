@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.34.4.6 2006/11/02 17:54:55 legallo Exp $
+ * $Id: driver_direct3d.cpp,v 1.34.4.7 2006/11/03 12:23:53 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2664,9 +2664,10 @@ IDirect3DSurface9 * CDriverD3D::getSurfaceTexture(ITexture * text)
 		setupTexture(*text);
 	}
 	CTextureDrvInfosD3D* rdvInfosD3D = (NLMISC::safe_cast<CTextureDrvInfosD3D*>(text->TextureDrvShare->DrvTexture.getPtr()));
+	
 	IDirect3DTexture9 * texture = rdvInfosD3D->Texture2d;
 	nlassert(texture)
-
+	
 	IDirect3DSurface9 * surface;
 	HRESULT hr = texture->GetSurfaceLevel(0, &surface);
 	nlassert(hr==D3D_OK);
@@ -2706,20 +2707,17 @@ bool CDriverD3D::stretchRect(ITexture * srcText, NLMISC::CRect &srcRect, ITextur
 		IDirect3DSurface9 * destSurface = getSurfaceTexture(destText);
 		
 		D3DTEXTUREFILTERTYPE filterType = D3DTEXF_LINEAR;
-		//TODO TEST
-		
-		//if(CheckDeviceFormat(???)!=D3D_OK)
-		//{
-		//	filterType = D3DTEXF_NONE;
-		//}
-		
-
+	
 		RECT srcD3DRect;
 		RECT destD3DRect;
 		getDirect3DRect(srcRect, srcD3DRect);
 		getDirect3DRect(destRect, destD3DRect);
 
 		HRESULT hr = _DeviceInterface->StretchRect(srcSurface, &srcD3DRect, destSurface, &destD3DRect, filterType);
+
+		srcSurface->Release();
+		destSurface->Release();
+
 		return (hr==D3D_OK);
 	}
 }

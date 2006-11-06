@@ -29,6 +29,9 @@ msgstr "Plus de Videos"
 msgid "portlet_flash_freetrial_morescreenshots"
 msgstr "Plus de Screenshots"
 
+msgid "portlet_flash_freetrial_video_link"
+msgstr "http://www.ryzom.fr/multimedia/movies/videos-officielles"
+
 #translation for the weblog
 msgid "weblog_archive_link"
 msgstr "Anciennes News"

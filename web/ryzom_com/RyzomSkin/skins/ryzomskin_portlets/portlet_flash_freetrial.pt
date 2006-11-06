@@ -13,26 +13,25 @@
 		    background-color:black;
 		    border-radius:10px;-moz-border-radius:10px;-ie-border-radius:10px;">
 
-	<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
-		codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0"
-		id="Ryzom_Video_160x600">
-		<param name="allowScriptAccess" value="sameDomain" />
-		<param name="movie" value="Ryzom_Video_160x600.swf" />
-		<param name="quality" value="high" />
-		<param name="bgcolor" value="#000000" />
-		<embed src="http://www.ryzom.com/data/flash/Video_160x600.swf"
-		       quality="high"
-		       name="Ryzom_Video_160x600"
-		       width="160" height="350"
-		       style="margin-top:5px;vertical-align:middle;"
-		       allowScriptAccess="sameDomain"
-		       type="application/x-shockwave-flash"
-		       pluginspage="http://www.macromedia.com/go/getflashplayer" />
-	</object>
 	<a href="" style="font-size:1.5em;font-weight:bold"
-	   tal:attributes="href string:${portal_url}/multimedia/movies"
-	   i18n:translate="portlet_flash_freetrial_morevideo">
-		Watch the Videos
+	   i18n:attributes="portlet_flash_freetrial_video_link">
+		<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
+			codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0"
+			id="Ryzom_Video_160x600">
+			<param name="allowScriptAccess" value="sameDomain" />
+			<param name="movie" value="Ryzom_Video_160x600.swf" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#000000" />
+			<embed src="http://mk1.nevrax.com/data/flash/Video_160x600.swf"
+			       quality="high"
+			       name="Ryzom_Video_160x600"
+			       width="160" height="350"
+			       style="margin-top:5px;vertical-align:middle;"
+			       allowScriptAccess="sameDomain"
+			       type="application/x-shockwave-flash"
+			       pluginspage="http://www.macromedia.com/go/getflashplayer" />
+		</object>
+		<div i18n:translate="portlet_flash_freetrial_morevideo">Watch the  Videos</div>
 	</a>
 	
 	</div>
@@ -48,14 +47,12 @@
 	<img src="side_top.png" alt="" />
 	<div style="width:180px;
 		    background-color:black;
-		    border-radius:10px;-moz-border-radius:10px;-ie-border-radius:10px;">
-
-        <img src="http://www.ryzom.com/images/pages/screen.gif" alt="Screenshots" />
+		    border-radius:10px;-moz-border-radius:10px;-ie-border-radius:10px;">        
 
 	<a href="" style="font-size:1.5em;font-weight:bold"
-	   tal:attributes="href string:${portal_url}/multimedia/screenshots"
-	   i18n:translate="portlet_flash_freetrial_morevideo">
-		More Screenshots
+	   tal:attributes="href string:${portal_url}/multimedia/screenshots">
+		<img style="border:0" src="http://www.ryzom.com/images/pages/screen.gif" alt="Screenshots" />
+		<div i18n:translate="portlet_flash_freetrial_morevideo">More Screenshots</div>
 	</a>
 	</div>
 	<div class="imageHide">

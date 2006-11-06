@@ -30,6 +30,7 @@
 		<tr>
 			<th>Nom</th>
 			<th>Nombre de clicks</th>
+            <th>Description</th>
 		</tr>
 		<div tal:omit-tag="" tal:repeat="capo capoZ" >
 			<tr onclick=""
@@ -38,6 +39,7 @@
 								class python:"parite"+str(nieme%2);'>
 				<td tal:content="python:capo.Title">rank</td>
 				<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
+                <td tal:content="python:capo.getObject().getDescription()">desc</td>
 			</tr>
 			<tr onclick=""
 				tal:attributes='onclick string:hide("${capo/Title}")' 

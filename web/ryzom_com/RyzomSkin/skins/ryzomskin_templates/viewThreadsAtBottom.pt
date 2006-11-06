@@ -2,23 +2,21 @@
       i18n:domain="plone">
 
 <body>
-
 <div metal:define-macro="discussionView"
      class="discussion"
      tal:define="userHasReplyPermission python:checkPermission('Reply to item', here);
                  portal_discussion portal/portal_discussion;
-                 isDiscussionAllowed python:portal_discussion.isDiscussionAllowedFor(here);
-                 ">
-                 
+                 isDiscussionAllowed python:portal_discussion.isDiscussionAllowedFor(here);">
+
     <tal:allowed condition="isViewTemplate">
         <tal:comments>
-        
+
             <form name="reply"
                   action=""
                   method="post"
                   tal:condition="python:userHasReplyPermission and isDiscussionAllowed"
                   tal:attributes="action string:$here_url/discussion_reply_form">
-    
+
                   <input class="standalone"
                          style="margin-bottom: 1.25em;"
                          type="submit"
@@ -26,7 +24,7 @@
                          i18n:attributes="value label_add_comment;"
                          />
             </form>
-            
+
             <form tal:condition="python:isAnon and not userHasReplyPermission and isDiscussionAllowed"
                   tal:define="pss modules/Products/PythonScripts/standard"
                   tal:attributes="action python:'%s/login_form?came_from=%s' %
@@ -49,9 +47,9 @@
                                     class python:test(here.isOfficial(reply.Creator()),'officials_comment','comment');">
                     
                     <h3>
-                        <span class="commentTitle">
-                        <tal:block replace="structure portal/discussionitem_icon.gif"/>
-                        <span tal:replace="reply/title_or_id">Comment title</span>
+                        <span class="commentTitle" id="" tal:attributes="id reply/id;">
+                           <tal:block replace="structure portal/discussionitem_icon.gif"/>
+                           <span tal:replace="reply/title_or_id">Comment title</span>
                         </span>
                     </h3>
                     <div class="documentByLine"

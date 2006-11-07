@@ -1,4 +1,5 @@
-<div tal:define="filter python:request.get('filter');
+<div tal:define="filter python:request.get('filter');		 
+		 global s python: int(0);
 		 capoZ here/getSurveillants;
 		 sortedCapoZ python:here.sortSurveillant(filter,capoZ);"
      tal:omit-tag="">
@@ -25,5 +26,9 @@
 				</div>
 			</td>
 		</tr>
+		<div tal:omit-tag="" tal:define="global s python:s + int(capo.getObject().getIterateur())" />
 	</div>
+	<tr>
+		<td colspan="3" tal:content="python: 'Nombres total de clicks: '+str(s)" />
+	</tr>
 </div>

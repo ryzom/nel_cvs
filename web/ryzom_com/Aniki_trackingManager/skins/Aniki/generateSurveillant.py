@@ -7,7 +7,6 @@
 ##parameters=nb, url, desc
 ##title=
 ##
-
 #on recupere le dernier id creer
 path = '/'.join(context.getPhysicalPath())
 result = context.portal_catalog(
@@ -20,14 +19,22 @@ lastId = result[0].getId
 
 #creation en boucle a partir de lastId+1 jusqu'a lastId+nb
 
-r = range(lastId+1,nb+1)
+r = range(int(lastId)+1,int(nb)+1)
 for i in r:
-	context.invokeFactory(id=i, type_name='Surveillant', title=i, description=desc, urlRedirection=url)
-	new_obj = getattr(context, i)
-	new_obj.setTitle(i)
+	newid = str(i)
+	if len(newid) <3:
+		newid = '00'+newid
+	elif len(newid) <2:
+		newid = '0'+newid
+	print newid
+	context.invokeFactory(id=newid, type_name='Surveillant', title=newid, description=desc, urlRedirection=url)
+	new_obj = getattr(context, newid)
+	new_obj.setTitle(newid)
 	new_obj.setUrlRedirection(url)
 
 #publication
 #plustard
 
-container.REQUEST.RESPONSE.redirect(context.absolute_url())
+#container.REQUEST.RESPONSE.redirect(context.absolute_url())
+
+return printed

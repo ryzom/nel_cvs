@@ -11,7 +11,7 @@
 
 <metal:block fill-slot="javascript_head_slot">
 	<script src="" type="text/javascript"
-		tal:attributes="src string:${portal_url}/js/ajax.js"></script>
+		tal:attributes="src string:${portal_url}/ajax.js"></script>
 
 	<script type="text/javascript">
 		// <![CDATA[
@@ -19,16 +19,18 @@
 function filter(url){
 	// fonction qui met a jour le tableau des scores
 	var res="";
-	var formulaire = document.getElementById("score");
-	if( formulaire.all.checked == true) res = "all";
-	if( formulaire.fr.checked == true) res = "fr";
-	if( formulaire.en.checked == true) res = "en";
-	if( formulaire.de.checked == true) res = "de";
-	res = url+"/Aniki_UpdateView?filter="+res;
-
+	var formulaire = document.getElementById("selectFilter");
+	if( formulaire.lang[0].checked == true) res = "?filter=all";
+	if( formulaire.lang[1].checked == true) res = "?filter=en";
+	if( formulaire.lang[2].checked == true) res = "?filter=fr";
+	if( formulaire.lang[3].checked == true) res = "?filter=de";
+	if( formulaire.format[0].checked == true) res += "&format=all";
+	if( formulaire.format[1].checked == true) res += "&format=160x600";
+	if( formulaire.format[2].checked == true) res += "&format=728x90";
+	if( formulaire.format[3].checked == true) res += "&format=300x250";
+	res = url+"/Aniki_UpdateView"+res;
 	sendRequestAndChangeContent("score", res);
 }
-
 		// ]]>
 	</script>
 </metal:block>
@@ -40,16 +42,22 @@ function filter(url){
 <h1 tal:content="here/title"></h1>
 <p>liste des pubs pour cette campagne:</p>
 
-<form action="" id="selectLang">
+<form action="" id="selectFilter">
 	<input type="radio" name="lang" id="all" checked="checked">Tous
 	<input type="radio" name="lang" id="en" >Anglais
 	<input type="radio" name="lang" id="fr" >Français
 	<input type="radio" name="lang" id="de" >Allemand
+<br />
+	<input type="radio" name="format" id="all2" checked="checked">Tous
+	<input type="radio" name="format" id="160x600" >160x600
+	<input type="radio" name="format" id="728x90" >728x90
+	<input type="radio" name="format" id="300x250" >300x250
+<br />
 	<input type="button" value="valider" name="valider" onclick=""
 		tal:attributes="onclick string:filter('${url}')" />
 </form>
 
-<div tal:define="capoZ here/getSurveillants" >
+<div tal:define="capoZ here/getSurveillants;global s python:int(0)">
 <table id="score" border="0" cellpadding="0" cellspacing="0">
 	<tbody>
 		<tr>
@@ -75,8 +83,13 @@ function filter(url){
 					</div>
 				</td>
 			</tr>
+			<div tal:omit-tag="" tal:define="global s python:s + int(capo.getObject().getIterateur())" />
 		</div>
+		<tr>
+			<td colspan="3" tal:content="python: 'Nombres total de clicks: '+str(s)" />
+		</tr>
 	</tbody>
+
 </table>
 </div>
 </div>

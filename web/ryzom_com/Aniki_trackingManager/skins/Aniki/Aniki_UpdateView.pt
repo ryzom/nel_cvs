@@ -1,0 +1,29 @@
+<div tal:define="filter python:request.get('filter');
+		 capoZ here/getSurveillants;
+		 sortedCapoZ python:here.sortSurveillant(filter,capoZ);"
+     tal:omit-tag="">
+	<tr>
+		<th>Nom</th>
+		<th>Nombre de clicks</th>
+		<th>Description</th>
+	</tr>
+	<div tal:omit-tag="" tal:repeat="capo sortedCapoZ" >
+		<tr onclick=""
+			tal:define="nieme repeat/capo/index"
+			tal:attributes='onclick string:sendRequestAndChangeContent("${capo/Title}", "${capo/Title}/getDescription");
+							class python:"parite"+str(nieme%2);'>
+			<td tal:content="python:capo.Title">rank</td>
+			<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
+			<td tal:content="python:capo.getObject().getDescription()">desc</td>
+		</tr>
+		<tr onclick=""
+			tal:attributes='onclick string:hide("${capo/Title}")' 
+			style="height:0px; padding:0px; margin:0px;">	
+			<td colspan="2" class="folded">
+				<div class="hidden" 
+					id="" tal:attributes="id string:${capo/Title}">
+				</div>
+			</td>
+		</tr>
+	</div>
+</div>

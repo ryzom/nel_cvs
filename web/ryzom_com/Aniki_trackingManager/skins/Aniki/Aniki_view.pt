@@ -10,27 +10,52 @@
 </metal:block>
 
 <metal:block fill-slot="javascript_head_slot">
-	<script src="" type="text/javascript" 
+	<script src="" type="text/javascript"
 		tal:attributes="src string:${portal_url}/js/ajax.js"></script>
+
+	<script type="text/javascript">
+		// <![CDATA[
+		
+function filter(url){
+	// fonction qui met a jour le tableau des scores
+	var res="";
+	var formulaire = document.getElementById("score");
+	if( formulaire.all.checked == true) res = "all";
+	if( formulaire.fr.checked == true) res = "fr";
+	if( formulaire.en.checked == true) res = "en";
+	if( formulaire.de.checked == true) res = "de";
+	res = url+"/Aniki_UpdateView?filter="+res;
+
+	sendRequestAndChangeContent("score", res);
+}
+
+		// ]]>
+	</script>
 </metal:block>
 
 <body>
 
-<div metal:fill-slot="main"
-	tal:define="errors python:request.get('errors', {});
-	                 Iterator python:modules['Products.CMFPlone'].IndexIterator;
-	                 tabindex python:Iterator()">
+<div metal:fill-slot="main" tal:define="url python:here.absolute_url();">
 
 <h1 tal:content="here/title"></h1>
 <p>liste des pubs pour cette campagne:</p>
 
-<table tal:define="capoZ here/getSurveillants" id="score" border="0"
-	cellpadding="0" cellspacing="0">
+<form action="" id="selectLang">
+	<input type="radio" name="lang" id="all" checked="checked">Tous
+	<input type="radio" name="lang" id="en" >Anglais
+	<input type="radio" name="lang" id="fr" >Français
+	<input type="radio" name="lang" id="de" >Allemand
+	<input type="button" value="valider" name="valider" onclick=""
+		tal:attributes="onclick string:filter('${url}')" />
+</form>
+
+<div tal:define="capoZ here/getSurveillants" >
+<table id="score" border="0" cellpadding="0" cellspacing="0">
 	<tbody>
 		<tr>
 			<th>Nom</th>
 			<th>Nombre de clicks</th>
-            <th>Description</th>
+			<th>Description</th>
 		</tr>
 		<div tal:omit-tag="" tal:repeat="capo capoZ" >
 			<tr onclick=""
@@ -39,7 +64,7 @@
 								class python:"parite"+str(nieme%2);'>
 				<td tal:content="python:capo.Title">rank</td>
 				<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
-                <td tal:content="python:capo.getObject().getDescription()">desc</td>
+				<td tal:content="python:capo.getObject().getDescription()">desc</td>
 			</tr>
 			<tr onclick=""
 				tal:attributes='onclick string:hide("${capo/Title}")' 
@@ -53,7 +78,7 @@
 		</div>
 	</tbody>
 </table>
-
+</div>
 </div>
 
 </body>

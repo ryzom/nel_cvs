@@ -1,7 +1,7 @@
 /** \file di_mouse_device.cpp
  * TODO: File description
  *
- * $Id: di_mouse_device.cpp,v 1.11 2005/05/20 17:25:22 boucher Exp $
+ * $Id: di_mouse_device.cpp,v 1.11.8.1 2006/11/07 10:13:50 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -297,22 +297,19 @@ void CDIMouse::onButtonClicked(uint button, CEventServer *server, uint32 date)
 void CDIMouse::processButton(uint button, bool pressed, CEventServer *server, uint32 date)
 {
 	updateMove(server);
+	float mx = (float) (_XFactor * (double) _XMousePos / ((double) 65536 * (double) 65536));
+	float my = (float) (_YFactor * (double) _YMousePos / ((double) 65536 * (double) 65536));
 	if (pressed)
 	{
 		CEventMouseDown *emd = 
-		new CEventMouseDown((float) (_XMousePos >> 32),
-								    (float) (_YMousePos >> 32),
-								    buildMouseSingleButtonFlags(button),
-								    _DIEventEmitter);
+		new CEventMouseDown(mx, my, buildMouseSingleButtonFlags(button),
+							_DIEventEmitter);
 		server->postEvent(emd);
 	}
 	else
 	{
 		CEventMouseUp *emu = 
-		new CEventMouseUp((float) (_XMousePos >> 32),
-								  (float) (_YMousePos >> 32),
-								  buildMouseSingleButtonFlags(button),
-								  _DIEventEmitter);
+		new CEventMouseUp(mx, my, buildMouseSingleButtonFlags(button), _DIEventEmitter);
 		server->postEvent(emu);
 		onButtonClicked(button, server, date);
 	}

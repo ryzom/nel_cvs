@@ -37,7 +37,9 @@ function filter(url){
 
 <body>
 
-<div metal:fill-slot="main" tal:define="url python:here.absolute_url();">
+<div metal:fill-slot="main" 
+	 tal:condition="python:'Reviewer' in container.portal_membership.getCandidateLocalRoles(here)"
+	 tal:define="url python:here.absolute_url();">
 
 <h1 tal:content="here/title"></h1>
 <p>liste des pubs pour cette campagne:</p>

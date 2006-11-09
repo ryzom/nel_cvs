@@ -1,7 +1,9 @@
-<div tal:define="filter python:request.get('filter');		 
+<div tal:define="filter python:request.get('filter');
+		 format python:request.get('format');
+		 text python:request.get('text');
 		 global s python: int(0);
 		 capoZ here/getSurveillants;
-		 sortedCapoZ python:here.sortSurveillant(filter,capoZ);"
+		 sortedCapoZ python:here.sortSurveillant(filter,capoZ,format,text);"
      tal:omit-tag="">
 	<tr>
 		<th>Nom</th>

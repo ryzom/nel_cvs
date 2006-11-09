@@ -4,7 +4,7 @@
 ##bind namespace=
 ##bind script=script
 ##bind subpath=traverse_subpath
-##parameters=filter=None, capoZ, format=None
+##parameters=filter=None, capoZ, format=None,text=None
 ##title=
 ##
 def filter_format(format,capo):
@@ -37,9 +37,16 @@ if filter:
 					newcapoZ.append(brain)
 	if format:
 		newcapoZ = filter_format(format,newcapoZ)
+	if text:
+		newcapoZ = filter_format(text,newcapoZ)
 	return newcapoZ
 
 if format:
-	return filter_format(format,capoZ)
+	newcapoZ = filter_format(format,capoZ)
+	if text:
+		newcapoZ = filter_format(text,newcapoZ)
+	return newcapoZ
+if text:
+	return filter_format(text,capoZ)
 
 return capoZ

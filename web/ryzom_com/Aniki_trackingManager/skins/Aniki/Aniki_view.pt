@@ -28,6 +28,7 @@ function filter(url){
 	if( formulaire.format[1].checked == true) res += "&format=160x600";
 	if( formulaire.format[2].checked == true) res += "&format=728x90";
 	if( formulaire.format[3].checked == true) res += "&format=300x250";
+	if( formulaire.find.value != '') res += "&text=" + formulaire.find.value ;  
 	res = url+"/Aniki_UpdateView"+res;
 	sendRequestAndChangeContent("score", res);
 }
@@ -38,8 +39,8 @@ function filter(url){
 <body>
 
 <div metal:fill-slot="main" 
-	 tal:condition="python:'Reviewer' in container.portal_membership.getCandidateLocalRoles(here)"
-	 tal:define="url python:here.absolute_url();">
+tal:condition="python:'Reviewer' in container.portal_membership.getCandidateLocalRoles(here)"
+tal:define="url python:here.absolute_url();">
 
 <h1 tal:content="here/title"></h1>
 <p>liste des pubs pour cette campagne:</p>
@@ -54,6 +55,8 @@ function filter(url){
 	<input type="radio" name="format" id="160x600" >160x600
 	<input type="radio" name="format" id="728x90" >728x90
 	<input type="radio" name="format" id="300x250" >300x250
+<br />
+	<input type="text" name="find" id="find" value="">
 <br />
 	<input type="button" value="valider" name="valider" onclick=""
 		tal:attributes="onclick string:filter('${url}')" />

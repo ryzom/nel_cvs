@@ -1,4 +1,4 @@
-## Script (Python) "newPatchNote"
+## Script (Python) "generateSurveillant"
 ##bind container=container
 ##bind context=context
 ##bind namespace=
@@ -16,10 +16,10 @@ result = context.portal_catalog(
                         sort_order='reverse',
 			)
 lastId = result[0].getId
-
+print '-'+lastId+'-'
 #creation en boucle a partir de lastId+1 jusqu'a lastId+nb
 
-r = range(int(lastId)+1,int(nb)+1)
+r = range(int(lastId)+1,int(lastId)+int(nb)+1)
 for i in r:
 	newid = str(i)
 	if len(newid) <3:

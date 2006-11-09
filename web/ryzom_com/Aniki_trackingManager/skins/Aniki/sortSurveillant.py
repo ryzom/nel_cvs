@@ -15,7 +15,7 @@ def filter_format(format,capo):
 		newcapoZ = []
 		for brain in capo:
 			obj = brain.getObject()
-			if format[0] in str(obj.getDescription()):
+			if format[0].upper() in str(obj.getDescription().upper()):
 				newcapoZ.append(brain)
 		return newcapoZ
 

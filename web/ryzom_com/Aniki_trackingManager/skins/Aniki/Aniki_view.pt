@@ -48,7 +48,7 @@ tal:define="url python:here.absolute_url();">
 <form action="" id="selectFilter">
 	<input type="radio" name="lang" id="all" checked="checked">Tous
 	<input type="radio" name="lang" id="en" >Anglais
-	<input type="radio" name="lang" id="fr" >Français
+	<input type="radio" name="lang" id="fr" >Francais
 	<input type="radio" name="lang" id="de" >Allemand
 <br />
 	<input type="radio" name="format" id="all2" checked="checked">Tous
@@ -79,15 +79,17 @@ tal:define="url python:here.absolute_url();">
 				<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
 				<td tal:content="python:capo.getObject().getDescription()">desc</td>
 			</tr>
+<!--
 			<tr onclick=""
 				tal:attributes='onclick string:hide("${capo/Title}")' 
 				style="height:0px; padding:0px; margin:0px;">	
-				<td colspan="2" class="folded">
+				<td colspan="3" class="folded">
 					<div class="hidden" 
 						id="" tal:attributes="id string:${capo/Title}">
 					</div>
 				</td>
 			</tr>
+-->
 			<div tal:omit-tag="" tal:define="global s python:s + int(capo.getObject().getIterateur())" />
 		</div>
 		<tr>

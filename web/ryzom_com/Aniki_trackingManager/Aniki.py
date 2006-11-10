@@ -5,10 +5,7 @@ from AccessControl import ClassSecurityInfo
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore import CMFCorePermissions
 
-try:
-    from Products.LinguaPlone.public import *
-except ImportError: 
-    from Products.Archetypes.public import *
+from Products.Archetypes.public import *
 
 #import de fonction du produit
 from config import *
@@ -19,6 +16,18 @@ AnikiSchema = BaseFolderSchema.copy()+ Schema((
 	TextField('description',
 		searchable=False,
 		widget=TextAreaWidget(description="A little description of the campaign",)
+	),
+	LinesField('types',
+		searchable=False,
+		widget=LinesWidget(description="Enter list of type, one per lines",)
+	),
+	LinesField('formats',
+		searchable=False,
+		widget=LinesWidget(description="Enter list of format, one per lines",)
+	),
+	LinesField('langs',
+		searchable=False,
+		widget=LinesWidget(description="Enter list of language, one per lines",)
 	),
 ))
 
@@ -44,7 +53,7 @@ class Aniki(BaseFolder):
 		"""use automatically at creation"""
 		BaseFolder.initializeArchetype(self, **kwargs)
 
-	security.declareProtected(CMFCorePermissions.View, 'redirect')
+	security.declarePublic('redirect')
 	def redirect(self, idPub,REQUEST):
 		"""This method will redirect to the URL"""
 		path = '/'.join(self.getPhysicalPath())

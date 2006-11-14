@@ -39,9 +39,17 @@ class CTextureBloom : public CTextureBlank
 public:
 NLMISC_DECLARE_CLASS(CTextureBloom);
 	
+	CTextureBloom() {Mode2D=false;}
+	virtual ~CTextureBloom() {}
+
 	virtual bool isBloomTexture() const { return true; }
 
-	virtual ~CTextureBloom() {}
+	void mode2D(bool isMode2D) {Mode2D=isMode2D;}
+	bool isMode2D() {return Mode2D;}
+
+private:
+
+	bool	Mode2D;
 };
 
 

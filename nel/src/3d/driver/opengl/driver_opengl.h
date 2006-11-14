@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.188.6.3 2006/11/03 13:53:10 legallo Exp $
+ * $Id: driver_opengl.h,v 1.188.6.4 2006/11/14 13:01:44 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,6 +166,7 @@ public:
 	GLuint					DepthStencilFBOId;
 
 	bool					InitFBO;
+	bool					AttachDepthStencil;
 
 	// The current wrap modes assigned to the texture.
 	ITexture::TWrapMode		WrapS;
@@ -523,8 +524,6 @@ public:
 	// return true if driver support Bloom effect.
 	virtual	bool			supportBloomEffect() const;
 
-	virtual	bool			initBloomEffect() const {return true;}
-	
 	virtual bool			activeFrameBufferObject(ITexture * tex);
 	
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);

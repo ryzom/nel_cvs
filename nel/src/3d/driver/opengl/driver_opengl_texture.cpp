@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.80.4.2 2006/11/02 17:57:21 legallo Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.80.4.3 2006/11/14 13:02:11 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include "driver_opengl.h"
 #include "../../texture_cube.h"
+#include "../../texture_bloom.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/file.h" // temp
 
@@ -74,6 +75,7 @@ CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDri
 	TextureMode = isRectangleTexture?GL_TEXTURE_RECTANGLE_NV:GL_TEXTURE_2D;
 	
 	InitFBO = false;
+	AttachDepthStencil = true;
 }
 // ***************************************************************************
 CTextureDrvInfosGL::~CTextureDrvInfosGL()
@@ -90,8 +92,9 @@ CTextureDrvInfosGL::~CTextureDrvInfosGL()
 
 	if(InitFBO)
 	{
-		nglDeleteFramebuffersEXT(1, &FBOId);	
-		nglDeleteRenderbuffersEXT(1, &DepthStencilFBOId);	
+		nglDeleteFramebuffersEXT(1, &FBOId);
+		if(AttachDepthStencil)
+			nglDeleteRenderbuffersEXT(1, &DepthStencilFBOId);	
 	}
 }
 
@@ -100,9 +103,16 @@ bool CTextureDrvInfosGL::initFrameBufferObject(ITexture * tex)
 {
 	if(!InitFBO)
 	{
+		if(tex->isBloomTexture())
+		{
+			AttachDepthStencil = !((CTextureBloom*)tex)->isMode2D();
+		}
 		// generate IDs
 		nglGenFramebuffersEXT(1, &FBOId);
-		nglGenRenderbuffersEXT(1, &DepthStencilFBOId);
+		if(AttachDepthStencil)
+		{
+			nglGenRenderbuffersEXT(1, &DepthStencilFBOId);
+		}
 
 		// initialize FBO
 		nglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FBOId); 
@@ -110,12 +120,15 @@ bool CTextureDrvInfosGL::initFrameBufferObject(ITexture * tex)
 								  TextureMode, ID, 0);
 
 		// attach depth/stencil render to FBO
-		nglBindRenderbufferEXT(GL_RENDERBUFFER_EXT, DepthStencilFBOId);
-		nglRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, tex->getWidth(), tex->getHeight());
-		nglFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-									 GL_RENDERBUFFER_EXT, DepthStencilFBOId);
-		nglFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-									 GL_RENDERBUFFER_EXT, DepthStencilFBOId);
+		if(AttachDepthStencil)
+		{
+			nglBindRenderbufferEXT(GL_RENDERBUFFER_EXT, DepthStencilFBOId);
+			nglRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, tex->getWidth(), tex->getHeight());
+			nglFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+										 GL_RENDERBUFFER_EXT, DepthStencilFBOId);
+			nglFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+										 GL_RENDERBUFFER_EXT, DepthStencilFBOId);
+		}
 
 		// verify le statut
 		GLenum status;
@@ -146,7 +159,8 @@ bool CTextureDrvInfosGL::initFrameBufferObject(ITexture * tex)
 				nlwarning("Framebuffer incomplete, missing read buffer\n");
 				break;
 			default:
-				nlassert(0);
+				nlwarning("Framebuffer incomplete\n");
+				//nlassert(0);
 		}
 	}
 
@@ -1830,7 +1844,7 @@ bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width
 
 		_RenderTargetFBO = true;
 
-		activeFrameBufferObject(tex);
+		return activeFrameBufferObject(tex);
 	}
 	else
 	{

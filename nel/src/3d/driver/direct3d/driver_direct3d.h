@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.44.4.2 2006/11/03 13:53:10 legallo Exp $
+ * $Id: driver_direct3d.h,v 1.44.4.3 2006/11/14 13:01:02 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -832,7 +832,6 @@ public:
 	virtual bool			isTextureRectangle(ITexture * tex) const {return false;}
 	IDirect3DSurface9*		getSurfaceTexture(ITexture * text);
 	void					getDirect3DRect(NLMISC::CRect &rect, RECT & d3dRect);
-	virtual	bool			initBloomEffect() const {return false;}
 	
 	// todo hulud d3d buffers
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) {};

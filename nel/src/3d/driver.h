@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.83.6.2 2006/11/03 13:53:10 legallo Exp $
+ * $Id: driver.h,v 1.83.6.3 2006/11/14 13:00:37 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -772,10 +772,6 @@ public:
 	// return true if driver support Bloom effect.
 	virtual	bool			supportBloomEffect() const =0;
 
-	// return true in openGL, to display scene in render target texture
-	virtual	bool			initBloomEffect() const =0;
-	
-	
 	/** get a part of the ZBuffer (back buffer).
 	  * NB: 0,0 is the bottom left corner of the screen.
 	  *

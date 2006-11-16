@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.37 2006/07/12 14:37:22 boucher Exp $
+ * $Id: driver_direct3d.cpp,v 1.37.6.1 2006/11/16 14:14:27 cado Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1014,7 +1014,7 @@ void CDriverD3D::updateRenderVariablesInternal()
 
 // ***************************************************************************
 
-static void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static bool D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	H_AUTO_D3D(D3DWndProc);
 	// Check this message in parents
@@ -1105,8 +1105,9 @@ static void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wPara
 		CWinEventEmitter *we = NLMISC::safe_cast<CWinEventEmitter *>(driver->_EventEmitter.getEmitter(0));
 		// Process the message by the emitter
 		we->setHWnd((uint32)hWnd);
-		we->processMessage ((uint32)hWnd, message, wParam, lParam);
+		return we->processMessage ((uint32)hWnd, message, wParam, lParam);
 	}
+	return false;
 }
 
 // ***************************************************************************
@@ -1146,11 +1147,12 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	H_AUTO_D3D(WndProc);
 	// Get the driver pointer..
 	CDriverD3D *pDriver=(CDriverD3D*)GetWindowLong (hWnd, GWL_USERDATA);
+	bool trapMessage = false;
 	if (pDriver != NULL)
 	{
-		D3DWndProc (pDriver, hWnd, message, wParam, lParam);
+		trapMessage = D3DWndProc (pDriver, hWnd, message, wParam, lParam);
 	}
-	return DefWindowProc(hWnd, message, wParam, lParam);
+	return trapMessage ? 0 : DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 // ***************************************************************************

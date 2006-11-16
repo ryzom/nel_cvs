@@ -1,5 +1,0 @@
-<metal:block use-macro="here/global_defines/macros/defines" />
-      <div class="visualClear"><!-- --></div>
-<center>   
-      <metal:footer use-macro="here/footer/macros/portal_footer" />
-</center>

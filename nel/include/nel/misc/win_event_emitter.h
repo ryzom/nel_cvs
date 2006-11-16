@@ -1,7 +1,7 @@
 /** \file win_event_emitter.h
  * TODO: File description
  *
- * $Id: win_event_emitter.h,v 1.7 2005/02/22 10:14:12 besson Exp $
+ * $Id: win_event_emitter.h,v 1.7.38.1 2006/11/16 14:14:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLMISC {
 class CWinEventEmitter : public IEventEmitter
 {
 public:
-	CWinEventEmitter () : _MouseEventsEnabled(true), _KeyboardEventsEnabled(true)
+	CWinEventEmitter () : _MouseEventsEnabled(true), _KeyboardEventsEnabled(true), _IMEEventsEnabled(true)
 	{
 		_HWnd=NULL;
 		resetButtonFlagState ();
@@ -67,11 +67,14 @@ public:
 	void resetButtonFlagState ();
 	
 	// enable / disable mouse events to be processed. The default is enabled.
-	void enableMouseEvents(bool enabled = true) { _MouseEventsEnabled = enabled;}
+	void enableMouseEvents(bool enabled = true) { _MouseEventsEnabled = enabled; }
 	
 	// enable / disable keyboard events to be processed. The default is enabled.
-	void enableKeyboardEvents(bool enabled = true) { _KeyboardEventsEnabled = enabled;}
+	void enableKeyboardEvents(bool enabled = true) { _KeyboardEventsEnabled = enabled; }
 	
+	// enable / disable other events to be processed. The default is enabled.
+	void enableIMEEvents(bool enabled = true) { _IMEEventsEnabled = enabled; }
+
 	// Test wether mouse events are enabled.
 	bool areMouseEventsEnabled() const { return _MouseEventsEnabled; }
 
@@ -102,8 +105,9 @@ private:
 
 public:
 	/** Process a win32 message.
+	  * Return true if the message must be trapped, false if DefWindowProc must be called afterwards
 	  */
-	void processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server=NULL);
+	bool processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server=NULL);
 private:
 	CWinEventServer		_InternalServer;
 	uint32				_HWnd;
@@ -115,6 +119,7 @@ public:
 	bool				_MouseButtons[3];
 	bool				_MouseEventsEnabled;
 	bool				_KeyboardEventsEnabled;
+	bool				_IMEEventsEnabled;
 private:
 	NLMISC::TMouseButton		getButtons() const;
 };

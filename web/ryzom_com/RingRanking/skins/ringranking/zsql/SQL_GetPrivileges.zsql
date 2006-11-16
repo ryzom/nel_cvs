@@ -1,9 +1,0 @@
-<dtml-comment>
-arguments: user_id
-connection_id:r2linux03
-title:Session: get Authors ranking
-</dtml-comment>
-
-select distinct add_privileges
-from ring_users
-where user_id=<dtml-sqlvar user_id type="string">

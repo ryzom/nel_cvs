@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.19 2005/02/22 10:14:12 besson Exp $
+ * $Id: events.h,v 1.19.38.1 2006/11/16 14:14:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,8 @@ const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
 const CClassId EventMouseDblClkId (0x55a94cb3, 0x3e641517);
 const CClassId EventMouseWheelId (0x73ac4321, 0x4c273150);
 
+// Input Method Editor (IME) events
+const CClassId EventIME (0x261f1ede, 0x1b0a6c3a);
 
 enum TKey 
 {
@@ -309,13 +311,20 @@ public:
 class CEventChar : public CEventKey
 {
 public:
-	CEventChar (ucchar c, TKeyButton button, IEventEmitter* emitter) : CEventKey (button, emitter, EventCharId)
+	CEventChar (ucchar c, TKeyButton button, IEventEmitter* emitter) : CEventKey (button, emitter, EventCharId), _Raw(true)
 	{
 		Char=c;
 	}
 	ucchar Char;
 
 	virtual	CEvent			*clone() const {return new CEventChar(*this);}
+	void					setRaw( bool raw ) { _Raw = raw; }
+	bool					isRaw() const { return _Raw; }
+
+private:
+
+	bool	_Raw; // true if raw, false if composed by an IME
+
 };
 
 
@@ -480,9 +489,26 @@ public:
 };
 
 
+/**
+ * CEventIME
+ */
+class CEventIME : public CEvent
+{
+public:
+	CEventIME (uint32 msg, uint32 wParam, uint32 lParam, IEventEmitter* emitter) : CEvent (emitter, EventIME), EventMessage(msg), WParam(wParam), LParam(lParam)
+	{}
+
+	uint32	EventMessage;
+	uint32	WParam, LParam;
+
+	virtual CEvent			*clone() const {return new CEventIME(*this);}
+};
+
+
 } // NLMISC
 
 
 #endif // NL_EVENTS_H
 
 /* End of events.h */
+

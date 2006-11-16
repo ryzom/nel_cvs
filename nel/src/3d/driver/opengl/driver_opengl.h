@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.189 2006/05/31 12:03:14 boucher Exp $
+ * $Id: driver_opengl.h,v 1.189.8.1 2006/11/16 14:14:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -639,7 +639,7 @@ private:
 
 #ifdef NL_OS_WINDOWS
 
-	friend static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	friend static bool GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	
 	HWND						_hWnd;
 	sint32						_WindowWidth, _WindowHeight, _WindowX, _WindowY;

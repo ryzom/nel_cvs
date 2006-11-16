@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.44 2005/09/16 09:38:08 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.44.26.1 2006/11/16 14:14:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,11 +138,11 @@ private:
 
 
 
-inline operator==(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
+inline bool operator==(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 {
 	return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;
 }
-inline operator!=(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
+inline bool operator!=(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 {
 	return !(lhs == rhs);
 }
@@ -1318,7 +1318,7 @@ public:
 
 
 	// Friends
-	friend void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	friend bool D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	friend class CTextureDrvInfosD3D;
 	friend class CVBDrvInfosD3D;
 	friend class CIBDrvInfosD3D;

@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_r.dll" /libpath:"../../../../nel/lib"
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib imm32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_r.dll" /libpath:"../../../../nel/lib"
 
 !ELSEIF  "$(CFG)" == "driver_direct3d - Win32 Debug"
 
@@ -68,7 +68,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_d.dll" /pdbtype:sept /libpath:"../../../../nel/lib"
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib imm32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_d.dll" /pdbtype:sept /libpath:"../../../../nel/lib"
 
 !ELSEIF  "$(CFG)" == "driver_direct3d - Win32 ReleaseDebug"
 
@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_rd.dll" /pdbtype:sept /libpath:"../../../../nel/lib"
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib imm32.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_rd.dll" /pdbtype:sept /libpath:"../../../../nel/lib"
 
 !ELSEIF  "$(CFG)" == "driver_direct3d - Win32 DebugFast"
 
@@ -106,7 +106,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_df.dll" /pdbtype:sept /libpath:"../../../../lib"
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib imm32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_df.dll" /pdbtype:sept /libpath:"../../../../lib"
 
 !ELSEIF  "$(CFG)" == "driver_direct3d - Win32 DebugInstrument"
 
@@ -135,7 +135,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_df.dll" /pdbtype:sept /libpath:"../../../../lib"
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"../../../../lib/nel_drv_direct3d_win_di.pdb" /debug /machine:I386 /def:".\driver_direct3d.def" /out:"../../../../lib/nel_drv_direct3d_win_di.dll" /libpath:"../../../../lib" /fixed:no
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib imm32.lib /nologo /dll /incremental:no /pdb:"../../../../lib/nel_drv_direct3d_win_di.pdb" /debug /machine:I386 /def:".\driver_direct3d.def" /out:"../../../../lib/nel_drv_direct3d_win_di.dll" /libpath:"../../../../lib" /fixed:no
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

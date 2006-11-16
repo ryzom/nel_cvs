@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.14 2004/07/20 09:03:31 corvazier Exp $
+ * $Id: win_event_emitter.cpp,v 1.14.62.1 2006/11/16 14:14:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,10 +110,18 @@ TMouseButton CWinEventEmitter::getButtons() const
 }
 
 
-void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server)
+bool CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server)
 {
 	if (!server)
 		server=&_InternalServer;
+
+	/// Process IME messages
+	/*if ( _IMEEventsEnabled && (ImmIsUIMessage( ImmGetDefaultIMEWnd((HWND)_HWnd), msg, wParam, lParam) == TRUE) )
+	{
+		server->postEvent( new CEventIME(msg, wParam, lParam, this) );
+		return true; // trap message (however DefWindowProc will still be called in some instances by the event listener)
+	}*/
+
 	switch (msg)
 	{
 	case WM_KEYDOWN:
@@ -158,6 +166,12 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 				server->postEvent (new CEventChar ((ucchar)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
 		}
 		break;
+	/*case WM_IME_CHAR:
+		if (_KeyboardEventsEnabled && _IMEEventsEnabled)
+		{
+			server->postEvent (new CEventChar ((ucchar)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
+		}
+		break;*/
 	case WM_ACTIVATE:
 		if (WA_INACTIVE==LOWORD(wParam))
 			server->postEvent (new CEventActivate (false, this));
@@ -279,7 +293,20 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			server->postEvent (new CEventMouseWheel (fX, fY, button, (short) HIWORD(wParam)>=0, this));
 			break;
 		}
+	case WM_IME_SETCONTEXT:
+	case WM_IME_STARTCOMPOSITION:
+	case WM_IME_COMPOSITION:
+	case WM_IME_ENDCOMPOSITION:
+	case WM_IME_NOTIFY:
+	//case WM_INPUTLANGCHANGEREQUEST:
+	case WM_INPUTLANGCHANGE:
+		if ( _IMEEventsEnabled )
+		{
+			server->postEvent( new CEventIME( msg, wParam, lParam, this ) );
+			return true; // trap message
+		}
 	}
+	return false;
 }
 
 //==========================================================
@@ -313,3 +340,4 @@ TMouseButton CWinEventEmitter::buildFlags() const
 } // NLMISC
 
 #endif // NL_OS_WINDOWS
+

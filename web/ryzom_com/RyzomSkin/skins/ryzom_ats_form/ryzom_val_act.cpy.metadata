@@ -1,6 +1,0 @@
-[default]
-proxy=Manager
-
-[actions]
-action.success=traverse_to:string:add_level_script
-

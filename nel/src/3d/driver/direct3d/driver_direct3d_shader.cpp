@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.15 2004/12/17 09:35:08 lecroart Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.15.48.1 2006/11/16 14:14:27 cado Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -26,6 +26,8 @@
  */
 
 #include "stddirect3d.h"
+
+#include <tchar.h>
 
 #include "driver_direct3d.h"
 #include "resource.h"
@@ -409,7 +411,7 @@ bool CDriverD3D::activeShader(CShader *shd)
 static void setFX(CShader &s, const char *name, INT rsc, CDriverD3D *drv)
 {
 	H_AUTO_D3D(setFX)
-	HRSRC hrsrc = FindResource(HInstDLL, MAKEINTRESOURCE(rsc), "FX");
+	HRSRC hrsrc = FindResource(HInstDLL, MAKEINTRESOURCE(rsc), _T("FX"));
 	HGLOBAL hglob = LoadResource(HInstDLL, hrsrc);
 	const char *datas = (const char *) LockResource(hglob);
 	s.setName(name);

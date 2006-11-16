@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.238 2006/05/31 12:03:14 boucher Exp $
+ * $Id: driver_opengl.cpp,v 1.238.8.1 2006/11/16 14:14:27 cado Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -64,14 +64,9 @@ using namespace std;
 using namespace NLMISC;
 
 
-
-
-
 // ***************************************************************************
 // try to allocate 16Mo by default of AGP Ram.
 #define	NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE		(16384*1024)
-
-
 
 // ***************************************************************************
 #ifdef NL_OS_WINDOWS
@@ -116,7 +111,7 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 	return IDriver::InterfaceVersion;
 }
 
-static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static bool GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	H_AUTO_OGL(GlWndProc)
 	if(message == WM_SIZE)
@@ -159,8 +154,9 @@ static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam,
 		CWinEventEmitter *we = NLMISC::safe_cast<CWinEventEmitter *>(driver->_EventEmitter.getEmitter(0));
 		// Process the message by the emitter
 		we->setHWnd((uint32)hWnd);
-		we->processMessage ((uint32)hWnd, message, wParam, lParam);
+		return we->processMessage ((uint32)hWnd, message, wParam, lParam);
 	}
+	return false;
 }
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -168,11 +164,19 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	H_AUTO_OGL(DriverGL_WndProc)
 	// Get the driver pointer..
 	CDriverGL *pDriver=(CDriverGL*)GetWindowLong (hWnd, GWL_USERDATA);
+	bool trapMessage = false;
 	if (pDriver != NULL)
 	{
-		GlWndProc (pDriver, hWnd, message, wParam, lParam);
+		trapMessage = GlWndProc (pDriver, hWnd, message, wParam, lParam);
 	}
-	return DefWindowProc(hWnd, message, wParam, lParam);
+
+#ifdef NL_DISABLE_MENU
+	// Disable menu (F10, ALT and ALT+SPACE key doesn't freeze or open the menu)
+	if(message == WM_SYSCOMMAND && wParam == SC_KEYMENU)
+		return 0;
+#endif // NL_DISABLE_MENU
+
+	return trapMessage ? 0 : DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 #elif defined (NL_OS_UNIX)
@@ -252,7 +256,6 @@ CDriverGL::CDriverGL()
 	_CurrentFogColor[2]= 0;
 	_CurrentFogColor[3]= 0;
 
-
 	_LightSetupDirty= false;
 	_ModelViewMatrixDirty= false;
 	_RenderSetupDirty= false;
@@ -260,8 +263,6 @@ CDriverGL::CDriverGL()
 	uint i;
 	for(i=0;i<MaxLight;i++)
 		_LightDirty[i]= false;
-
-	
 
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
@@ -1153,7 +1154,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	// init _DriverGLStates
 	_DriverGLStates.init(_Extensions.ARBTextureCubeMap, _MaxDriverLight);
 
-
 	// Init OpenGL/Driver defaults.
 	//=============================
 	glViewport(0,0,width,height);
@@ -1171,8 +1171,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_SUM_EXT);
-		
-		
+
 	_CurrViewport.init(0.f, 0.f, 1.f, 1.f);
 	_CurrScissor.initFullScreen();
 	_CurrentGlNormalize= false;
@@ -1197,7 +1196,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 
 	_VertexProgramEnabled= false;
 	_LastSetupGLArrayVertexProgram= false;
-
 
 	// Init VertexArrayRange according to supported extenstion.
 	_SupportVBHard= false;
@@ -1279,8 +1277,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	//===========================================================
 	initFragmentShaders();
 
-
-
 	// Activate the default texture environnments for all stages.
 	//===========================================================
 	for(sint stage=0;stage<inlGetNumTextStages(); stage++)
@@ -1328,7 +1324,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	// meaning that light direction is always (0,1,0) in eye-space
 	// use enableLighting(0....), to get normal behaviour
 	_DriverGLStates.enableLight(0, true);
-		
 
 	_Initialized = true;
 
@@ -1649,11 +1644,8 @@ bool CDriverGL::clear2D(CRGBA rgba)
 {
 	H_AUTO_OGL(CDriverGL_clear2D)
 	glClearColor((float)rgba.R/255.0f,(float)rgba.G/255.0f,(float)rgba.B/255.0f,(float)rgba.A/255.0f);
-	
-		
+
 	glClear(GL_COLOR_BUFFER_BIT);
-	
-		
 
 	return true;
 }
@@ -1664,12 +1656,9 @@ bool CDriverGL::clearZBuffer(float zval)
 {
 	H_AUTO_OGL(CDriverGL_clearZBuffer)
 	glClearDepth(zval);
-	
-		
+
 	_DriverGLStates.enableZWrite(true);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	
-		
 
 	return true;
 }
@@ -1680,11 +1669,7 @@ bool CDriverGL::clearStencilBuffer(float stencilval)
 {
 	H_AUTO_OGL(CDriverGL_clearStencilBuffer)
 	glClearStencil((int)stencilval);
-	
-
 	glClear(GL_STENCIL_BUFFER_BIT);
-	
-
 	return true;
 }
 
@@ -1694,8 +1679,6 @@ void CDriverGL::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 {
 	H_AUTO_OGL(CDriverGL_setColorMask )
 	glColorMask (bRed, bGreen, bBlue, bAlpha);
-	
-		
 }
 
 // --------------------------------------------------
@@ -1711,7 +1694,7 @@ bool CDriverGL::swapBuffers()
 		Setup a std vertex buffer to ensure NVidia synchronisation.
 	*/
 	if (_Extensions.NVVertexArrayRange)
-	{	
+	{
 		static	CVertexBuffer	dummyVB;
 		static	bool			dummyVBinit= false; 
 		if(!dummyVBinit)
@@ -1770,7 +1753,6 @@ bool CDriverGL::swapBuffers()
 		}
 	}
 
-
 #ifdef NL_OS_WINDOWS
 	if (_EventEmitter.getNumEmitters() > 1) // is direct input running ?
 	{
@@ -1813,7 +1795,6 @@ bool CDriverGL::swapBuffers()
 		forceActivateTexEnvMode(stage, env);
 		forceActivateTexEnvColor(stage, env);
 	}	
-	
 
 	// Activate the default material.
 	//===========================================================
@@ -1875,8 +1856,6 @@ bool CDriverGL::release()
 
 	// Reset VertexArrayRange.
 	resetVertexArrayRange();
-
-	
 
 	// delete containers
 	delete _AGPVertexArrayRange;
@@ -1965,7 +1944,6 @@ bool CDriverGL::release()
 #endif // XF86VIDMODE
 
 #endif // NL_OS_UNIX
-
 
 	// released
 	_Initialized= false;
@@ -2076,9 +2054,6 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 	int iheight=(int)((float)clientHeight*height+0.5f);
 	clamp (iheight, 0, clientHeight-iy);
 	glViewport (ix, iy, iwidth, iheight);
-	
-		
-
 }
 
 // --------------------------------------------------
@@ -2087,8 +2062,6 @@ void CDriverGL::getViewport(CViewport &viewport)
 	H_AUTO_OGL(CDriverGL_getViewport)
 	viewport = _CurrViewport;	
 }
-
-
 
 // --------------------------------------------------
 void	CDriverGL::setupScissor (const class CScissor& scissor)
@@ -2141,7 +2114,6 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 	if(x==0 && x==0 && width>=1 && height>=1)
 	{
 		glDisable(GL_SCISSOR_TEST);
-					
 	}
 	else
 	{
@@ -2164,8 +2136,6 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 
 		glScissor (ix0, iy0, iwidth, iheight);
 		glEnable(GL_SCISSOR_TEST);
-		
-			
 	}
 }
 
@@ -2295,8 +2265,6 @@ void CDriverGL::getWindowPos(uint32 &x, uint32 &y)
 #endif // NL_OS_UNIX
 }
 
-
-
 // --------------------------------------------------
 
 bool CDriverGL::isActive()
@@ -2325,13 +2293,10 @@ const char *CDriverGL::getVideocardInformation ()
 	const char *vendor = (const char *) glGetString (GL_VENDOR);
 	const char *renderer = (const char *) glGetString (GL_RENDERER);
 	const char *version = (const char *) glGetString (GL_VERSION);
-	
-		
 
 	smprintf(name, 1024, "OpenGL / %s / %s / %s", vendor, renderer, version);
 	return name;
 }
-
 
 void CDriverGL::setCapture (bool b)
 {
@@ -2424,7 +2389,6 @@ void			CDriverGL::getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &r
 	}
 }
 
-
 void			CDriverGL::getZBuffer (std::vector<float>  &zbuffer)
 {
 	H_AUTO_OGL(CDriverGL_getZBuffer )
@@ -2452,14 +2416,9 @@ bool CDriverGL::fillBuffer (CBitmap &bitmap)
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	glDrawPixels (rect.Width, rect.Height, GL_RGBA, GL_UNSIGNED_BYTE, &(bitmap.getPixels()[0]) );
-	
-		
 
 	return true;
 }
-
-
-
 
 void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 										 uint32 level,
@@ -2519,10 +2478,7 @@ void CDriverGL::setPolygonMode (TPolygonMode mode)
 		glPolygonMode (GL_FRONT_AND_BACK, GL_POINT);
 		break;
 	}
-	
-		
 }
-
 
 bool			CDriverGL::fogEnabled()
 {
@@ -2674,7 +2630,6 @@ uint32			CDriverGL::getUsedTextureMemory() const
 	return memory;
 }
 
-
 // ***************************************************************************
 bool CDriverGL::supportTextureShaders() const
 {
@@ -2720,10 +2675,7 @@ void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const floa
 	nlassert(stage < (uint) inlGetNumTextStages() );
 	_DriverGLStates.activeTextureARB(stage);
 	glTexEnvfv(GL_TEXTURE_SHADER_NV, GL_OFFSET_TEXTURE_MATRIX_NV, mat);
-	
-		
 }
-
 
 // ***************************************************************************
 void      CDriverGL::enableNVTextureShader(bool enabled)
@@ -2943,7 +2895,6 @@ void CDriverGL::refreshProjMatrixFromGL()
 		
 }
 
-
 // ***************************************************************************
 bool			CDriverGL::setMonitorColorProperties (const CMonitorColorProperties &properties)
 {
@@ -3094,9 +3045,6 @@ void CDriverGL::initEMBM()
 		}
 	}
 }
-
-
-
 
 // ***************************************************************************
 /** Water fragment program with extension ARB_fragment_program
@@ -3265,7 +3213,6 @@ uint loadARBFragmentProgramStringNative(const char *prog)
 		
 }
 
-
 // ***************************************************************************
 /** R200 Fragment Shader :
   * Send fragment shader to fetch a perturbed envmap from the addition of 2 bumpmap
@@ -3284,15 +3231,11 @@ static void fetchPerturbedEnvMapR200()
 	
 	nglColorFragmentOp3ATI(GL_MAD_ATI, GL_REG_2_ATI, GL_NONE, GL_NONE, GL_REG_0_ATI, GL_NONE, GL_BIAS_BIT_ATI|GL_2X_BIT_ATI, GL_CON_0_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE); // scale bumpmap 1 & add envmap coords	
 	nglColorFragmentOp3ATI(GL_MAD_ATI, GL_REG_2_ATI, GL_NONE, GL_NONE, GL_REG_1_ATI, GL_NONE, GL_BIAS_BIT_ATI|GL_2X_BIT_ATI, GL_CON_1_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE); // scale bumpmap 2 & add to bump map 1
-	
-	
 
 	////////////
 	// PASS 2 //
 	////////////
 	nglSampleMapATI(GL_REG_2_ATI, GL_REG_2_ATI, GL_SWIZZLE_STR_ATI); // fetch envmap at perturbed texcoords	
-	
-		
 }
 
 // ***************************************************************************
@@ -3331,11 +3274,9 @@ void CDriverGL::initFragmentShaders()
 		// WATER //
 		///////////
 		ATIWaterShaderHandleNoDiffuseMap = nglGenFragmentShadersATI(1);
-		
-			
+
 		ATIWaterShaderHandle = nglGenFragmentShadersATI(1);
-		
-			
+
 		if (!ATIWaterShaderHandle || !ATIWaterShaderHandleNoDiffuseMap)
 		{
 			ATIWaterShaderHandleNoDiffuseMap = ATIWaterShaderHandle = 0;
@@ -3343,7 +3284,6 @@ void CDriverGL::initFragmentShaders()
 		}
 		else
 		{
-
 			glGetError();
 			// Water shader for R200 : we just add the 2 bump map contributions (du, dv). We then use this contribution to perturbate the envmap
 			nglBindFragmentShaderATI(ATIWaterShaderHandleNoDiffuseMap);
@@ -3367,20 +3307,16 @@ void CDriverGL::initFragmentShaders()
 			nglColorFragmentOp2ATI(GL_MUL_ATI, GL_REG_0_ATI, GL_NONE, GL_NONE, GL_REG_3_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE); // scale bumpmap 1 & add envmap coords
 			nglAlphaFragmentOp2ATI(GL_MUL_ATI, GL_REG_0_ATI, GL_NONE, GL_REG_3_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE);
 
-
 			nglEndFragmentShaderATI();
 			error = glGetError();
 		    nlassert(error == GL_NONE);
 			nglBindFragmentShaderATI(0);
-			
-				
 		}
 		////////////
 		// CLOUDS //
 		////////////
 		ATICloudShaderHandle = nglGenFragmentShadersATI(1);		
-		
-			
+
 		if (!ATICloudShaderHandle)
 		{			
 			nlwarning("Couldn't generate cloud shader using ATI_fragment_shader !");			
@@ -3404,13 +3340,10 @@ void CDriverGL::initFragmentShaders()
 			GLenum error = glGetError();
 			nlassert(error == GL_NONE);	
 			nglBindFragmentShaderATI(0);
-			
-				
 		}
 	}	
 
 	// if none of the previous programs worked, fallback on NV_texture_shader, or (todo) simpler shader
-	
 }
 
 // ***************************************************************************
@@ -3424,8 +3357,6 @@ void CDriverGL::deleteARBFragmentPrograms()
 		{
 			GLuint progId = (GLuint) ARBWaterShader[k];
 			nglDeleteProgramsARB(1, &progId);
-			
-				
 			ARBWaterShader[k] = 0;
 		}
 	}
@@ -3454,11 +3385,8 @@ void CDriverGL::deleteFragmentShaders()
 	{
 		nglDeleteFragmentShaderATI((GLuint) ATICloudShaderHandle);		
 		ATICloudShaderHandle = 0;
-	}
-	
-		
+	}	
 }
-
 
 // ***************************************************************************
 void CDriverGL::finish()
@@ -3533,8 +3461,6 @@ bool	CDriverGL::isPolygonSmoothingEnabled() const
 	
 	return _PolygonSmooth;
 }
-
-
 
 // ***************************************************************************
 void	CDriverGL::startProfileVBHardLock()
@@ -3635,7 +3561,7 @@ void CDriverGL::profileIBAllocation(std::vector<std::string> &result)
 }
 
 // ***************************************************************************
-void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
+void CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 {
 	
 	result.clear();
@@ -4130,7 +4056,6 @@ void CDriverGL::stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass)
 		default: nlstop;
 	}
 
-	
 	_DriverGLStates.stencilOp(glFail, glZFail, glZPass);
 }
 
@@ -4178,6 +4103,3 @@ void displayGLError(GLenum error)
 		break;
 	}
 }
-
-
-

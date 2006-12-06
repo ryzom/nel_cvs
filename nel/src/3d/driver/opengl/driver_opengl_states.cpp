@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * TODO: File description
  *
- * $Id: driver_opengl_states.cpp,v 1.29 2005/07/22 12:34:29 legallo Exp $
+ * $Id: driver_opengl_states.cpp,v 1.30 2006/12/06 17:21:23 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,10 +49,11 @@ CDriverGLStates::CDriverGLStates()
 
 
 // ***************************************************************************
-void			CDriverGLStates::init(bool supportTextureCubeMap, uint maxLight)
+void			CDriverGLStates::init(bool supportTextureCubeMap, bool supportTextureRectangle, uint maxLight)
 {
 	H_AUTO_OGL(CDriverGLStates_init)
 	_TextureCubeMapSupported= supportTextureCubeMap;
+	_TextureRectangleSupported= supportTextureRectangle;
 	_MaxDriverLight= maxLight;
 	_MaxDriverLight= std::min(_MaxDriverLight, uint(MaxLight));
 
@@ -160,6 +161,8 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 		glDisable(GL_TEXTURE_2D);
 		if(_TextureCubeMapSupported)
 			glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+		if(_TextureRectangleSupported)
+			glDisable(GL_TEXTURE_RECTANGLE_NV);
 		_TextureMode[stage]= TextureDisabled;
 
 		// Tex gen init
@@ -167,9 +170,7 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 		glDisable( GL_TEXTURE_GEN_S );
 		glDisable( GL_TEXTURE_GEN_T );
 		glDisable( GL_TEXTURE_GEN_R );
-		glDisable( GL_TEXTURE_GEN_Q );
-		
-			
+		glDisable( GL_TEXTURE_GEN_Q );		
 	}
 
 	// ActiveTexture current texture to 0.
@@ -209,9 +210,7 @@ void			CDriverGLStates::enableBlend(uint enable)
 		if(_CurBlend)
 			glEnable(GL_BLEND);
 		else
-			glDisable(GL_BLEND);
-		
-			
+			glDisable(GL_BLEND);		
 	}
 }
 
@@ -231,9 +230,7 @@ void			CDriverGLStates::enableCullFace(uint enable)
 		if(_CurCullFace)
 			glEnable(GL_CULL_FACE);
 		else
-			glDisable(GL_CULL_FACE);
-		
-			
+			glDisable(GL_CULL_FACE);	
 	}
 }
 
@@ -258,9 +255,7 @@ void			CDriverGLStates::enableAlphaTest(uint enable)
 		else
 		{
 			glDisable(GL_ALPHA_TEST);
-		}
-		
-			
+		}		
 	}
 }
 
@@ -284,9 +279,7 @@ void			CDriverGLStates::enableLighting(uint enable)
 		else
 		{			
 			glDisable(GL_LIGHTING);			
-		}
-		
-			
+		}		
 	}
 }
 
@@ -310,7 +303,6 @@ void			CDriverGLStates::enableLight(uint num, uint enable)
 			glEnable ((GLenum)(GL_LIGHT0+num));
 		else
 			glDisable ((GLenum)(GL_LIGHT0+num));
-		
 	}
 }
 
@@ -342,7 +334,6 @@ void			CDriverGLStates::enableZWrite(uint enable)
 			glDepthMask(GL_TRUE);
 		else
 			glDepthMask(GL_FALSE);
-		
 	}
 }
 
@@ -363,9 +354,7 @@ void			CDriverGLStates::enableStencilTest(bool enable)
 		if(_CurStencilTest)
 			glEnable(GL_STENCIL_TEST);
 		else
-			glDisable(GL_STENCIL_TEST);
-		
-			
+			glDisable(GL_STENCIL_TEST);	
 	}
 }
 
@@ -383,9 +372,7 @@ void			CDriverGLStates::blendFunc(GLenum src, GLenum dst)
 		_CurBlendSrc= src;
 		_CurBlendDst= dst;
 		// Setup GLState.
-		glBlendFunc(_CurBlendSrc, _CurBlendDst);
-		
-			
+		glBlendFunc(_CurBlendSrc, _CurBlendDst);	
 	}
 }
 
@@ -401,9 +388,7 @@ void			CDriverGLStates::depthFunc(GLenum zcomp)
 		// new state.
 		_CurDepthFunc= zcomp;
 		// Setup GLState.
-		glDepthFunc(_CurDepthFunc);
-		
-			
+		glDepthFunc(_CurDepthFunc);	
 	}
 }
 
@@ -419,9 +404,7 @@ void			CDriverGLStates::alphaFunc(float threshold)
 		// new state
 		_CurAlphaTestThreshold= threshold;
 		// setup function.
-		glAlphaFunc(GL_GREATER, _CurAlphaTestThreshold);
-		
-			
+		glAlphaFunc(GL_GREATER, _CurAlphaTestThreshold);	
 	}
 }
 
@@ -489,9 +472,7 @@ void			CDriverGLStates::setEmissive(uint32 packedColor, const GLfloat color[4])
 #endif
 	{
 		_CurEmissive= packedColor;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);
-		
-			
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, color);	
 	}
 }
 
@@ -504,9 +485,7 @@ void			CDriverGLStates::setAmbient(uint32 packedColor, const GLfloat color[4])
 #endif
 	{
 		_CurAmbient= packedColor;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color);
-		
-			
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color);		
 	}
 }
 
@@ -519,9 +498,7 @@ void			CDriverGLStates::setDiffuse(uint32 packedColor, const GLfloat color[4])
 #endif
 	{
 		_CurDiffuse= packedColor;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);
-		
-			
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);	
 	}
 }
 
@@ -534,9 +511,7 @@ void			CDriverGLStates::setSpecular(uint32 packedColor, const GLfloat color[4])
 #endif
 	{
 		_CurSpecular= packedColor;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color);
-		
-			
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color);	
 	}
 }
 
@@ -549,9 +524,7 @@ void			CDriverGLStates::setShininess(float shin)
 #endif
 	{
 		_CurShininess= shin;
-		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shin);
-		
-			
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shin);	
 	}
 }
 
@@ -594,9 +567,7 @@ void			CDriverGLStates::setVertexColorLighted(bool enable)
 			GLfloat	glColor[4];
 			convColor(diffCol, glColor);
 			glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, glColor);
-		}
-		
-			
+		}	
 	}
 }
 
@@ -679,9 +650,7 @@ void		CDriverGLStates::setTexGenMode (uint stage, GLint mode)
 			glEnable( GL_TEXTURE_GEN_S );
 			glEnable( GL_TEXTURE_GEN_T );
 			glEnable( GL_TEXTURE_GEN_R );
-		}
-		
-			
+		}		
 	}
 }
 
@@ -697,9 +666,11 @@ void			CDriverGLStates::resetTextureMode()
 	{
 		glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 	}
-	_TextureMode[_CurrentActiveTextureARB]= TextureDisabled;
-	
-		
+	if (_TextureRectangleSupported)
+	{
+		glDisable(GL_TEXTURE_RECTANGLE_NV);
+	}
+	_TextureMode[_CurrentActiveTextureARB]= TextureDisabled;	
 }
 
 
@@ -713,6 +684,13 @@ void			CDriverGLStates::setTextureMode(TTextureMode texMode)
 		// Disable first old mode.
 		if(oldTexMode == Texture2D)
 			glDisable(GL_TEXTURE_2D);
+		else if(oldTexMode == TextureRect)
+		{
+			if(_TextureRectangleSupported)
+				glDisable(GL_TEXTURE_RECTANGLE_NV);
+			else
+				glDisable(GL_TEXTURE_2D);
+		}
 		else if(oldTexMode == TextureCubeMap)
 		{
 			if(_TextureCubeMapSupported)
@@ -724,6 +702,13 @@ void			CDriverGLStates::setTextureMode(TTextureMode texMode)
 		// Enable new mode.
 		if(texMode == Texture2D)
 			glEnable(GL_TEXTURE_2D);
+		else if(texMode == TextureRect)
+		{
+			if(_TextureRectangleSupported)
+				glEnable(GL_TEXTURE_RECTANGLE_NV);
+			else
+				glDisable(GL_TEXTURE_2D);
+		}
 		else if(texMode == TextureCubeMap)
 		{
 			if(_TextureCubeMapSupported)
@@ -734,9 +719,7 @@ void			CDriverGLStates::setTextureMode(TTextureMode texMode)
 
 		// new mode.
 		_TextureMode[_CurrentActiveTextureARB]= texMode;
-	}
-	
-		
+	}	
 }
 
 

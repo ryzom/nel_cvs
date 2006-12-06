@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * TODO: File description
  *
- * $Id: std_afx.h,v 1.15 2004/11/15 10:25:09 lecroart Exp $
+ * $Id: std_afx.h,v 1.16 2006/12/06 17:21:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,35 +69,35 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/matrix.h"
-#include <nel/misc/file.h>
-#include <nel/misc/path.h>
-#include <nel/misc/time_nl.h>
-#include <nel/misc/config_file.h>
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
+#include "nel/misc/time_nl.h"
+#include "nel/misc/config_file.h"
 
 #include <vector>
 #include <map>
 #include <algorithm>
 
 
-#include <3d/nelu.h>
-#include <3d/mesh.h>
-#include <3d/transform_shape.h>
-#include <3d/mesh_instance.h>
-#include <3d/text_context.h>
-#include <3d/skeleton_model.h>
-#include <3d/animation_set.h>
-#include <3d/channel_mixer.h>
-#include <3d/shape.h>
-#include <3d/event_mouse_listener.h>
-#include <3d/light.h>
-#include <3d/font_manager.h>
+#include "3d/nelu.h"
+#include "3d/mesh.h"
+#include "3d/transform_shape.h"
+#include "3d/mesh_instance.h"
+#include "3d/text_context.h"
+#include "3d/skeleton_model.h"
+#include "3d/animation_set.h"
+#include "3d/channel_mixer.h"
+#include "3d/shape.h"
+#include "3d/event_mouse_listener.h"
+#include "3d/light.h"
+#include "3d/font_manager.h"
 
-#include <nel/misc/event_listener.h>
-#include <nel/misc/stream.h>
+#include "nel/misc/event_listener.h"
+#include "nel/misc/stream.h"
 
-#include <nel/3d/logic_info.h>
+#include "nel/3d/logic_info.h"
 
-#include <nel/pacs/u_global_position.h>
+#include "nel/pacs/u_global_position.h"
 
 
 

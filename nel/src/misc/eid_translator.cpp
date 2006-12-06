@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.35 2006/07/12 14:37:22 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.36 2006/12/06 17:21:15 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -168,23 +168,22 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 	H_AUTO(EIdTrans_getByEntity3);
 	string lowerName = toLower(entityName.toString());
 
+	if (exact)
+	{
+		// use the reverse index to speed up search
+		TNameIndexCont::iterator it(NameIndex.find(lowerName));
+		if (it != NameIndex.end())
+			res.push_back(it->second);
+
+		return;
+	}
+	// parse the entire container to match all entities
 	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != RegisteredEntities.end(); ++it)
 	{
-		if (exact)
+		CEntity &entity = it->second;
+		if (toLower(entity.EntityName.toString()).find(lowerName) != string::npos)
 		{
-			CEntity &entity = it->second;
-			if (toLower(entity.EntityName.toString()) == lowerName)
-			{
-				res.push_back(it->first);
-			}
-		}
-		else
-		{
-			CEntity &entity = it->second;
-			if (toLower(entity.EntityName.toString()).find(lowerName) != string::npos)
-			{
-				res.push_back(it->first);
-			}
+			res.push_back(it->first);
 		}
 	}
 }
@@ -291,7 +290,7 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	
 	nlinfo ("EIT: Register EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot, shardId)));
-	NameIndex.insert(make_pair(entityName, reid));
+	NameIndex.insert(make_pair(toLower(entityName), reid));
 }
 
 void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName, uint32 shardId)
@@ -324,8 +323,8 @@ void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &en
 				return;
 			}
 			// update the name and name index
-			NameIndex.erase(entity.EntityName);
-			NameIndex.insert(make_pair(entityName, reid));
+			NameIndex.erase(toLower(entity.EntityName));
+			NameIndex.insert(make_pair(toLower(entityName), reid));
 			entity.EntityName = entityName;
 			entity.EntityNameStringId = 0;
 		}
@@ -356,7 +355,7 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 	CEntity &entity = it->second;
 
 	nldebug ("EIT: Unregister EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entity.EntityName.toString().c_str(), entity.UId, entity.UserName.c_str());
-	NameIndex.erase(entity.EntityName);
+	NameIndex.erase(toLower(entity.EntityName));
 	RegisteredEntities.erase (reid);
 }
 
@@ -496,7 +495,7 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 			TEntityCont::iterator first(RegisteredEntities.begin()), last(RegisteredEntities.end());
 			for (; first != last; ++first)
 			{
-				NameIndex.insert(make_pair(first->second.EntityName, first->first));
+				NameIndex.insert(make_pair(toLower(first->second.EntityName), first->first));
 			}
 		}
 		else

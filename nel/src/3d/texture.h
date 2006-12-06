@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.21 2006/05/31 12:03:14 boucher Exp $
+ * $Id: texture.h,v 1.22 2006/12/06 17:21:15 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -400,7 +400,10 @@ public:
 
 	// is this texture a bumpmap ?
 	virtual bool isBumpMap() const { return false; }
-		
+
+	// is this texture a bloom texture ?
+	virtual bool isBloomTexture() const { return false; }
+	
 	// For Texture profiling. The smartPtr is kept (NULL default)
 	void	setTextureCategory(NLMISC::CSmartPtr<CTextureCategory> &textCat) {_TextureCategory= textCat;}
 

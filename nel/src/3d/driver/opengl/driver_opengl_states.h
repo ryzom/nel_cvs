@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * TODO: File description
  *
- * $Id: driver_opengl_states.h,v 1.22 2005/07/22 12:34:48 legallo Exp $
+ * $Id: driver_opengl_states.h,v 1.23 2006/12/06 17:21:23 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	/// Constructor. no-op.
 	CDriverGLStates();
 	// init. Do it just after setDisplay()
-	void			init(bool supportTextureCubeMap, uint maxLight);
+	void			init(bool supportTextureCubeMap, bool supportTextureRectangle, uint maxLight);
 
 	/// Reset all OpenGL states of interest to default, and update caching. This don't apply to light.
 	void			forceDefaults(uint nbTextureStages);	
@@ -141,7 +141,7 @@ public:
 
 	/// \name Texture Mode setting.
 	// @{
-	enum			TTextureMode {TextureDisabled, Texture2D, TextureCubeMap, TextureModeCount};	
+	enum			TTextureMode {TextureDisabled, Texture2D, TextureRect, TextureCubeMap, TextureModeCount};	
 	/// same as glActiveTextureARB(). usefull for setTextureMode.
 	void			activeTextureARB(uint stage);
 	/// same as active texture arb, but with no cache check
@@ -222,6 +222,7 @@ private:
 	bool			_VertexColorLighted;
 
 	bool			_TextureCubeMapSupported;
+	bool			_TextureRectangleSupported;
 	uint			_CurrentActiveTextureARB;
 	TTextureMode	_TextureMode[8];
 

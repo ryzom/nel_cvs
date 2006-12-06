@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.83 2005/07/22 12:21:46 legallo Exp $
+ * $Id: driver.h,v 1.84 2006/12/06 17:21:15 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -762,6 +762,15 @@ public:
 	  * \param rect the in/out (wanted/clipped) part of Color buffer to retrieve.
 	  */
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) = 0;
+
+	// copy the first texture in a second one of different dimensions
+	virtual bool			stretchRect (ITexture * srcText, NLMISC::CRect &srcRect, ITexture * destText, NLMISC::CRect &destRect) = 0;
+	
+	// is this texture a rectangle texture ?
+	virtual bool			isTextureRectangle(ITexture * tex) const = 0;
+
+	// return true if driver support Bloom effect.
+	virtual	bool			supportBloomEffect() const =0;
 
 	/** get a part of the ZBuffer (back buffer).
 	  * NB: 0,0 is the bottom left corner of the screen.

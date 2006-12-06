@@ -32,10 +32,10 @@ namespace WS
 			/// a value equal to the last enum item +1
 			end_of_enum,
 
-			/// Number of enumerated values
-			nb_enum_items = 3,
+			invalid_val,
 			
-			invalid_val
+			/// Number of enumerated values
+			nb_enum_items = 3
 		};
 		
 		/// Index table to convert enum value to linear index table

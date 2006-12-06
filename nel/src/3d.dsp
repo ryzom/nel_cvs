@@ -1204,6 +1204,14 @@ SOURCE=.\3d\texture_blend.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture_bloom.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_bloom.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_bump.cpp
 # End Source File
 # Begin Source File

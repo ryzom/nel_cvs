@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.22 2006/07/12 14:37:21 boucher Exp $
+ * $Id: eid_translator.h,v 1.23 2006/12/06 17:21:01 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -171,7 +171,7 @@ private:
 
 
 	/// The container for all entity in the translator
-	TEntityCont		RegisteredEntities;
+	TEntityCont			RegisteredEntities;
 
 	typedef std::map<ucstring, NLMISC::CEntityId>	TNameIndexCont;
 	/// the reverse index to retreive entity by name

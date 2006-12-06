@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
-# ADD LINK32 nlligo_rd.lib nlgeorges_rd.lib mfcs42.lib libxml2.lib freetype.lib shlwapi.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll" /pdbtype:sept
+# ADD LINK32 mfcs42.lib libxml2.lib freetype.lib shlwapi.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll" /pdbtype:sept
 # SUBTRACT LINK32 /incremental:yes
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"

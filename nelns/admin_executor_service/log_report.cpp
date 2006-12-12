@@ -1,7 +1,7 @@
 /** \file log_report.cpp
  * <File description>
  *
- * $Id: log_report.cpp,v 1.5 2005/02/16 14:05:35 lancon Exp $
+ * $Id: log_report.cpp,v 1.6 2006/12/12 17:28:16 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -34,12 +34,10 @@ using namespace NLMISC;
 using namespace std;
 
 
-CVariable<string> LogPath( "aes","LogPath", "Path of the log files", ".", 0, true );
+CVariable<string> LogPath( "LogReport","LogPath", "Path of the log files", ".", 0, true );
 
 const uint MAX_LOG_LINE_SIZE = 1024;
 //nlctassert(MAX_LOG_LINE_SIZE>0);
-
-CLogReport MainLogReport;
 
 enum TLogLineHeader { LHDate, LHTime, LHType, LHThread, LHService, LHCodeFile, LHCodeLine, LHSeparator, LH_NB_FIELDS };
 
@@ -108,8 +106,185 @@ void	CMakeLogTask::setLogPathToDefault()
 /*
  *
  */
+CMakeLogTask::~CMakeLogTask()
+{
+	if ( _Thread ) // implies && _OutputLogReport
+	{
+		if ( ! _Complete )
+		{
+			pleaseStop();
+			_Thread->wait();
+		}
+		clear();
+	}
+}
+
+
+/*
+ *
+ */
+void	CMakeLogTask::start()
+{
+	if ( _Thread )
+	{
+		if ( _Complete )
+			clear();
+		else
+			return;
+	}
+	_Stopping = false;
+	_Complete = false;
+	_Thread = NLMISC::IThread::create( this );
+	_OutputLogReport = new CLogReport();
+	_Thread->start();
+}
+
+
+/*
+ *
+ */
+void	CMakeLogTask::clear()
+{
+	if (_Thread)
+	{
+		delete _Thread;
+		_Thread = NULL;
+	}
+	if (_OutputLogReport)
+	{
+		delete _OutputLogReport;
+		_OutputLogReport = NULL;
+	}
+}
+
+/*
+ *
+ */
+void	CMakeLogTask::terminateTask()
+{
+	if (!_Thread) // _Thread _implies _OutputLogReport
+		return;
+
+	pleaseStop();
+	_Thread->wait();
+
+	clear();
+}
+
+//
+bool isOfLogDotLogFamily( const std::string& filename )
+{
+	return ((filename == "log.log") ||
+			 ((filename.size() == 10) &&
+			  (filename.substr( 0, 3 ) == "log") &&
+			  isNumberChar(filename[3]) && isNumberChar(filename[4]) && isNumberChar(filename[5]) &&
+			  (filename.substr( 6, 4 ) == ".log")) );
+}
+
+
+enum TVersionTargetMode { TTMAll, TTMMatchAllV, TTMMatchExactV, TTMMatchGreaterV, TTMMatchLowerV } targetMode;
+const uint CurrentVersion = ~0;
+
+// Return true and logVersion, or false if not a log with version
+bool getLogVersion( const std::string& filename, uint& logVersion )
+{
+	uint len = filename.size();
+	if ( (len > 4) && (filename.substr( len-4 ) == ".log") )
+	{
+		if ( filename.substr(0, 3) == "log" )
+		{
+			if ( (len == 7) ||
+				 ((len == 10) && (isNumberChar(filename[3]) && isNumberChar(filename[4]) && isNumberChar(filename[5]))) )
+			{
+				logVersion = CurrentVersion;
+				return true;
+			}
+		}
+		else if ( filename[0] == 'v' )
+		{
+			string::size_type p = filename.find( "_", 1 );
+			if ( p != string::npos )
+			{
+				if ( (len == p + 8) ||
+					 ((len == p + 11) && (isNumberChar(filename[p+4]) && isNumberChar(filename[p+5]) && isNumberChar(filename[p+6]))) )
+				{
+					NLMISC::fromString( filename.substr( 1, p-1 ), logVersion );
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+// Assumes filename is .log file
+bool matchLogTarget( const std::string& filename, TVersionTargetMode targetMode, uint targetVersion )
+{
+	if ( targetMode == TTMAll )
+		return true;
+
+	uint version;
+
+	// Get version or exclude non-standard log files
+	if ( ! getLogVersion( filename, version ) )
+		return false;
+
+	// Exclude non-matching version
+	switch ( targetMode )
+	{
+	case TTMMatchExactV:
+		return (version == targetVersion); // break;
+	case TTMMatchGreaterV:
+		return (version >= targetVersion); // break;
+	case TTMMatchLowerV:
+		return (version <= targetVersion); // break;
+	default: // TTMMatchAllV
+		return true;
+	}
+}
+
+/*
+ *
+ */
 void	CMakeLogTask::run()
 {
+	// Parse log target
+	uint targetVersion = CurrentVersion;
+	uint lts = _LogTarget.size();
+	if ( _LogTarget.empty() || (_LogTarget == "v") )
+	{
+		targetMode = TTMMatchExactV;
+	}
+	else if ( _LogTarget == "v*" )
+	{
+		targetMode = TTMMatchAllV;
+	}
+	else if ( _LogTarget == "*" )
+	{
+		targetMode = TTMAll;
+	}
+	else if ( (lts > 1) && (_LogTarget[0] == 'v') )
+	{
+		uint additionalChars = 1;
+		if ( _LogTarget[lts-1] == '+' )
+			targetMode = TTMMatchGreaterV;
+		else if ( _LogTarget[lts-1] == '-' )
+			targetMode = TTMMatchLowerV;
+		else
+		{
+			targetMode = TTMMatchExactV;
+			additionalChars = 0;
+		}
+		
+		NLMISC::fromString( _LogTarget.substr( 1, lts-additionalChars-1 ), targetVersion );
+	}
+	else
+	{
+		nlwarning( "Invalid log target argument: %s", _LogTarget.c_str() );
+		_Complete = true;
+		return;
+	}
+
 	// Get log files and sort them
 	string path = LogPath.get();
 	if ( (! path.empty()) && (path[path.size()-1]!='/') )
@@ -121,33 +296,32 @@ void	CMakeLogTask::run()
 	sortLogFiles( filenames );
 
 	// Analyse log files
-	MainLogReport.reset();
+	_OutputLogReport->reset();
 	uint nbLines = 0;
 	char line [MAX_LOG_LINE_SIZE];
 
-	uint skippedLogDotLog = 0;
+	uint nbSkippedFiles = 0;
 	for ( ilf=filenames.begin(); ilf!=filenames.end(); ++ilf )
 	{
 		string shortname = CFile::getFilename( *ilf );
-		if ( (shortname == "log.log") ||
-			 ((shortname.size() == 10) &&
-			  (shortname.substr( 0, 3 ) == "log") &&
-			  isNumberChar(shortname[3]) && isNumberChar(shortname[4]) && isNumberChar(shortname[5]) &&
-			  (shortname.substr( 6, 4 ) == ".log")) )
+
+		// Filter log files based on filename before opening them
+		if ( ! matchLogTarget( shortname, targetMode, targetVersion ) )
 		{
-			++skippedLogDotLog;
+			++nbSkippedFiles;
 			continue;
 		}
+
 		nlinfo( "Processing %s (%u/%u)", (*ilf).c_str(), ilf-filenames.begin(), filenames.size() );
 		CIFile logfile;
 		if ( logfile.open( *ilf, true ) )
 		{
-			MainLogReport.setProgress( ilf-filenames.begin(), filenames.size() );
+			_OutputLogReport->setProgress( ilf-filenames.begin(), filenames.size() );
 			while ( ! logfile.eof() )
 			{
 				logfile.getline( line, MAX_LOG_LINE_SIZE );
 				line[MAX_LOG_LINE_SIZE-1] = '\0'; // force valid end of line
-				MainLogReport.pushLine( line );
+				_OutputLogReport->pushLine( line );
 				++nbLines;
 
 				if ( isStopping() )
@@ -156,8 +330,8 @@ void	CMakeLogTask::run()
 		}
 	}
 	nlinfo( "%u lines processed", nbLines );
-	if ( skippedLogDotLog != 0 )
-		nlinfo( "%u log[NNN].log files skipped", skippedLogDotLog );
+	if ( nbSkippedFiles != 0 )
+		nlinfo( "%u log files skipped, not matching target %s", nbSkippedFiles, _LogTarget.c_str() );
 	_Complete = true;
 }
 

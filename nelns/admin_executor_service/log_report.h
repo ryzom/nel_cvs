@@ -1,7 +1,7 @@
 /** \file log_report.h
  * <File description>
  *
- * $Id: log_report.h,v 1.6 2006/12/12 17:28:16 cado Exp $
+ * $Id: log_report.h,v 1.7 2006/12/13 15:15:48 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -69,8 +69,14 @@ public:
 	/// Set the path of logfile directory. 
 	void setLogPath(const std::string & logPath);
 
+	/// Set one or more paths of logfile directory. They will be processed when running the background thread.
+	void setLogPaths(const std::vector<std::string>& logPaths);
+
 	/// Set the path of logfile directory to default value
 	void setLogPathToDefault();
+
+	/// Return the log paths
+	const std::vector<std::string> getLogPaths() const { return _LogPaths; }
 
 	/** Set which files are to be browsed:
 	 * v       --> log*.log (default if setLogTarget() not called or called with an empty string)
@@ -92,8 +98,8 @@ private:
 
 	volatile bool	_Stopping;
 	volatile bool	_Complete;
-	std::string		_DefaultLogPath;
 	std::string		_LogTarget;
+	std::vector<std::string>	_LogPaths;
 
 	NLMISC::IThread	*_Thread;
 

@@ -1,7 +1,7 @@
 /** \file log_report.cpp
  * <File description>
  *
- * $Id: log_report.cpp,v 1.6 2006/12/12 17:28:16 cado Exp $
+ * $Id: log_report.cpp,v 1.7 2006/12/13 15:15:47 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -45,7 +45,8 @@ enum TLogLineHeader { LHDate, LHTime, LHType, LHThread, LHService, LHCodeFile, L
 ///
 bool isLogFile( const std::string& filename )
 {
-	return (filename.find( ".log" ) != string::npos);
+	uint len = filename.size();
+	return (len >= 4 ) && (filename.substr( len-4 ) == ".log");
 }
 
 ///
@@ -88,20 +89,19 @@ void sortLogFiles( vector<std::string>& filenames )
 
 void	CMakeLogTask::setLogPath(const std::string & logPath)
 {
-	if (_DefaultLogPath.empty()) {  _DefaultLogPath = LogPath.get(); }
-	LogPath = logPath;
+	_LogPaths.resize( 1 );
+	_LogPaths[0] = logPath;
 }
 
+void	CMakeLogTask::setLogPaths(const std::vector<std::string>& logPaths)
+{
+	_LogPaths = logPaths;
+}
 
 void	CMakeLogTask::setLogPathToDefault()
 {
-	if (!_DefaultLogPath.empty())
-	{
-		LogPath = _DefaultLogPath;
-		_DefaultLogPath = "";
-	}
+	setLogPath( LogPath.get() );
 }
-
 
 /*
  *
@@ -286,14 +286,20 @@ void	CMakeLogTask::run()
 	}
 
 	// Get log files and sort them
-	string path = LogPath.get();
-	if ( (! path.empty()) && (path[path.size()-1]!='/') )
-		path += "/";
 	vector<string> filenames;
-	CPath::getPathContent( path, false, false, true, filenames, NULL, true );
-	vector<string>::iterator ilf = partition( filenames.begin(), filenames.end(), isLogFile );
-	filenames.erase( ilf, filenames.end() );
-	sortLogFiles( filenames );
+	vector<string> filenamesOfPath;
+	for ( vector<string>::const_iterator ilf=_LogPaths.begin(); ilf!=_LogPaths.end(); ++ilf )
+	{
+		string path = (*ilf);
+		if ( (! path.empty()) && (path[path.size()-1]!='/') )
+			path += "/";
+		filenamesOfPath.clear();
+		CPath::getPathContent( path, false, false, true, filenamesOfPath, NULL, true );
+		vector<string>::iterator ilf = partition( filenamesOfPath.begin(), filenamesOfPath.end(), isLogFile );
+		filenamesOfPath.erase( ilf, filenamesOfPath.end() );
+		sortLogFiles( filenamesOfPath );
+		filenames.insert( filenames.end(), filenamesOfPath.begin(), filenamesOfPath.end() );
+	}
 
 	// Analyse log files
 	_OutputLogReport->reset();
@@ -301,7 +307,7 @@ void	CMakeLogTask::run()
 	char line [MAX_LOG_LINE_SIZE];
 
 	uint nbSkippedFiles = 0;
-	for ( ilf=filenames.begin(); ilf!=filenames.end(); ++ilf )
+	for ( vector<string>::const_iterator ilf=filenames.begin(); ilf!=filenames.end(); ++ilf )
 	{
 		string shortname = CFile::getFilename( *ilf );
 

@@ -29,6 +29,10 @@ AnikiSchema = BaseFolderSchema.copy()+ Schema((
 		searchable=False,
 		widget=LinesWidget(description="Enter list of language, one per lines",)
 	),
+	LinesField('authorized_groups',
+		searchable=False,
+		widget=LinesWidget(description="Enter a list of authorized group(s)",)
+	),
 ))
 
 class Aniki(BaseFolder):
@@ -75,5 +79,18 @@ class Aniki(BaseFolder):
 			sort_on = 'sortable_title',
 			)
 		return results
+
+	security.declarePublic('isAuthorized')
+	def isAuthorized(self,name):
+		"""return true is name is include in authorized groups"""
+		groups = self.getAuthorized_groups()
+		user = self.acl_users.getUserByName(name);
+		if user:
+			userGroups = user.getGroups()
+			for group in groups:
+				if 'group_'+group in userGroups:
+					return True
+		return False
+
 
 registerType(Aniki, PROJECTNAME)

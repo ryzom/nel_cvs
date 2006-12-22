@@ -38,9 +38,13 @@ function filter(url){
 
 <body>
 
-<div metal:fill-slot="main" 
-tal:condition="python:'Reviewer' in container.portal_membership.getCandidateLocalRoles(here)"
-tal:define="url python:here.absolute_url();">
+<div metal:fill-slot="main" tal:condition="not: isAnon">
+<tal:contains
+tal:define="url python:here.absolute_url();
+            name python:member.getId();
+            isAuthorized python: here.isAuthorized(name);"
+
+tal:condition="python:isAuthorized">
 
 <h1 tal:content="here/title"></h1>
 <p>liste des pubs pour cette campagne:</p>
@@ -73,23 +77,22 @@ tal:define="url python:here.absolute_url();">
 		<div tal:omit-tag="" tal:repeat="capo capoZ" >
 			<tr onclick=""
 				tal:define="nieme repeat/capo/index"
+				tal:condition="python: isAuthorized"
 				tal:attributes='onclick string:sendRequestAndChangeContent("${capo/Title}", "${capo/Title}/getDescription");
 								class python:"parite"+str(nieme%2);'>
 				<td tal:content="python:capo.Title">rank</td>
 				<td tal:content="python:capo.getObject().getIterateur()">Nom</td>
 				<td tal:content="python:capo.getObject().getDescription()">desc</td>
 			</tr>
-<!--
 			<tr onclick=""
 				tal:attributes='onclick string:hide("${capo/Title}")' 
 				style="height:0px; padding:0px; margin:0px;">	
-				<td colspan="3" class="folded">
+				<td colspan="2" class="folded">
 					<div class="hidden" 
 						id="" tal:attributes="id string:${capo/Title}">
 					</div>
 				</td>
 			</tr>
--->
 			<div tal:omit-tag="" tal:define="global s python:s + int(capo.getObject().getIterateur())" />
 		</div>
 		<tr>
@@ -99,6 +102,7 @@ tal:define="url python:here.absolute_url();">
 
 </table>
 </div>
+</tal:contains>
 </div>
 
 </body>

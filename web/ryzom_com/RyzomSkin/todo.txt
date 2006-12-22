@@ -1,2 +1,1 @@
-- add a automated page for /portlets/info (add/publication/...)
-- proxy_role for isOfficial
+

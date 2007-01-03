@@ -50,8 +50,51 @@
     </select>
   </form>
 
-<!-- la ligne pour mettre les icone print,envoyer,...langage... -->
-<div metal:use-macro="here/document_actions/macros/document_actions"></div>
+<div class="documentActions">
+    <ul>
+        <li tal:define="lang python:here.portal_languages.getLanguageBindings()[0]">
+            <a href="" tal:attributes=" href string:news/feed.rdf?setlanguage=${lang}">
+                <img i18n:attributes="title" src="" alt="" title=""
+                     tal:attributes="src    string:rss.gif;
+                                     title  string:RSS feed of this listing;
+                                     alt    string:RSS feed of this listing;" />
+            </a>
+        </li>
+        <li>
+            <a href="sendto_form">
+                <img src="mail_icon.gif" alt="Send this page to somebody" title="Envoyer cette page à quelqu'un" />
+            </a>
+        </li>
+        <li>
+            <a href="javascript:this.print();">
+                <img src="print_icon.gif" alt="Print this page" title="Imprimer cette page" />
+            </a>
+        </li>
+        <li>
+            <a href="javascript:toggleFullScreenMode();">
+                <img src="fullscreenexpand_icon.gif" alt="Toggle full screen mode" title="Toggle full screen mode">
+            </a>
+        </li>
+    </ul>
+    
+    <ul>
+        <li>
+            <a href="?set_language=de" title="Switch language to Deutsch">
+                <span><img alt="Deutsch" src="flag-de.gif"/></span>
+            </a>
+        </li>
+        <li>
+            <a href="?set_language=en" title="Switch language to English">
+                <span><img alt="English" src="flag-en.gif"/></span>
+            </a>
+        </li>
+        <li>
+            <a href="?set_language=fr" title="Switch language to Français">
+                <span><img alt="Français" src="flag-fr.gif"/></span>
+            </a>
+        </li>
+    </ul>
+</div>
 
       <div id="content-weblog"
         tal:define="results here/getEntries;

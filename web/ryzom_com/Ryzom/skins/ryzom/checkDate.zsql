@@ -1,0 +1,5 @@
+<dtml-comment>
+arguments:data file
+connection_id: rsweb_atys_zope
+</dtml-comment>
+select * from dl_stats where date = <dtml-sqlvar date type="string"> and file = <dtml-sqlvar file type="string">

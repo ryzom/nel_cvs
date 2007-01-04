@@ -1,0 +1,5 @@
+<dtml-comment>
+arguments:data file
+connection_id: rsweb_atys_zope
+</dtml-comment>
+insert into dl_stats (date,file,counter) values (<dtml-sqlvar date type="string">,<dtml-sqlvar file type="string">, 0)

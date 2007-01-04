@@ -1,0 +1,5 @@
+<dtml-comment>
+arguments:data file
+connection_id: rsweb_atys_zope
+</dtml-comment>
+update dl_stats set counter = counter + 1 where date = <dtml-sqlvar date type="string"> and file = <dtml-sqlvar file type="string">

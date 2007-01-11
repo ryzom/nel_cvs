@@ -1,7 +1,7 @@
-/** \file path.cpp
+	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.3 2006/07/21 10:54:09 boucher Exp $
+ * $Id: path.cpp,v 1.119.4.4 2007/01/11 09:11:47 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -2015,7 +2015,7 @@ bool CFile::deleteFile(const std::string &filename)
 	int res = unlink (filename.c_str());
 	if (res == -1)
 	{
-		nlwarning ("PATH: Can't delete file '%s': %d %s", filename.c_str(), errno, strerror(errno));
+		nlwarning ("PATH: Can't delete file '%s': (errno %d) %s", filename.c_str(), errno, strerror(errno));
 		return false;
 	}
 	return true;

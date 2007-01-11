@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.33.6.6 2006/11/08 13:41:38 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.33.6.7 2007/01/11 09:11:47 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -208,10 +208,16 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 		}
 	}
 
+	bool allowNumeric = false;
 	for (uint i = 0; i < entityName.size(); i++)
 	{
+		if (entityName[i] == '(')
+		{
+			// starting from shard name, allow alphanumeric character
+			allowNumeric = true;
+		}
 		// only accept name with alphabetic and numeric value [a-zA-Z] and parenthesis 
-		if (!isalpha (entityName[i]) && entityName[i] != '(' && entityName[i] != ')')
+		if (!allowNumeric && !isalpha (entityName[i]) && entityName[i] != '(' && entityName[i] != ')')
 		{
 			log->displayNL("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
 			return false;

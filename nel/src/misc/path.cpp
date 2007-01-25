@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.4 2007/01/11 09:11:47 boucher Exp $
+ * $Id: path.cpp,v 1.119.4.5 2007/01/25 13:22:46 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1790,13 +1790,36 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 	{
 #ifdef NL_OS_WINDOWS
 		if (MoveFile(ssrc.c_str(), sdest.c_str()) == 0)
-#else
-		if (link (ssrc.c_str(), sdest.c_str()) == -1)
-#endif
 		{
-			nlwarning ("PATH: CopyMoveFile error: can't link/move '%s' into '%s'", ssrc.c_str(), sdest.c_str());
+			LPVOID lpMsgBuf;
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+					    FORMAT_MESSAGE_FROM_SYSTEM | 
+						FORMAT_MESSAGE_IGNORE_INSERTS,
+						NULL,
+						GetLastError(),
+						MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+						(LPTSTR) &lpMsgBuf,
+						0,
+						NULL );
+			nlwarning ("PATH: CopyMoveFile error: can't link/move '%s' into '%s', error %u (%s)", 
+				ssrc.c_str(), 
+				sdest.c_str(),
+				GetLastError(),
+				lpMsgBuf);
+
+			LocalFree(lpMsgBuf);
 			return false;
 		}
+#else
+		if (link (ssrc.c_str(), sdest.c_str()) == -1)
+		{
+			nlwarning ("PATH: CopyMoveFile error: can't link/move '%s' into '%s', error %u", 
+				ssrc.c_str(), 
+				sdest.c_str(),
+				errno);
+			return false;
+		}
+#endif
 #ifndef NL_OS_WINDOWS
 		if (unlink (ssrc.c_str()) == -1)
 		{

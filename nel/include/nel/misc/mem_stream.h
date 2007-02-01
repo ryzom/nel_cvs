@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.45 2006/01/10 17:38:46 boucher Exp $
+ * $Id: mem_stream.h,v 1.46 2007/02/01 16:24:32 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,15 +42,17 @@ struct EMemStream : public NLMISC::EStream
 };
 
 
-/*
-/// Vector of uint8
-typedef std::vector<uint8> CVector8;
-
-/// Iterator on CVector8
-typedef CVector8::iterator It8;
-*/
-
-
+/** This class implement a copy on write behavior for memory stream buffer.
+ *	The goal is to allow buffer sharing between CMemStream object, so that
+ *	a CMemStream can be copied or passed by value as input/output parameter
+ *	without copying the data buffer (thus making a CMemStrem copy alomst free).
+ *	This class reference a TMemStreamBuffer object with a smart pointer,
+ *	when some code call the getBufferWrite() method to obtain write access
+ *	to the memory buffer, if the ref count is more than 1, then we make a copy
+ *	of the internal buffer for the current object.
+ *
+ *	\Author Boris Boucher
+ */
 class CMemStreamBuffer
 {
 public:
@@ -68,35 +70,36 @@ private:
 
 public:
 
-//	mutable uint8	*Pos;
 	mutable	uint32	Pos;
 
-	// constructor, allocate a shared buffer
+	/// constructor, allocate a shared buffer
 	CMemStreamBuffer()
 	{
 		_SharedBuffer = new TMemStreamBuffer;
-		//Pos = _SharedBuffer->_Buffer.getPtr();
 		Pos = 0;
 	}
 
 
+	/// Return a read accessor to the buffer
 	const TBuffer &getBuffer() const
 	{
 		return _SharedBuffer->_Buffer;
 	}
 
+	/** Return a write accessor to the buffer, create acopy it if more than
+	 *	one CMemStreamBuffer reference then buffer.
+	 */
 	TBuffer &getBufferWrite()
 	{
 		if (_SharedBuffer->getRefCount() > 1)
 		{
-//			uint32 offset = Pos - _SharedBuffer->_Buffer.getPtr();
 			// we need to duplicate the buffer
 			_SharedBuffer = new TMemStreamBuffer(*_SharedBuffer);
-//			Pos = _SharedBuffer->_Buffer.getPtr() + offset;
 		}
 		return _SharedBuffer->_Buffer;
 	}
 
+	/// Exchange the buffer of two CMemStreamBuffer (just swap memory pointer)
 	void swap(CMemStreamBuffer &other)
 	{
 		std::swap(_SharedBuffer, other._SharedBuffer);
@@ -144,8 +147,7 @@ public:
 	{
 		_DefaultCapacity = std::max( defaultcapacity, (uint32)16 ); // prevent from no allocation
 		_Buffer.getBufferWrite().resize (_DefaultCapacity);
-//		_BufPos = _Buffer.getPtr();
-		_Buffer.Pos = 0; //_Buffer.getBuffer().getPtr();
+		_Buffer.Pos = 0;
 	}
 
 	/// Copy constructor
@@ -160,7 +162,6 @@ public:
 	{
 		IStream::operator= (other);
 		_Buffer = other._Buffer;
-//		_BufPos = _Buffer.getPtr() + other.lengthS();
 		_StringMode = other._StringMode;
 		_DefaultCapacity = other._DefaultCapacity;
 		return *this;
@@ -218,16 +219,8 @@ public:
 	 */
 	virtual sint32	getPos () const throw(EStream)
 	{
-		//return _BufPos - _Buffer.getPtr();
-		//return _Buffer.Pos - _Buffer.getPtr()
 		return sint32(_Buffer.Pos);
 	}
-
-//	/// Const and not-virtual getPos(), for direct use. Caution: should not be overloaded in a child class.
-//	virtual sint32			getPos() const
-//	{
-//		return _BufPos - _Buffer.getPtr();
-//	}
 
 	/**
 	 * When writing, skip 'len' bytes and return the position of the blank space for a future poke().
@@ -235,7 +228,6 @@ public:
 	 */
 	sint32			reserve( uint len )
 	{
-//		sint32 pos = _Buffer.Pos - _Buffer.getBuffer().getPtr();
 		sint32 pos = sint32(_Buffer.Pos);
 		if ( ! isReading() )
 		{
@@ -275,7 +267,6 @@ public:
 		{
 			_Buffer.getBufferWrite().resize (_DefaultCapacity);
 		}
-//		_Buffer.Pos = _Buffer.getBuffer().getPtr();
 		_Buffer.Pos = 0;
 	}
 
@@ -308,28 +299,8 @@ public:
 	virtual const uint8		*buffer() const
 	{
 		return _Buffer.getBuffer().getPtr();
-/*		if ( _Buffer.empty() )
-		{
-			return NULL;
-		}
-		else
-		{
-			return &(*_Buffer.begin());
-		}*/
 	}
 
-/*	/// Returns the message buffer (read only)
-	const CVector8&	bufferAsVector() const
-	{
-		return _Buffer;
-	}
-
-	/// Returns the vector for external filling
-	CVector8&	bufferAsVector()
-	{
-		return _Buffer;
-	}
-*/
 
 	/**
 	 * When you fill the buffer externaly (using bufferAsVector) you have to reset the BufPos calling this method
@@ -337,7 +308,6 @@ public:
 	 * If you are using the stream only in output mode, you can use this method as a faster version
 	 * of clear() *if you don't serialize pointers*.
 	 */
-//	void			resetBufPos() { _Buffer.Pos = _Buffer.getBuffer().getPtr(); }
 	void			resetBufPos() { _Buffer.Pos = 0; }
 
 	/**
@@ -353,12 +323,10 @@ public:
 		CFastMem::memcpy( _Buffer.getBufferWrite().getPtr(), srcbuf, len );
 		if (isReading())
 		{
-//			_Buffer.Pos = _Buffer.getBuffer().getPtr();
 			_Buffer.Pos = 0;
 		}
 		else
 		{
-//			_Buffer.Pos = _Buffer.getBuffer().getPtr() + _Buffer.getBuffer().size();
 			_Buffer.Pos = _Buffer.getBuffer().size();
 		}
 	}
@@ -388,10 +356,7 @@ public:
 			return NULL;
 
 		_Buffer.getBufferWrite().resize( msgsize );
-//		_Buffer.Pos = _Buffer.getBuffer().getPtr();
 		_Buffer.Pos = 0;
-		/*if ( ! isReading() )
-			_BufPos += msgsize;*/
 		return _Buffer.getBufferWrite().getPtr();
 	}
 
@@ -413,7 +378,6 @@ public:
 			uint32 sizeOfReadStream = lengthR();
 			resetPtrTable();
 			setInOut( false );
-//			_Buffer.Pos = _Buffer.getBuffer().getPtr() + sizeOfReadStream;
 			_Buffer.Pos = sizeOfReadStream;
 		}
 		else
@@ -421,10 +385,8 @@ public:
 			// Out->In: We want to read (serialize in) what we have written (serialized out)
 			resetPtrTable();
 			setInOut( true );
-//			_Buffer.getBufferWrite().resize (_Buffer.Pos - _Buffer.getBuffer().getPtr());
 			// TODO : is it necessary ?
 			_Buffer.getBufferWrite().resize (_Buffer.Pos);
-//			_Buffer.Pos = _Buffer.getBuffer().getPtr();
 			_Buffer.Pos = 0;
 		}
 	}
@@ -439,13 +401,10 @@ public:
 	void			increaseBufferIfNecessary(uint32 len)
 	{
 		uint32 oldBufferSize = _Buffer.getBuffer().size();
-//		if (_Buffer.Pos - _Buffer.getBuffer().getPtr() + len > oldBufferSize)
 		if (_Buffer.Pos + len > oldBufferSize)
 		{
 			// need to increase the buffer size
-//			uint32 pos = _Buffer.Pos - _Buffer.getBuffer().getPtr();
 			_Buffer.getBufferWrite().resize(oldBufferSize*2 + len);
-//			_Buffer.Pos = _Buffer.getBuffer().getPtr() + pos;
 		}
 	}
 
@@ -465,10 +424,8 @@ public:
 		else
 		{
 			increaseBufferIfNecessary (sizeof(T));
-//			*(T*)_BufPos = val;
 			*(T*)(_Buffer.getBufferWrite().getPtr() + _Buffer.Pos) = val;
 		}
-//		_BufPos += sizeof (T);
 		_Buffer.Pos += sizeof (T);
 #else // NL_LITTLE_ENDIAN
 		IStream::serial( val );
@@ -480,10 +437,8 @@ public:
 	{
 		//nldebug( "MEMSTREAM: Writing %u-byte value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
 		increaseBufferIfNecessary (sizeof(T));
-//		*(T*)_BufPos = value;
 		*(T*)(_Buffer.getBufferWrite().getPtr() + _Buffer.Pos) = value;
 		
-//		_BufPos += sizeof (T);
 		_Buffer.Pos += sizeof (T);
 	}
 
@@ -497,9 +452,7 @@ public:
 			throw EStreamOverflow();
 		}
 		// Serialize in
-//		value = *(T*)_BufPos;
 		value = *(T*)(_Buffer.getBuffer().getPtr() + _Buffer.Pos);
-//		_BufPos += sizeof(value);
 		_Buffer.Pos += sizeof(value);
 	}
 
@@ -590,7 +543,6 @@ protected:
 	/// Returns the serialized length (number of bytes written or read)
 	virtual uint32			lengthS() const
 	{
-//		return _Buffer.Pos - _Buffer.getBuffer().getPtr(); // not calling getPos() because virtual and not const!
 		return _Buffer.Pos; // not calling getPos() because virtual and not const!
 	}
 
@@ -608,9 +560,7 @@ protected:
 	 */
 	virtual uint			getDbgStreamSize() const;
 
-//	CObjectVector<uint8, false>	_Buffer;
 	CMemStreamBuffer			_Buffer;
-//	mutable uint8				*_BufPos;
 	
 	mutable	bool				_StringMode;
 
@@ -998,38 +948,6 @@ inline	void		CMemStream::serial(ucstring &b)
 }
 
 
-// Specialisation of serialCont() for vector<bool>
-/*inline	void	CMemStream::serialCont(std::vector<bool> &cont)
-{
-	uint32	len=0;
-	if(isReading())
-	{
-		serial(len);
-		// special version for vector: adjut good size.
-		contReset(cont);
-		cont.reserve(len);
-
-		for(uint i=0;i!=len;++i)
-		{
-			bool	v;
-			serial(v);
-			cont.insert(cont.end(), v);
-		}
-	}
-	else
-	{
-		len= cont.size();
-		serial(len);
-
-		std::vector<bool>::iterator it= cont.begin();
-		for(uint i=0;i!=len;++i, ++it)
-		{
-			bool b = *it;
-			serial( b );
-		}
-	}
-}*/
-
 
 /*
  * Serialisation in hexadecimal
@@ -1052,11 +970,6 @@ inline	void	CMemStream::serialHex(uint32 &b)
 		IStream::serial( b );
 	}
 }
-
-
-
-
-
 
 
 

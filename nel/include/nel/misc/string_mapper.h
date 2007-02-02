@@ -1,6 +1,6 @@
 /** \file string_mapper.h
  *
- * $Id: string_mapper.h,v 1.18 2005/06/06 10:38:25 berenguier Exp $
+ * $Id: string_mapper.h,v 1.18.8.1 2007/02/02 18:06:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,6 +167,9 @@ public:
 
 	/// Globaly map a string into a unique Id
 	TSStringId			add(const std::string &str);
+
+	// see if a string is already present in the map
+	bool				isAdded(const std::string &str) const;
 
 	void				memoryCompress();
 	// Uncompress the map.

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.53.6.2 2006/04/05 15:29:16 coutelas Exp $
+ * $Id: path.h,v 1.53.6.3 2007/02/02 18:06:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -89,6 +89,9 @@ public:
 
 	/** Remove all search path contains in the alternative directories */
 	static void			removeAllAlternativeSearchPath ();
+
+	// Remove a set of big file from the search paths (and also from CBigFile)
+	static void			removeBigFiles(const std::vector<std::string> &bnpFilenames);
 
 	/** Returns the long name (path + filename) for the specified file.
 	 * The directory separator is always '/'.
@@ -275,6 +278,8 @@ private:
 	};
 
 	std::map<std::string, CFileEntry> _Files; // first is the filename in lowercase (can be with a remapped extension)
+
+
 
 	// If memory compressed use this
 	// -----------------------------

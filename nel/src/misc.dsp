@@ -767,6 +767,14 @@ SOURCE=..\include\nel\misc\co_task.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\inter_window_msg_queue.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\inter_window_msg_queue.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\mutex.cpp
 # End Source File
 # Begin Source File

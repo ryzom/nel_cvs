@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.5 2007/01/25 13:22:46 boucher Exp $
+ * $Id: path.cpp,v 1.119.4.6 2007/02/02 18:08:20 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "stdmisc.h"
 
 #include <fstream>
+#include <hash_set>
 
 #include "nel/misc/big_file.h"
 #include "nel/misc/path.h"
@@ -1359,6 +1360,60 @@ void CPath::display ()
 	}
 	nlinfo ("PATH: End of display");
 }
+
+void CPath::removeBigFiles(const std::vector<std::string> &bnpFilenames)
+{
+	NL_ALLOC_CONTEXT (MiPath);
+	nlassert(!isMemoryCompressed());
+	CPath *inst = CPath::getInstance();
+	std::hash_set<TSStringId> bnpStrIds;
+	std::map<std::string, CFileEntry>::iterator fileIt, fileCurrIt;
+	for (uint k = 0; k < bnpFilenames.size(); ++k)
+	{
+		std::string completeBNPName = strlwr(bnpFilenames[k]) + "@";
+		if (inst->SSMpath.isAdded(completeBNPName))
+		{
+			bnpStrIds.insert(inst->SSMpath.add(completeBNPName));
+		}
+		CBigFile::getInstance().remove(bnpFilenames[k]);
+		fileIt = inst->_Files.find(strlwr(bnpFilenames[k]));
+		if (fileIt != inst->_Files.end())
+		{
+			inst->_Files.erase(fileIt);
+		}
+	}				
+	if (bnpStrIds.empty()) return;
+	//	remove reampped files	
+	std::map<std::string, std::string>::iterator remapIt, remapCurrIt;
+	for(remapIt = inst->_RemappedFiles.begin(); remapIt != inst->_RemappedFiles.end();)
+	{
+		remapCurrIt = remapIt;
+		++ remapIt;		
+		const std::string &filename = remapCurrIt->second;
+		fileIt = inst->_Files.find(filename);
+		if (fileIt != inst->_Files.end())
+		{
+			if (bnpStrIds.count(fileIt->second.idPath))
+			{			
+				inst->_Files.erase(fileIt);
+				inst->_RemappedFiles.erase(remapCurrIt);			
+			}
+		}
+	}
+	//	remove file entries
+	for(fileIt = inst->_Files.begin(); fileIt != inst->_Files.end();)
+	{
+		fileCurrIt = fileIt;
+		++ fileIt;		
+		if (bnpStrIds.count(fileCurrIt->second.idPath))
+		{			
+			inst->_Files.erase(fileCurrIt);			
+		}		
+	}	
+	
+
+}
+
 
 void CPath::memoryCompress()
 { 

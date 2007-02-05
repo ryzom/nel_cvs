@@ -181,6 +181,7 @@ void CInterWindowMsgQueue::CSendTask::run()
 					Sleep(30);
 					if (!_Parent->_ForeignWindow.getWnd())
 					{
+						nlwarning("CInterWindowMsgQueue : tried to send message, but destination window has been closed");
 						break;
 					}								
 				}
@@ -227,15 +228,7 @@ bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreign
 		{
 			// message queue already exists
 			return false;
-		}
-		bool ok = _LocalWindow.init(localId) && _ForeignWindow.init(foreignId);
-		if (!ok)
-		{
-			_LocalWindow.release();
-			_ForeignWindow.release();
-			return false;
-		}
-		_LocalWindow.setWnd(ownerWindow);
+		}				
 		WNDPROC oldWinProc = (WNDPROC) GetWindowLong(ownerWindow, GWL_WNDPROC);
 		uint &refCount = _OldWinProcMap[ownerWindow].RefCount;	
 		++ refCount;
@@ -248,11 +241,20 @@ bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreign
 		else
 		{
 			nlassert(oldWinProc == ListenerProc);
-		}
+		}				
+		//
 		messageQueueMap->value()[msgQueueIdent] = this;
 		_SendTask = new CSendTask(this);
 		_SendThread = IThread::create(_SendTask);
-		_SendThread->start();			
+		_SendThread->start();
+		// init the window handle in shared memory last,
+		// this way we are sure that the ne win proc has been installed, and can start received messages
+		bool ok = _LocalWindow.init(localId) && _ForeignWindow.init(foreignId);
+		if (!ok)
+		{
+			release();
+		}
+		_LocalWindow.setWnd(ownerWindow);
 	}
 	return true;
 }
@@ -356,10 +358,11 @@ LRESULT CALLBACK CInterWindowMsgQueue::ListenerProc(HWND hwnd, UINT uMsg, WPARAM
 						// no mutex stuff here, we're in the main thread
 						TMsgList &targetList = it->second->_InMessageQueue;
 						targetList.splice(targetList.end(), nestedMsgs); // append
+						return TRUE;
 					}
 					else
 					{
-						nlwarning("CInterWindowMsgQueue : Received inter window message from '%x' to '%x', but there's no associated message queue", (int) fromId, (int) toId);
+						nlwarning("CInterWindowMsgQueue : Received inter window message from '%x' to '%x', but there's no associated message queue", (int) fromId, (int) toId);						
 					}					
 				}								
 			}
@@ -367,13 +370,14 @@ LRESULT CALLBACK CInterWindowMsgQueue::ListenerProc(HWND hwnd, UINT uMsg, WPARAM
 			{
 				nlwarning("CInterWindowMsgQueue : Bad message format in inter window communication");
 			}
+
 		}
 		else
 		{			
 			// msg received with NULL content
 			nlwarning("CInterWindowMsgQueue : NULL message received");
 		}
-		return TRUE;
+		return FALSE;
 	}
 	else
 	{
@@ -393,7 +397,11 @@ CInterWindowMsgQueue::~CInterWindowMsgQueue()
 void CInterWindowMsgQueue::clearOutQueue()
 {
 	CSynchronized<TMsgList>::CAccessor  outMessageQueue(&_OutMessageQueue);	
-	outMessageQueue.value().clear();	
+	if (outMessageQueue.value().empty())
+	{
+		nlwarning("CInterWindowMsgQueue : clearing out queue");
+		outMessageQueue.value().clear();
+	}
 }
 
 //**************************************************************************************************

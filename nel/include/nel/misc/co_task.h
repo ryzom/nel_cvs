@@ -1,7 +1,7 @@
 /** \file co_task.h
  * Coroutine based task.
  *
- * $Id: co_task.h,v 1.2.4.1 2006/07/21 10:54:08 boucher Exp $
+ * $Id: co_task.h,v 1.2.4.2 2007/02/07 15:24:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,10 +184,7 @@ namespace NLMISC
 		}
 
 		/// parent task ask for task ending (run function should check this and terminate asap)
-		void requestTerminate()
-		{
-			_TerminationRequested = true;
-		}
+		void requestTerminate();		
 
 		/** check if termination request have been called (mainly used by task user code
 		 *	to check for terminating the task on request).
@@ -207,6 +204,13 @@ namespace NLMISC
 		 *	Coroutine terminate when this method return.
 		 */
 		virtual void run() =0;
+
+		/** Wait (using 'yield') until some amount of time (in milliseconds) has ellapsed, or until termination is requested.
+		 *  This should be called inside this task 'run()', else an assertion is raised
+		 */
+		void sleep(uint milliseconds);		  
+		   
+
 	};
 	
 

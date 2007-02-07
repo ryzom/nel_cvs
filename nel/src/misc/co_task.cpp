@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.3.4.8 2006/07/21 10:54:09 boucher Exp $
+ * $Id: co_task.cpp,v 1.3.4.9 2007/02/07 15:24:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 #include "nel/misc/co_task.h"
 #include "nel/misc/tds.h"
+#include "nel/misc/time_nl.h"
 // Flag to use thread instead of coroutine primitives (i.e windows fibers or gcc context)
 #ifndef NL_OS_WINDOWS
 #define NL_USE_THREAD_COTASK
@@ -533,6 +534,23 @@ namespace NLMISC
 
 	}
 #endif //NL_USE_THREAD_COTASK
+
+	void CCoTask::requestTerminate()
+	{
+		_TerminationRequested = true;
+	}
+
+	void CCoTask::sleep(uint milliseconds)
+	{
+		nlassert(getCurrentTask() == this); // called outside run() !
+		TTime startTime = CTime::getLocalTime();
+		while(!isTerminationRequested())
+		{
+			TTime currTime = CTime::getLocalTime();
+			if (currTime - startTime >= milliseconds) break;
+			yield();
+		}
+	}
 
 } // namespace NLMISC
 

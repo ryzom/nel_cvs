@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.42.18.4 2006/06/23 17:11:51 boucher Exp $
+ * $Id: file.cpp,v 1.42.18.5 2007/02/08 14:42:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -607,7 +607,13 @@ void		COFile::serialBuffer(uint8 *buf, uint len) throw(EWriteError)
 		throw	EFileNotOpened(_FileName);
 //	if(fwrite(buf, len, 1, _F) != 1)
 	if(fwrite(buf, 1, len, _F) != len)
+	{
+		if (ferror(_F) && errno == 28 /*ENOSPC*/)
+		{
+			throw EDiskFullError(_FileName);
+		}
 		throw	EWriteError(_FileName);
+	}
 }
 // ======================================================================================================
 void		COFile::serialBit(bool &bit) throw(EWriteError)

@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.6 2007/02/02 18:08:20 vizerie Exp $
+ * $Id: path.cpp,v 1.119.4.7 2007/02/15 13:43:08 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1833,7 +1833,11 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 					ssrc.c_str(),
 					sdest.c_str(),
 					s,
-					ws);
+					ws);				
+				fclose(fp1);
+				fclose(fp2);
+				nlwarning("Errno = %d", errno);				
+				return false;
 			}
 			s = fread(buffer, 1, sizeof(buffer), fp1);
 		}

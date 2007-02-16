@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.7 2007/02/15 13:43:08 vizerie Exp $
+ * $Id: path.cpp,v 1.119.4.8 2007/02/16 17:58:06 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1488,7 +1488,18 @@ void CPath::memoryUncompress()
 {
 	CPath *inst = CPath::getInstance ();
 	inst->SSMext.memoryUncompress(); 
-	inst->SSMpath.memoryUncompress(); 	
+	inst->SSMpath.memoryUncompress(); 		
+	for(std::vector<CMCFileEntry>::iterator it = inst->_MCFiles.begin(); it != inst->_MCFiles.end(); ++it)
+	{
+		CFileEntry fe;
+		fe.Name = it->Name;
+		fe.idExt = it->idExt;
+		fe.idPath = it->idPath;
+		fe.Remapped = it->Remapped;
+
+		inst->_Files[toLower(CFile::getFilename(fe.Name))] = fe;
+	}
+	contReset(inst->_MCFiles);
 	inst->_MemoryCompressed = false;
 }
 

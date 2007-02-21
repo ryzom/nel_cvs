@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.8 2007/02/16 17:58:06 vizerie Exp $
+ * $Id: path.cpp,v 1.119.4.9 2007/02/21 14:55:07 dailyclient Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1463,7 +1463,10 @@ void CPath::memoryCompress()
 			// This is a file included in a bigfile (so the name is in the bigfile manager)
 			sTmp = sTmp.substr(0, sTmp.size()-1);
 			inst->_MCFiles[nNb].Name = CBigFile::getInstance().getFileNamePtr(rFE.Name, sTmp);
-			nlassert(inst->_MCFiles[nNb].Name != NULL);
+			if (inst->_MCFiles[nNb].Name == NULL)
+			{
+				nlerror("memoryCompress: failed to find named file in big file: %s",inst->SSMpath.get(rFE.idPath));
+			}
 		}
 		else
 		{

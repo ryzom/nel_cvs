@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * TODO: File description
  *
- * $Id: value_smoother.h,v 1.12 2005/02/22 10:14:12 besson Exp $
+ * $Id: value_smoother.h,v 1.12.16.1 2007/02/23 14:12:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,6 +114,11 @@ public:
 		return _NumFrame;
 	}
 
+	uint getCurrentFrame() const
+	{
+		return _CurFrame;
+	}
+
 	const std::vector<T> &getLastFrames() const
 	{
 		return _LastFrames;
@@ -182,6 +187,11 @@ public:
 	uint getNumFrame() const
 	{
 		return _NumFrame;
+	}
+
+	uint getCurrentFrame() const
+	{
+		return 0;
 	}
 
 	const std::vector<bool> &getLastFrames() const

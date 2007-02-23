@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89.4.8 2006/03/30 10:09:44 boucher Exp $
+ * $Id: service.h,v 1.89.4.9 2007/02/23 14:12:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,6 +395,9 @@ public:
 	uint32								getShardId() const { return _ShardId; }
 	
 	const NLMISC::CCPUTimeStat&			getCPUUsageStats() const	{ return _CPUUsageStats; }
+
+	/// Allow the service to return a status string with important value
+	virtual std::string					getServiceStatusString() const;
 
 	/**
 	 * If your service needs a delay when it is asked to quit, provide a callback here (optional).

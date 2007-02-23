@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.39.4.6 2006/06/12 09:42:54 boucher Exp $
+ * $Id: login_server.cpp,v 1.39.4.7 2007/02/23 14:12:20 boucher Exp $
  *
  */
 
@@ -77,6 +77,8 @@ static uint TimeBeforeEraseCookie = 15*60;
 map<uint32, TSockId> UserIdSockAssociations;
 
 TNewClientCallback NewClientCallback = NULL;
+
+TNewCookieCallback NewCookieCallback = NULL;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +168,12 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		nlinfo ("LS: New cookie %s (name '%s' priv '%s' extended '%s' instance %u slot %u) inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str(), userExtended.c_str(), instanceId, charSlot);
 		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv, userExtended, instanceId, charSlot));
 		reason = "";
+
+		// callback if needed
+		if (NewCookieCallback != NULL)
+		{
+			NewCookieCallback(cookie);
+		}
 	}
 
 	CMessage msgout ("SCS");
@@ -416,6 +424,12 @@ void CLoginServer::init (const std::string &listenAddr, TDisconnectClientCallbac
 
 	ModeTcp = false;
 }
+
+void CLoginServer::addNewCookieCallback(TNewCookieCallback newCookieCb)
+{
+	NewCookieCallback = newCookieCb;
+}
+
 
 string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, string &userPriv, string &userExtended, uint32 &instanceId, uint32 &charSlot)
 {

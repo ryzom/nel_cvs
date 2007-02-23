@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.22.6.2 2006/01/11 15:02:09 boucher Exp $
+ * $Id: variable.h,v 1.22.6.3 2007/02/23 14:12:09 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "types_nl.h"
 #include "command.h"
 #include "value_smoother.h"
+#include "sstring.h"
 
 
 namespace NLMISC {
@@ -297,36 +298,37 @@ public:
 
 	std::string getStat () const
 	{
-//		std::stringstream s;
-//		s << _CommandName << "=" << _Value;
-//		s << " Min=" << _Min;
-//		s << " Max=" << _Max;
-		std::string str;
-		str = _CommandName + "=" + NLMISC::toString(_Value) + " Min=" + NLMISC::toString(_Min);
+		CSString str;
+		str << _CommandName << "=" << _Value << " Min=" << _Min;
 		if (_Mean.getNumFrame()>0)
 		{
 			const std::vector<T>& v = _Mean.getLastFrames();
 			T theMin = *std::min_element(v.begin(), v.end());
-			str += " RecentMin=" + NLMISC::toString(theMin);
+			str << " RecentMin=" << theMin;
 		}
-		str += " Max=" + NLMISC::toString(_Max);
+		str << " Max=" << _Max;
 		if (_Mean.getNumFrame()>0)
 		{
 			const std::vector<T>& v = _Mean.getLastFrames();
 			T theMax = *std::max_element(v.begin(), v.end());
-			str += " RecentMax=" + NLMISC::toString(theMax);
+			str << " RecentMax=" << theMax;
 		}
 		if (_Mean.getNumFrame()>0)
 		{
-			str += " RecentMean=" + NLMISC::toString(_Mean.getSmoothValue()) + " RecentValues=";
-//			s << " Mean=" << _Mean.getSmoothValue();
-//			s << " LastValues=";
-			for (uint i = 0; i < _Mean.getNumFrame(); i++)
+			str << " RecentMean=" << _Mean.getSmoothValue() << " RecentValues=";
+			// output the oldest part of the buffer first
+			for (uint i=_Mean.getCurrentFrame(); i<_Mean.getNumFrame(); ++i)
 			{
-				str += NLMISC::toString(_Mean.getLastFrames()[i]);
-				//s << _Mean.getLastFrames()[i];
-				if (i < _Mean.getNumFrame()-1)
-					str += ","; //s << ",";
+				str << _Mean.getLastFrames()[i];
+				if (i < _Mean.getNumFrame()-1 || _Mean.getCurrentFrame() != 0)
+					str << ",";
+			}
+			// then output the newest part
+			for (uint i = 0; i < _Mean.getCurrentFrame(); i++)
+			{
+				str << _Mean.getLastFrames()[i];
+				if (i < _Mean.getCurrentFrame()-1)
+					str << ",";
 			}
 		}
 		return str;
@@ -345,7 +347,14 @@ public:
 			if (args[0] == "stat")
 			{
 				// display the stat value
-				log.displayNL(getStat().c_str());
+				std::string stat = getStat();
+				// cut the stat line in lines of 80 chars
+				std::string::size_type pos = 0;
+				while (pos < stat.size())
+				{
+					log.displayNL(getStat().substr(pos, 80).c_str());
+					pos += 80;
+				}
 				return true;
 			}
 			else if (args[0] == "mean")

@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.19.4.6 2006/06/12 09:42:54 boucher Exp $
+ * $Id: login_server.h,v 1.19.4.7 2007/02/23 14:12:09 boucher Exp $
  * 
  */
 
@@ -46,6 +46,9 @@ namespace NLNET
 /// Callback function type called when a new client is identified (with the login password procedure)
 typedef void (*TNewClientCallback) (TSockId from, const CLoginCookie &cookie);
 
+/// Callback function type called when a new cookie is acceptable (aka as 'a player can connect with this cookie')
+typedef void (*TNewCookieCallback) (const CLoginCookie &cookie);
+
 /// Callback function type called when a client need to be disconnected (double login...)
 typedef void (*TDisconnectClientCallback) (uint32 userId, const std::string &reqServiceName);
 
@@ -79,6 +82,9 @@ public:
 	/// Create the connection to the Welcome Service for a connection
 	/// the dc will be call when the Welcome Service decides to disconnect a player (double login...)
 	static void init (const std::string &listenAddr, TDisconnectClientCallback dc);
+
+	/// Add a callback to be warned when a new cookie become acceptable
+	static void addNewCookieCallback(TNewCookieCallback newCookieCb);
 
 	/// Used only in UDP, check if the cookie is valid. return empty string if valid, reason otherwise
 	static std::string CLoginServer::isValidCookie (const CLoginCookie &lc, std::string &userName, std::string &userPriv, std::string &userExtended, uint32 &instanceId, uint32 &charSlot);

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.20 2006/08/02 16:05:17 cado Exp $
+ * $Id: service.cpp,v 1.238.4.21 2007/02/23 14:12:20 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -306,6 +306,14 @@ void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 servic
 	nlinfo("SERVICE: ShardId is %u", shardId);
 	IService::getInstance()->setShardId( shardId );
 }
+
+std::string IService::getServiceStatusString() const
+{
+	static string emptyString;
+
+	return emptyString;
+}
+
 
 //
 void IService::anticipateShardId( uint32 shardId )

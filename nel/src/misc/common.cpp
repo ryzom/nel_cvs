@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.73.4.2 2006/05/30 12:10:42 boucher Exp $
+ * $Id: common.cpp,v 1.73.4.3 2007/02/23 14:12:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,13 @@ using namespace std;
 #endif
 
 #endif // NL_OS_WINDOWS
+
+#ifdef NL_COMP_VC6
+// only for MSDEV 6.0
+extern "C" long _ftol2( double dblSource ) { return _ftol( dblSource ); }
+#endif
+
+
 
 namespace	NLMISC
 {

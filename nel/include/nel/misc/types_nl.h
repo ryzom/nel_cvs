@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.54.4.1 2006/07/21 10:54:08 boucher Exp $
+ * $Id: types_nl.h,v 1.54.4.2 2007/02/23 14:12:09 boucher Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -288,6 +288,13 @@ typedef	uint16	ucchar;
 #if defined(NL_OS_WINDOWS) && !defined(NL_EXTENDED_FOR_SCOPE) && !defined(NL_COMP_VC8)
 #  define for if(false) {} else for
 #endif
+
+#ifdef NL_COMP_VC6
+// only for MSDEV 6.0
+extern "C" long _ftol( double ); //defined by VC6 C libs
+extern "C" long _ftol2( double dblSource );
+#endif
+
 
 /**
  * Force the use of NeL memory manager

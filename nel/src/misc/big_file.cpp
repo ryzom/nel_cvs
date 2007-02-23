@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.19.6.2 2006/10/27 12:56:37 vizerie Exp $
+ * $Id: big_file.cpp,v 1.19.6.3 2007/02/23 14:12:20 boucher Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -273,6 +273,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		bnpTmp.AlwaysOpened = true;
 	}
 
+	nldebug("BigFile : adding bnp '%s' to the collection", bigfilenamealone.c_str());
 	_BNPs.insert (make_pair(toLower(bigfilenamealone), bnpTmp));
 
 	return true;

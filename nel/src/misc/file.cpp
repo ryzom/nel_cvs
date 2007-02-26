@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.42.18.5 2007/02/08 14:42:18 vizerie Exp $
+ * $Id: file.cpp,v 1.42.18.6 2007/02/26 16:19:01 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,9 @@
  */
 
 #include "stdmisc.h"
-
+#ifndef NL_OS_WINDOWS
+#include <errno.h>
+#endif
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/big_file.h"

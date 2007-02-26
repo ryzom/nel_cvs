@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.21 2007/02/23 14:12:20 boucher Exp $
+ * $Id: service.cpp,v 1.238.4.22 2007/02/26 15:06:40 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -119,8 +119,18 @@ IService	*IService::_Instance = NULL;
 static sint ExitSignalAsked = 0;
 
 // services stat
-CVariable<sint32> UserSpeedLoop ("nel", "UserSpeedLoop", "duration of the last network loop (in ms)", 10, false);
-CVariable<sint32> NetSpeedLoop ("nel", "NetSpeedLoop", "duration of the last user loop (in ms)", 10, false);
+CVariable<sint32> UserSpeedLoop ("nel", "UserSpeedLoop", "duration of the last user loop (in ms)", 10, false);
+CVariable<sint32> NetSpeedLoop ("nel", "NetSpeedLoop", "duration of the last network loop (in ms)", 10, false);
+/// The time passed in callback during the loop
+CVariable<uint32> L5CallbackTime("nel", "L5CallbackTime", "Time passed in the L5 callback function in the last loop (in ms)", 0, 100 );
+/// The number of L5 callback treated 
+CVariable<uint32> L5CallbackCount("nel", "L5CallbackCount", "The number of layer 5 callback received in the last loop", 0, 100 );
+
+extern uint32 TotalCallbackCalled;
+extern uint32 TimeInCallback;
+uint32 LastTotalCallbackCalled = 0;
+uint32 LastTimeInCallback = 0;
+
 
 
 // this is the thread that initialized the signal redirection
@@ -1427,6 +1437,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
 			UserSpeedLoop = (sint32) (before - bbefore);
+			L5CallbackTime = TimeInCallback - LastTimeInCallback;
+			LastTimeInCallback = TimeInCallback;
+			L5CallbackCount = TotalCallbackCalled - LastTotalCallbackCalled;
+			LastTotalCallbackCalled = TotalCallbackCalled;
 
 			if (WindowDisplayer != NULL)
 			{

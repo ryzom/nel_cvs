@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.95.4.3 2006/07/21 10:54:09 boucher Exp $
+ * $Id: unified_network.cpp,v 1.95.4.4 2007/02/26 15:06:40 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -51,7 +51,9 @@ static uint ThreadCreator = 0;
 
 static const uint64 AppIdDeadConnection = 0xDEAD;
 
-static uint32 TotalCallbackCalled = 0;
+uint32 TotalCallbackCalled = 0;
+
+uint32 TimeInCallback =0;
 
 #ifdef NL_OS_UNIX
 /// Yield method (Unix only)
@@ -69,7 +71,6 @@ CVariablePtr<uint32> DefaultMaxExpectedBlockSize("nel", "DefaultMaxExpectedBlock
 
 /// Sending size limit
 CVariablePtr<uint32> DefaultMaxSentBlockSize("nel", "DefaultMaxSentBlockSize", "If sending more than this value in bytes, the program may be stopped", &CBufNetBase::DefaultMaxSentBlockSize, true );
-
 
 #define AUTOCHECK_DISPLAY nlwarning
 //#define AUTOCHECK_DISPLAY CUnifiedNetwork::getInstance()->displayInternalTables (), nlerror
@@ -475,11 +476,18 @@ void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 
 			{
 				H_AUTO(L5UserCallback);
+
+				TTime before = CTime::getLocalTime();
 				
 				(*it).second.before();
 				const std::string &cbName = itcb->first;
 				(*itcb).second (msgin, uc->ServiceName, sid);
 				(*it).second.after();
+
+				TTime after = CTime::getLocalTime();
+
+				// sum the time used to do callback
+				TimeInCallback += (after-before);
 			}
 		}
 

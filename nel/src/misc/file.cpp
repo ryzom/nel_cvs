@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.42.18.6 2007/02/26 16:19:01 distrib Exp $
+ * $Id: file.cpp,v 1.42.18.7 2007/02/28 13:12:36 dailyserver Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -19,7 +19,7 @@
 
  * You should have received a copy of the GNU General Public License
  * along with NEVRAX NEL; see the file COPYING. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * Free Software Foundation, I²nc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
 
@@ -31,6 +31,8 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/big_file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/command.h"
+#include "nel/misc/sstring.h"
 
 using namespace std;
 
@@ -38,6 +40,14 @@ using namespace std;
 
 namespace NLMISC
 {
+
+typedef std::list<uint64> TFileAccessTimes;					// list of times at which a given file is opened for reading
+typedef std::hash_map<std::string,TFileAccessTimes> TFileAccessLog;	// map from file name to read access times
+typedef NLMISC::CSynchronized<TFileAccessLog> TSynchronizedFileAccessLog;
+
+static TSynchronizedFileAccessLog IFileAccessLog("IFileAccessLog");
+static bool IFileAccessLoggingEnabled= false;
+static uint64 IFileAccessLogStartTime= 0;
 
 uint32 CIFile::_NbBytesSerialized = 0;
 uint32 CIFile::_NbBytesLoaded = 0;
@@ -151,6 +161,20 @@ bool		CIFile::open(const std::string &path, bool text)
 	if(path.empty ())
 		return false;
 
+	// IFile Access Log management
+	if (IFileAccessLoggingEnabled)
+	{
+		// get the current time
+		uint64 timeNow = NLMISC::CTime::getPerformanceTime();
+
+		// get a handle for the container
+		TSynchronizedFileAccessLog::CAccessor synchronizedFileAccesLog(&IFileAccessLog);
+		TFileAccessLog& fileAccessLog= synchronizedFileAccesLog.value();
+
+		// add the current time to the container entry for the given path (creating a new container entry if required)
+		fileAccessLog[path].push_back(timeNow);
+	}
+
 	char mode[3];
 	mode[0] = 'r';
 	mode[1] = 'b'; // No more reading in text mode
@@ -201,7 +225,6 @@ bool		CIFile::open(const std::string &path, bool text)
 		if (_F != NULL)
 		{
 			/*
-			
 			THIS CODE REPLACED BY SADGE BECAUSE SOMETIMES
 			ftell() RETRUNS 0 FOR NO GOOD REASON - LEADING TO CLIENT CRASH
 
@@ -668,4 +691,92 @@ std::string		COFile::getStreamName() const
 }
 
 
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+NLMISC_CATEGORISED_COMMAND(nel, iFileAccessLogStart, "Start file access logging", "")
+{
+	if (!args.empty())
+		return false;
+
+	IFileAccessLoggingEnabled= true;
+	if (IFileAccessLogStartTime==0)
+	{
+		uint64 timeNow = NLMISC::CTime::getPerformanceTime();
+		IFileAccessLogStartTime= timeNow;
+	}
+
+	return true;
 }
+
+// ======================================================================================================
+NLMISC_CATEGORISED_COMMAND(nel, iFileAccessLogStop, "Stop file access logging", "")
+{
+	if (!args.empty())
+		return false;
+
+	IFileAccessLoggingEnabled= false;
+
+	return true;
+}
+
+// ======================================================================================================
+NLMISC_CATEGORISED_COMMAND(nel, iFileAccessLogClear, "Clear file access logs", "")
+{
+	if (!args.empty())
+		return false;
+
+	TSynchronizedFileAccessLog::CAccessor(&IFileAccessLog).value().clear();
+
+	return true;
+}
+
+// ======================================================================================================
+NLMISC_CATEGORISED_COMMAND(nel, iFileAccessLogDisplay, "Display file access logs", "")
+{
+	if (!args.empty())
+		return false;
+
+	log.displayNL("-- FILE ACCESS LOG BEGIN --");
+
+	TSynchronizedFileAccessLog::CAccessor fileAccesLog(&IFileAccessLog);
+	TFileAccessLog::const_iterator it= fileAccesLog.value().begin();
+	TFileAccessLog::const_iterator itEnd= fileAccesLog.value().end();
+	uint32 count=0;
+	while (it!=itEnd)
+	{
+		uint32 numTimes= it->second.size();
+		CSString fileName= it->first;
+		if (fileName.contains("@"))
+		{
+			log.display("%d,%s,%s,",numTimes,fileName.splitTo("@").c_str(),fileName.splitFrom("@").c_str());
+		}
+		else
+		{
+			log.display("%d,,%s,",numTimes,fileName.c_str());
+		}
+		TFileAccessTimes::const_iterator atIt= it->second.begin();
+		TFileAccessTimes::const_iterator atItEnd=it->second.end();
+		while (atIt!=atItEnd)
+		{
+			uint64 delta= (*atIt-IFileAccessLogStartTime);
+			log.display("%"NL_I64"u,",delta);
+			++atIt;
+		}
+		log.displayNL("");
+		++count;
+		++it;
+	}
+
+	log.displayNL("-- FILE ACCESS LOG END (%d Unique Files Accessed) --",count);
+
+	return true;
+}
+
+}
+
+

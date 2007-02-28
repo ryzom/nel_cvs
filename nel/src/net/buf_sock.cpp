@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.43.4.1 2006/07/21 10:54:09 boucher Exp $
+ * $Id: buf_sock.cpp,v 1.43.4.2 2007/02/28 12:23:52 dailyserver Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdnet.h"
 
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/variable.h"
 #include "nel/net/buf_sock.h"
 #include "nel/net/buf_server.h"
 
@@ -37,6 +38,8 @@
 
 using namespace NLMISC;
 using namespace std;
+
+NLMISC::CVariable<uint32> MaxTCPPacketSize("nel", "MaxTCPPacketSize", "Maximum size of TCP packets created by cumulating small packets", 10240, 0, true);
 
 
 namespace NLNET {
@@ -148,102 +151,113 @@ bool CBufSock::flush( uint *nbBytesRemaining )
 	TBlockSize netlen;
 //	vector<uint8> tmpbuffer;
 
-	// Process each element in the send queue
-	while ( ! SendFifo.empty() )
+	do
 	{
+		// Process each element in the send queue
 		uint8 *tmpbuffer;
 		uint32 size;
-		SendFifo.front( tmpbuffer, size );
-
-		// Compute the size and add it into the beginning of the buffer
-		netlen = htonl( (TBlockSize)size );
-		uint32 oldBufferSize = _ReadyToSendBuffer.size();
-		_ReadyToSendBuffer.resize (oldBufferSize+sizeof(TBlockSize)+size);
-		*(TBlockSize*)&(_ReadyToSendBuffer[oldBufferSize])=netlen;
-		//nldebug( "O-%u %u+L%u (0x%x)", Sock->descriptor(), oldBufferSize, size, size );
-
-
-		// Append the temporary buffer to the global buffer
-		CFastMem::memcpy (&_ReadyToSendBuffer[oldBufferSize+sizeof(TBlockSize)], tmpbuffer, size);
-		SendFifo.pop();
-	}
-
-	// Actual sending of _ReadyToSendBuffer
-	//if ( ! _ReadyToSendBuffer.empty() )
-	if ( _ReadyToSendBuffer.size() != 0 )
-	{		
-		// Send
-		CSock::TSockResult res;
-		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
-
-		res = Sock->send( _ReadyToSendBuffer.getPtr()+_RTSBIndex, len, false );
-
-		if ( res == CSock::Ok )
+		if (! SendFifo.empty())
 		{
-/*			// Debug display
-			switch ( _FlushTrigger )
-			{
-			case FTTime : nldebug( "LNETL1: Time triggered flush for %s:", asString().c_str() ); break;
-			case FTSize : nldebug( "LNETL1: Size triggered flush for %s:", asString().c_str() ); break;
-			default:	  nldebug( "LNETL1: Manual flush for %s:", asString().c_str() );
-			}
-			_FlushTrigger = FTManual;
-			nldebug( "LNETL1: %s sent effectively a buffer (%d on %d B)", asString().c_str(), len, _ReadyToSendBuffer.size() );
-*/			
-			
-			// TODO OPTIM remove the nldebug for speed
-			//commented for optimisation nldebug( "LNETL1: %s sent effectively %u/%u bytes (pos %u wantedsend %u)", asString().c_str(), len, _ReadyToSendBuffer.size(), _RTSBIndex, realLen/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
+			SendFifo.front( tmpbuffer, size );
+		}
+		while ( ! SendFifo.empty() && ( (_ReadyToSendBuffer.size()==0) || (_ReadyToSendBuffer.size() +size < MaxTCPPacketSize) ) )
+		{
+			// Compute the size and add it into the beginning of the buffer
+			netlen = htonl( (TBlockSize)size );
+			uint32 oldBufferSize = _ReadyToSendBuffer.size();
+			_ReadyToSendBuffer.resize (oldBufferSize+sizeof(TBlockSize)+size);
+			*(TBlockSize*)&(_ReadyToSendBuffer[oldBufferSize])=netlen;
+			//nldebug( "O-%u %u+L%u (0x%x)", Sock->descriptor(), oldBufferSize, size, size );
 
-			if ( _RTSBIndex+len == _ReadyToSendBuffer.size() ) // for non-blocking mode
+
+			// Append the temporary buffer to the global buffer
+			CFastMem::memcpy (&_ReadyToSendBuffer[oldBufferSize+sizeof(TBlockSize)], tmpbuffer, size);
+			SendFifo.pop();
+			if (! SendFifo.empty())
 			{
-				// If sending is ok, clear the global buffer
-				//nldebug( "O-%u all %u bytes (%u to %u) sent", Sock->descriptor(), len, _RTSBIndex, _ReadyToSendBuffer.size() );
+				SendFifo.front( tmpbuffer, size );
+			}
+		}
+
+		// Actual sending of _ReadyToSendBuffer
+		//if ( ! _ReadyToSendBuffer.empty() )
+		if ( _ReadyToSendBuffer.size() != 0 )
+		{		
+			// Send
+			CSock::TSockResult res;
+			TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
+
+			res = Sock->send( _ReadyToSendBuffer.getPtr()+_RTSBIndex, len, false );
+
+			if ( res == CSock::Ok )
+			{
+/*				// Debug display
+				switch ( _FlushTrigger )
+				{
+				case FTTime : nldebug( "LNETL1: Time triggered flush for %s:", asString().c_str() ); break;
+				case FTSize : nldebug( "LNETL1: Size triggered flush for %s:", asString().c_str() ); break;
+				default:	  nldebug( "LNETL1: Manual flush for %s:", asString().c_str() );
+				}
+				_FlushTrigger = FTManual;
+				nldebug( "LNETL1: %s sent effectively a buffer (%d on %d B)", asString().c_str(), len, _ReadyToSendBuffer.size() );
+*/			
+				
+				// TODO OPTIM remove the nldebug for speed
+				//commented for optimisation nldebug( "LNETL1: %s sent effectively %u/%u bytes (pos %u wantedsend %u)", asString().c_str(), len, _ReadyToSendBuffer.size(), _RTSBIndex, realLen/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
+
+				if ( _RTSBIndex+len == _ReadyToSendBuffer.size() ) // for non-blocking mode
+				{
+					// If sending is ok, clear the global buffer
+					//nldebug( "O-%u all %u bytes (%u to %u) sent", Sock->descriptor(), len, _RTSBIndex, _ReadyToSendBuffer.size() );
+					_ReadyToSendBuffer.clear();
+					_RTSBIndex = 0;
+					if ( nbBytesRemaining )
+						*nbBytesRemaining = 0;
+				}
+				else
+				{
+					// Or clear only the data that was actually sent
+					nlassertex( _RTSBIndex+len < _ReadyToSendBuffer.size(), ("index=%u len=%u size=%u", _RTSBIndex, len, _ReadyToSendBuffer.size()) );
+					//nldebug( "O-%u only %u B on %u (%u to %u) sent", Sock->descriptor(), len, _ReadyToSendBuffer.size()-_RTSBIndex, _RTSBIndex, _ReadyToSendBuffer.size() );
+					_RTSBIndex += len;
+					if ( nbBytesRemaining )
+						*nbBytesRemaining = _ReadyToSendBuffer.size() - _RTSBIndex;
+					if ( _ReadyToSendBuffer.size() > 20480 ) // if big, clear data already sent
+					{
+						uint nbcpy = _ReadyToSendBuffer.size() - _RTSBIndex;
+						for (uint i = 0; i < nbcpy; i++)
+						{
+							_ReadyToSendBuffer[i] = _ReadyToSendBuffer[i+_RTSBIndex];
+						}
+						_ReadyToSendBuffer.resize(nbcpy);
+						//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+_RTSBIndex );
+						_RTSBIndex = 0;
+						//nldebug( "O-%u Cleared data already sent, %u B remain", Sock->descriptor(), nbcpy );
+					}
+				}
+			}
+			else
+			{
+#ifdef NL_DEBUG
+				// Can happen in a normal behavior if, for example, the other side is not connected anymore
+				nldebug( "LNETL1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
+#endif
+				// NEW: Clearing (loosing) the buffer if the sending can't be performed at all
 				_ReadyToSendBuffer.clear();
 				_RTSBIndex = 0;
 				if ( nbBytesRemaining )
 					*nbBytesRemaining = 0;
-			}
-			else
-			{
-				// Or clear only the data that was actually sent
-				nlassertex( _RTSBIndex+len < _ReadyToSendBuffer.size(), ("index=%u len=%u size=%u", _RTSBIndex, len, _ReadyToSendBuffer.size()) );
-				//nldebug( "O-%u only %u B on %u (%u to %u) sent", Sock->descriptor(), len, _ReadyToSendBuffer.size()-_RTSBIndex, _RTSBIndex, _ReadyToSendBuffer.size() );
-				_RTSBIndex += len;
-				if ( nbBytesRemaining )
-					*nbBytesRemaining = _ReadyToSendBuffer.size() - _RTSBIndex;
-				if ( _ReadyToSendBuffer.size() > 20480 ) // if big, clear data already sent
-				{
-					uint nbcpy = _ReadyToSendBuffer.size() - _RTSBIndex;
-					for (uint i = 0; i < nbcpy; i++)
-					{
-						_ReadyToSendBuffer[i] = _ReadyToSendBuffer[i+_RTSBIndex];
-					}
-					_ReadyToSendBuffer.resize(nbcpy);
-					//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+_RTSBIndex );
-					_RTSBIndex = 0;
-					//nldebug( "O-%u Cleared data already sent, %u B remain", Sock->descriptor(), nbcpy );
-				}
+				return false;
 			}
 		}
 		else
 		{
-#ifdef NL_DEBUG
-			// Can happen in a normal behavior if, for example, the other side is not connected anymore
-			nldebug( "LNETL1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
-#endif
-			// NEW: Clearing (loosing) the buffer if the sending can't be performed at all
-			_ReadyToSendBuffer.clear();
-			_RTSBIndex = 0;
 			if ( nbBytesRemaining )
 				*nbBytesRemaining = 0;
-			return false;
 		}
+
 	}
-	else
-	{
-		if ( nbBytesRemaining )
-			*nbBytesRemaining = 0;
-	}
+	while ( !SendFifo.empty() && _ReadyToSendBuffer.size()==0 );
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.18 2005/02/22 10:14:13 besson Exp $
+ * $Id: sock.h,v 1.18.16.1 2007/02/28 12:23:52 dailyserver Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,6 +318,9 @@ private:
 	// Test: send & receive duration (ms)
 	uint32			_MaxReceiveTime;
 	uint32			_MaxSendTime;
+
+	/// Flag used to determine the moments at which sends atrta an stop blocking
+	bool			_Blocking;
 
 };
 

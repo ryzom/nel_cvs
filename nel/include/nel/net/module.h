@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.13 2006/05/31 12:03:14 boucher Exp $
+ * $Id: module.h,v 1.13.6.1 2007/03/02 13:58:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -741,7 +741,7 @@ namespace NLNET
 
 	public:
 		/// return the default init string (empty)
-		static const std::string &CModuleBase::getInitStringHelp();
+		static const std::string &getInitStringHelp();
 
 		/** Search an interceptor in the interceptor list.
 		 *	By default, the method begin to search at the first interceptor.

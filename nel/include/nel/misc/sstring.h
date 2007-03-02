@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.38 2006/09/14 16:56:08 cado Exp $
+ * $Id: sstring.h,v 1.38.4.1 2007/03/02 13:58:09 cado Exp $
  */
 
 
@@ -163,7 +163,7 @@ public:
 	static char convertHexDigit(char c);
 
 	// a handy routine that tests whether a given string contains binary characters or not. Only characters>32 + isWhiteSpace() are valid
-	bool CSString::isValidText();
+	bool isValidText();
 	// a handy routine that tests whether a given string is a valid file name or not
 	// "\"hello there\\bla\""	is valid 
 	// "hello there\\bla"		is not valid - missing quotes
@@ -287,9 +287,9 @@ public:
 	/// Return a copy of the string with leading and trainling spaces removed
 	CSString strip() const;
 	/// Return a copy of the string with leading spaces removed
-	CSString CSString::leftStrip() const;
+	CSString leftStrip() const;
 	/// Return a copy of the string with trainling spaces removed
-	CSString CSString::rightStrip() const;
+	CSString rightStrip() const;
 
 	/// Making an upper case copy of a string
 	CSString toUpper() const;
@@ -702,7 +702,7 @@ inline bool CSString::isPrintable(char c)
 	if (c==',') return true;
 	if (c==';') return true;
 	if (c=='$') return true;
-	if (c=='£') return true;
+	if (c==156) return true; // Sterling Pound char causing error in gcc 4.1.2
 	if (c=='^') return true;
 	if (c=='~') return true;
 	if (c=='\'') return true;

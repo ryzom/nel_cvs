@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.61 2005/10/13 10:11:57 boucher Exp $
+ * $Id: naming_client.cpp,v 1.61.18.1 2007/03/02 13:58:09 cado Exp $
  *
  */
 
@@ -81,6 +81,8 @@ static bool Registered;
 static bool RegisteredSuccess;
 static TServiceId *RegisteredSID = NULL;
 static string Reason;
+
+static void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 
 static void cbRegister (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {

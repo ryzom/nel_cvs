@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.9 2007/02/21 14:55:07 dailyclient Exp $
+ * $Id: path.cpp,v 1.119.4.10 2007/03/02 16:32:56 lancon Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -2112,6 +2112,22 @@ bool CFile::deleteFile(const std::string &filename)
 	if (res == -1)
 	{
 		nlwarning ("PATH: Can't delete file '%s': (errno %d) %s", filename.c_str(), errno, strerror(errno));
+		return false;
+	}
+	return true;
+}
+
+#ifdef NL_OS_WINDOWS
+#define rmdir _rmdir
+#endif
+
+bool CFile::deleteDirectory(const std::string &filename)
+{
+	setRWAccess(filename);
+	int res = rmdir (filename.c_str());
+	if (res == -1)
+	{
+		nlwarning ("PATH: Can't delete directory '%s': (errno %d) %s", filename.c_str(), errno, strerror(errno));
 		return false;
 	}
 	return true;

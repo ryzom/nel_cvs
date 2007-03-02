@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.24 2005/05/16 09:12:01 distrib Exp $
+ * $Id: memory_manager.h,v 1.24.10.1 2007/03/02 16:32:56 lancon Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,11 @@
 
 // CONFIGURATION
 #include "nel/memory/memory_config.h"
+
+#ifndef NL_COMP_STLPORT5
+// this file seem to not exist in new stlport version
 #include <stl/_site_config.h>
+#endif
 
 /*	Doc:
 	----

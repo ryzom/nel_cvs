@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.53.6.3 2007/02/02 18:06:26 vizerie Exp $
+ * $Id: path.h,v 1.53.6.4 2007/03/02 16:32:56 lancon Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -490,6 +490,14 @@ struct CFile
 	*/
 	static bool deleteFile(const std::string &filename);
 
+
+	/** Delete a directory if possible (change the write access if possible)
+	* \return true if the delete occurs.
+	*/
+	static bool deleteDirectory(const std::string &filename);
+
+
+	
 	/** Get temporary output filename.
 	*	Call this method to get a temporary output filename. If you have successfuly saved your data, delete the old filename and move the new one.
 	*/

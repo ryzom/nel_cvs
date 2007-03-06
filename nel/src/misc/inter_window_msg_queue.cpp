@@ -399,7 +399,6 @@ void CInterWindowMsgQueue::clearOutQueue()
 	CSynchronized<TMsgList>::CAccessor  outMessageQueue(&_OutMessageQueue);	
 	if (!outMessageQueue.value().empty())
 	{
-		nlwarning("CInterWindowMsgQueue : clearing out queue");
 		outMessageQueue.value().clear();
 	}
 }

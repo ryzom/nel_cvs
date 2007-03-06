@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.10 2007/03/02 16:32:56 lancon Exp $
+ * $Id: path.cpp,v 1.119.4.11 2007/03/06 18:14:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1810,7 +1810,7 @@ void CFile::checkFileChange (TTime frequency)
 	}
 }
 
-static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool failIfExists = false)
+static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool failIfExists = false, IProgressCallback *progress = NULL)
 {
 	if (!dest || !src) return false;
 	if (!strlen(dest) || !strlen(src)) return false;	
@@ -1820,8 +1820,15 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 //	return copyFile  ? CopyFile(dossrc.c_str(), dosdest.c_str(), failIfExists) != FALSE
 //					 : MoveFile(dossrc.c_str(), dosdest.c_str()) != FALSE;
 
+	if (progress) progress->progress(0.f);
 	if(copyFile)
 	{
+		uint32 totalSize = 0;
+		uint32 readSize = 0;
+		if (progress)
+		{
+			totalSize = CFile::getFileSize(ssrc);
+		}
 		FILE *fp1 = fopen(ssrc.c_str(), "rb");
 		if (fp1 == NULL)
 		{
@@ -1837,9 +1844,14 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 		static char buffer [1000];
 		size_t s;
 
-		s = fread(buffer, 1, sizeof(buffer), fp1);
+		s = fread(buffer, 1, sizeof(buffer), fp1);		
 		while (s != 0)
-		{
+		{			
+			if (progress)
+			{
+				readSize += s;
+				progress->progress((float) readSize / totalSize);
+			}
 			size_t ws = fwrite(buffer, 1, s, fp2);
 			if (ws != s)
 			{
@@ -1858,6 +1870,7 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 
 		fclose(fp1);
 		fclose(fp2);
+		if (progress) progress->progress(1.f);
 	}
 	else
 	{
@@ -1901,12 +1914,13 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 		}
 #endif
 	}
+	if (progress) progress->progress(1.f);
 	return true;
 }
 
-bool CFile::copyFile(const char *dest, const char *src, bool failIfExists /*=false*/)
+bool CFile::copyFile(const char *dest, const char *src, bool failIfExists /*=false*/, IProgressCallback *progress)
 {
-	return CopyMoveFile(dest, src, true, failIfExists);
+	return CopyMoveFile(dest, src, true, failIfExists, progress);
 }
 
 bool CFile::quickFileCompare(const std::string &fileName0, const std::string &fileName1)

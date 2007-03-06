@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.53.6.4 2007/03/02 16:32:56 lancon Exp $
+ * $Id: path.h,v 1.53.6.5 2007/03/06 18:13:49 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -450,7 +450,7 @@ struct CFile
 	  * \param failIfExists If the destination file exists, nothing is done, and it returns false.
 	  * \return true if the copy succeeded
 	  */
-	static bool copyFile(const char *dest, const char *src, bool failIfExists = false);
+	static bool copyFile(const char *dest, const char *src, bool failIfExists = false, class IProgressCallback *progress = NULL);
 
 	/** Compare 2 files
 	  * \return true if both files exist and the files have same timestamp and size

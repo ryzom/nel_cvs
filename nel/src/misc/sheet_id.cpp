@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.36.8.2 2006/06/05 10:24:32 miller Exp $
+ * $Id: sheet_id.cpp,v 1.36.8.3 2007/03/07 14:56:20 dailyserver Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -34,6 +34,7 @@
 
 #include "nel/misc/sheet_id.h"
 #include "nel/misc/common.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace std;
 
@@ -107,7 +108,7 @@ CSheetId::CSheetId( const string& sheetName )
 //-----------------------------------------------
 bool CSheetId::buildSheetId(const std::string& sheetName)
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	// try looking up the sheet name in _SheetNameToId
 	CStaticMap<CChar,uint32,CCharComp>::const_iterator itId;
@@ -143,6 +144,9 @@ bool CSheetId::buildSheetId(const std::string& sheetName)
 
 void CSheetId::loadSheetId ()
 {
+	H_AUTO(CSheetIdInit);
+	nldebug("Loding sheet_id.bin");
+
 	// Open the sheet id to sheet file name association
 	CIFile file;
 	std::string path = CPath::lookup("sheet_id.bin", false, false);
@@ -263,6 +267,7 @@ void CSheetId::loadSheetId ()
 	{
 		nlerror("<CSheetId::init> Can't open the file sheet_id.bin");
 	}
+	nldebug("Finished loading sheet_id.bin: %u entries read",_SheetIdToName.size());
 }
 
 
@@ -302,7 +307,7 @@ void CSheetId::uninit()
 //-----------------------------------------------
 CSheetId& CSheetId::operator=( const CSheetId& sheetId )
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	if(this == &sheetId)
 	{
@@ -327,7 +332,7 @@ CSheetId& CSheetId::operator=( const CSheetId& sheetId )
 //-----------------------------------------------
 CSheetId& CSheetId::operator=( const string& sheetName )
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	CStaticMap<CChar,uint32,CCharComp>::const_iterator itId;
 	CChar c;
@@ -354,7 +359,7 @@ CSheetId& CSheetId::operator=( const string& sheetName )
 //-----------------------------------------------
 CSheetId& CSheetId::operator=( uint32 sheetRef )
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	_Id.Id = sheetRef;
 	
@@ -370,7 +375,7 @@ CSheetId& CSheetId::operator=( uint32 sheetRef )
 //-----------------------------------------------
 bool CSheetId::operator < (const CSheetId& sheetRef ) const
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	if (_Id.Id < sheetRef.asInt())
 	{
@@ -389,7 +394,7 @@ bool CSheetId::operator < (const CSheetId& sheetRef ) const
 //-----------------------------------------------
 string CSheetId::toString(bool ifNotFoundUseNumericId) const
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	CStaticMap<uint32,CChar>::const_iterator itStr = _SheetIdToName.find (_Id.Id);
 	if( itStr != _SheetIdToName.end() )
@@ -434,7 +439,7 @@ void CSheetId::serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
 //-----------------------------------------------
 void CSheetId::display()
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -453,7 +458,7 @@ void CSheetId::display()
 //-----------------------------------------------
 void CSheetId::display(uint32 type)
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -480,7 +485,7 @@ void CSheetId::display(uint32 type)
 //-----------------------------------------------
 void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -497,7 +502,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 //-----------------------------------------------
 void CSheetId::buildIdVector(std::vector <CSheetId> &result, uint32 type)
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 	nlassert(type < (1 << (NL_SHEET_ID_TYPE_BITS)));
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
@@ -522,7 +527,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, uint32 type)
 //-----------------------------------------------
 void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames,uint32 type)
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 	nlassert(type < (1 << (NL_SHEET_ID_TYPE_BITS)));
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
@@ -573,7 +578,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::s
 //-----------------------------------------------
 uint32 CSheetId::typeFromFileExtension(const std::string &fileExtension)
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 
 	unsigned i;
 	for (i=0;i<_FileExtensions.size();i++)
@@ -590,7 +595,7 @@ uint32 CSheetId::typeFromFileExtension(const std::string &fileExtension)
 //-----------------------------------------------
 const std::string &CSheetId::fileExtensionFromType(uint32 type)
 {
-	nlassert(_Initialised);
+	if (!_Initialised) init(false);
 	nlassert(type < (1<<(NL_SHEET_ID_TYPE_BITS)));
 
 	return _FileExtensions[type];

@@ -26,7 +26,7 @@ namespace NLMISC
   * to enable non blocking exchange. (The WM_COPYDATA message require the use of SendMessage, which is blocking until the 
   * target window receive the message and respond)
   * 
-  * Names should be agreed on for the 2 windows that are to communicate (windows handles are transparently
+  * Identifier should be agreed on for the 2 windows that are to communicate (windows handles are transparently
   * exchanged through shared memory based on this name)
   *
   * When initializing the queue for a specific window, this window message proc will be subclassed
@@ -35,6 +35,14 @@ namespace NLMISC
   * 'release' should be called before the hooked window is destroyed, to avoid dangling reference to it
   * in this object. As one can expect 'release' is also automatically called when this object is destroyed
   *
+  * Additionnaly, an internal, invisible window will be create if no one is given (second form of 'init'). This avoid having to worry
+  * about order of init / release of subclassing.
+  *
+  * FIXME : In fact, creating an invisible, internal window (that is required to have a message queue), should be the default, 
+  * this would hide the internal communication mean, and we simply would have something called like 'CInterProcessMsgQueue'.
+  * Alternatives have been considered, but this one seemed simpler at first because of the facility offered by WM_COPYDATA
+  * Other possible implementations include shared memory (would require additionnal synchronisation & possible splitting of messages then), sockets (would make the firewall complain then ...) etc.
+  * .
   */
 
 class CInterWindowMsgQueue
@@ -45,9 +53,16 @@ public:
 	/** Create a 2-way message queue between 2 windows. 
 	  * Each ownerWindow / localId / foreignId triplet should be unique, repeated call with the same value will return false
 	  * as long as the message queue created from them is alive
+	  * IMPORTANT: 'ownerWindow' will be subclassed to handle the messages. If multiple subclassing are done on that window,
+	  * they must be undone in reverse order, or an assertion will be raised. The simplest thing is use the second form of init,
+	  * which will create an internal invisible window, thusavoiding this concern.
+	  *
+
 	  * return true on success
 	  */
 	bool init(HWND ownerWindow, uint32 localId, uint32 foreignId);
+	// initialize the message queue with its one internal window used for communication
+	bool init(HINSTANCE hInstance, uint32 localId, uint32 foreignId);
 	/** Release the msg queue
 	  * This will unhook the window, restoring its previous message procedure
 	  * Note than if the window was hooked by someone else, an assert will be raised
@@ -87,6 +102,8 @@ private:
 	TMsgList						_InMessageQueue;  // Incoming messages : not synchronised here, because the wnd 
 												      // message proc that receive foreign window messages (through WM_COPYDATA)
 													  // belong to the same thread than the reader (that calls 'pumpMessage')
+
+	HWND							_InvisibleWindow;
 	
 
 	// internal send thread
@@ -180,10 +197,15 @@ private:
 
 	static TOldWinProcMap _OldWinProcMap;
 
+	bool initInternal(HINSTANCE hInstance, HWND ownerWindow, uint32 localId, uint32 foreignId = NULL);
+
 private:	
-	static		 LRESULT CALLBACK ListenerProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static	LRESULT CALLBACK listenerProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static	LRESULT CALLBACK invisibleWindowListenerProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static  LRESULT			 handleWMCopyData(HWND hwnd, COPYDATASTRUCT *cds);
 	void updateTargetWindow();
 	void clearOutQueue();	
+	HWND createInvisibleWindow(HINSTANCE hInstance);
 };
 
 

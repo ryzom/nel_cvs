@@ -207,14 +207,51 @@ void CInterWindowMsgQueue::CSendTask::stop()
 //**************************************************************************************************
 CInterWindowMsgQueue::CInterWindowMsgQueue() : _SendTask(NULL),
 											   _SendThread(NULL),
+											   _InvisibleWindow(NULL),
 											   _OutMessageQueue("CInterWindowMsgQueue::_OutMessageQueue")
 {	
 }
 
 //**************************************************************************************************
-bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreignId)
-{			
-	nlassert(ownerWindow != NULL);
+HWND CInterWindowMsgQueue::createInvisibleWindow(HINSTANCE hInstance)
+{
+	static const char *INVISIBLE_WINDOW_CLASS = "nl_interwnd_invisible_wnd_class";
+	WNDCLASSEX wc;
+	wc.cbSize = sizeof(WNDCLASSEX); 
+	wc.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+	wc.lpfnWndProc		= invisibleWindowListenerProc;
+	wc.cbClsExtra		= 0;
+	wc.cbWndExtra		= 0;
+	wc.hInstance		= hInstance;
+	wc.hIcon			= 0;
+	wc.hCursor			= 0;
+	wc.hbrBackground	= 0;
+	wc.lpszMenuName		= 0;
+	wc.lpszClassName	= INVISIBLE_WINDOW_CLASS;
+	wc.hIconSm			= 0;
+	RegisterClassEx(&wc);	
+    return CreateWindow(INVISIBLE_WINDOW_CLASS, "", WS_POPUP, 
+                        CW_USEDEFAULT,CW_USEDEFAULT, 
+                        CW_USEDEFAULT,CW_USEDEFAULT, 
+                        NULL, 0,
+                        hInstance, 0);    
+}
+
+//**************************************************************************************************
+bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreignId /*=NULL*/)
+{
+	return initInternal(NULL, ownerWindow, localId, foreignId);
+}
+
+//**************************************************************************************************
+bool CInterWindowMsgQueue::init(HINSTANCE hInstance, uint32 localId, uint32 foreignId /*=NULL*/)
+{
+	return initInternal(hInstance, NULL, localId, foreignId);
+}
+
+//**************************************************************************************************
+bool CInterWindowMsgQueue::initInternal(HINSTANCE hInstance, HWND ownerWindow,uint32 localId,uint32 foreignId /*=NULL*/)
+{		
 	nlassert(localId != 0);
 	nlassert(foreignId != 0);
 	nlassert(localId != foreignId);
@@ -228,20 +265,35 @@ bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreign
 		{
 			// message queue already exists
 			return false;
-		}				
-		WNDPROC oldWinProc = (WNDPROC) GetWindowLong(ownerWindow, GWL_WNDPROC);
-		uint &refCount = _OldWinProcMap[ownerWindow].RefCount;	
-		++ refCount;
-		if (refCount == 1)
+		}
+		if (!ownerWindow)
 		{
-			nlassert(oldWinProc != ListenerProc); // first registration so the winproc must be different
-			SetWindowLong(ownerWindow, GWL_WNDPROC, (LONG) ListenerProc);	
-			_OldWinProcMap[ownerWindow].OldWinProc = oldWinProc;
+			nlassert(hInstance);
+			_InvisibleWindow = createInvisibleWindow(hInstance);
+			ownerWindow = _InvisibleWindow;
 		}
 		else
 		{
-			nlassert(oldWinProc == ListenerProc);
-		}				
+			nlassert(ownerWindow);
+			nlassert(!hInstance);
+		}	
+		if (ownerWindow != _InvisibleWindow)
+		{
+			// subclass window
+			WNDPROC oldWinProc = (WNDPROC) GetWindowLong(ownerWindow, GWL_WNDPROC);
+			uint &refCount = _OldWinProcMap[ownerWindow].RefCount;	
+			++ refCount;
+			if (refCount == 1)
+			{
+				nlassert(oldWinProc != listenerProc); // first registration so the winproc must be different
+				SetWindowLong(ownerWindow, GWL_WNDPROC, (LONG) listenerProc);	
+				_OldWinProcMap[ownerWindow].OldWinProc = oldWinProc;
+			}
+			else
+			{
+				nlassert(oldWinProc == listenerProc);
+			}
+		}
 		//
 		messageQueueMap->value()[msgQueueIdent] = this;
 		_SendTask = new CSendTask(this);
@@ -261,36 +313,43 @@ bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreign
 
 //**************************************************************************************************
 void CInterWindowMsgQueue::release()
-{	
+{		
 	if (_LocalWindow.getWnd() != 0)
 	{
 		if (IsWindow(_LocalWindow.getWnd())) // handle gracefully case where the window has been destroyed before
 											 // this manager
 		{
-			WNDPROC currWinProc = (WNDPROC) GetWindowLong(_LocalWindow.getWnd(), GWL_WNDPROC);
-			if (currWinProc != ListenerProc)
+			
+			if (_LocalWindow.getWnd() != _InvisibleWindow)
 			{
-				nlassert(0); // IF THIS ASSERT FIRES : 
-							 // either : 
-							 // - The window handle has been removed, and recreated
-							 // - The window has been hooked by someone else
-							 // in the application, but not unhooked properly.
-							 // Hook (performed at init) and unhook (performed here at release) should be
-							 // done in reverse order ! We got no way to unhook correclty, else.
+				WNDPROC currWinProc = (WNDPROC) GetWindowLong(_LocalWindow.getWnd(), GWL_WNDPROC);
+				if (currWinProc != listenerProc)
+				{
+					nlassert(0); // IF THIS ASSERT FIRES : 
+								 // either : 
+								 // - The window handle has been removed, and recreated
+								 // - The window has been hooked by someone else
+								 // in the application, but not unhooked properly.
+								 // Hook (performed at init) and unhook (performed here at release) should be
+								 // done in reverse order ! We got no way to unhook correclty, else.
+				}
 			}
 		}
-		TOldWinProcMap::iterator it = _OldWinProcMap.find(_LocalWindow.getWnd());
-		nlassert(it != _OldWinProcMap.end());
-		nlassert(it->second.RefCount > 0);
-		-- it->second.RefCount;
-		if (it->second.RefCount == 0)
+		if (_LocalWindow.getWnd() != _InvisibleWindow)
 		{
-			if (IsWindow(_LocalWindow.getWnd()))
+			TOldWinProcMap::iterator it = _OldWinProcMap.find(_LocalWindow.getWnd());
+			nlassert(it != _OldWinProcMap.end());
+			nlassert(it->second.RefCount > 0);
+			-- it->second.RefCount;
+			if (it->second.RefCount == 0)
 			{
-				SetWindowLong(_LocalWindow.getWnd(), GWL_WNDPROC, (LONG) it->second.OldWinProc);
+				if (IsWindow(_LocalWindow.getWnd()))
+				{
+					SetWindowLong(_LocalWindow.getWnd(), GWL_WNDPROC, (LONG) it->second.OldWinProc);
+				}
+				_OldWinProcMap.erase(it);
 			}
-			_OldWinProcMap.erase(it);
-		}		
+		}
 	}
 	if (_SendThread)
 	{
@@ -317,67 +376,78 @@ void CInterWindowMsgQueue::release()
 	clearOutQueue();
 	_LocalWindow.release();
 	_ForeignWindow.release();
+	if (_InvisibleWindow)
+	{
+		DestroyWindow(_InvisibleWindow);
+		_InvisibleWindow = NULL;
+	}
 }
 
 
 //=====================================================
-LRESULT CALLBACK CInterWindowMsgQueue::ListenerProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CInterWindowMsgQueue::handleWMCopyData(HWND hwnd, COPYDATASTRUCT *cds)
+{
+	// ctruct a write stream
+	CMemStream msgIn;		
+	if (cds->lpData)
+	{
+		uint32 fromId;
+		uint32 toId;
+		TMsgList nestedMsgs;			
+		try
+		{
+			
+			msgIn.serialBuffer((uint8 *) cds->lpData, cds->cbData);
+			// make it a read stream
+			msgIn.resetPtrTable();
+			msgIn.invert();				
+			nlassert(msgIn.isReading());
+			msgIn.serialVersion(_CurrentVersion);
+			msgIn.serial(fromId);
+			msgIn.serial(toId);
+			msgIn.serialCont(nestedMsgs);
+
+			CInterWindowMsgQueue messageQueue;
+			{
+				typedef CSynchronized<TMessageQueueMap>::CAccessor TAccessor;
+				// NB : use a 'new' instead of an automatic object here, because I got an 'INTERNAL COMPILER ERROR' compiler file 'msc1.cpp', line 1794
+				// else, this is one of the way recommended by microsoft to solve the problem.
+				std::auto_ptr<TAccessor> messageQueueMap(new TAccessor(&_MessageQueueMap));									
+				TMessageQueueMap::iterator it = messageQueueMap->value().find(CMsgQueueIdent(hwnd, toId, fromId));
+				if (it != messageQueueMap->value().end())
+				{
+					// no mutex stuff here, we're in the main thread
+					TMsgList &targetList = it->second->_InMessageQueue;
+					targetList.splice(targetList.end(), nestedMsgs); // append
+					return TRUE;
+				}
+				else
+				{
+					nlwarning("CInterWindowMsgQueue : Received inter window message from '%x' to '%x', but there's no associated message queue", (int) fromId, (int) toId);						
+				}					
+			}								
+		}
+		catch(EStream &)
+		{
+			nlwarning("CInterWindowMsgQueue : Bad message format in inter window communication");
+		}
+
+	}
+	else
+	{			
+		// msg received with NULL content
+		nlwarning("CInterWindowMsgQueue : NULL message received");
+	}
+	return FALSE;
+}
+
+//=====================================================
+LRESULT CALLBACK CInterWindowMsgQueue::listenerProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {	
 	if (uMsg == WM_COPYDATA) // WM_COPYDATA messages are sent by the other window to communicate with the client
 	{
-		// ctruct a write stream
-		CMemStream msgIn;
 		COPYDATASTRUCT *cds = (COPYDATASTRUCT *) lParam;
-		if (cds->lpData)
-		{
-			uint32 fromId;
-			uint32 toId;
-			TMsgList nestedMsgs;			
-			try
-			{
-				
-				msgIn.serialBuffer((uint8 *) cds->lpData, cds->cbData);
-				// make it a read stream
-				msgIn.resetPtrTable();
-				msgIn.invert();				
-				nlassert(msgIn.isReading());
-				msgIn.serialVersion(_CurrentVersion);
-				msgIn.serial(fromId);
-				msgIn.serial(toId);
-				msgIn.serialCont(nestedMsgs);
-
-				CInterWindowMsgQueue messageQueue;
-				{
-					typedef CSynchronized<TMessageQueueMap>::CAccessor TAccessor;
-					// NB : use a 'new' instead of an automatic object here, because I got an 'INTERNAL COMPILER ERROR' compiler file 'msc1.cpp', line 1794
-					// else, this is one of the way recommended by microsoft to solve the problem.
-					std::auto_ptr<TAccessor> messageQueueMap(new TAccessor(&_MessageQueueMap));									
-					TMessageQueueMap::iterator it = messageQueueMap->value().find(CMsgQueueIdent(hwnd, toId, fromId));
-					if (it != messageQueueMap->value().end())
-					{
-						// no mutex stuff here, we're in the main thread
-						TMsgList &targetList = it->second->_InMessageQueue;
-						targetList.splice(targetList.end(), nestedMsgs); // append
-						return TRUE;
-					}
-					else
-					{
-						nlwarning("CInterWindowMsgQueue : Received inter window message from '%x' to '%x', but there's no associated message queue", (int) fromId, (int) toId);						
-					}					
-				}								
-			}
-			catch(EStream &)
-			{
-				nlwarning("CInterWindowMsgQueue : Bad message format in inter window communication");
-			}
-
-		}
-		else
-		{			
-			// msg received with NULL content
-			nlwarning("CInterWindowMsgQueue : NULL message received");
-		}
-		return FALSE;
+		return handleWMCopyData(hwnd, (COPYDATASTRUCT *) lParam);		
 	}
 	else
 	{
@@ -385,6 +455,17 @@ LRESULT CALLBACK CInterWindowMsgQueue::ListenerProc(HWND hwnd, UINT uMsg, WPARAM
 		nlassert(it != _OldWinProcMap.end());			
 		return CallWindowProc(it->second.OldWinProc, hwnd, uMsg, wParam, lParam);
 	}
+}
+
+//=====================================================
+LRESULT CALLBACK CInterWindowMsgQueue::invisibleWindowListenerProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{	
+	if (uMsg == WM_COPYDATA) // WM_COPYDATA messages are sent by the other window to communicate with the client
+	{
+		COPYDATASTRUCT *cds = (COPYDATASTRUCT *) lParam;
+		return handleWMCopyData(hwnd, (COPYDATASTRUCT *) lParam);		
+	}
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);	
 }
 
 //**************************************************************************************************

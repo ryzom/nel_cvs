@@ -49,7 +49,15 @@ class CInterWindowMsgQueue
 {
 public:
 	CInterWindowMsgQueue();
-	~CInterWindowMsgQueue();
+	~CInterWindowMsgQueue();	
+	/** Create a 2-way inter process message queue. 
+	  * Each ownerWindow / localId / foreignId triplet should be unique, repeated call with the same value will return false
+	  * as long as the message queue created from them is alive
+	  * IMPORTANT: 'ownerWindow' will be subclassed to handle the messages. If multiple subclassing are done on that window,
+	  * they must be undone in reverse order, or an assertion will be raised. The simplest thing is use the second form of init,
+	  * which will create an internal invisible window, thusavoiding this concern.
+	  */
+	bool init(HINSTANCE hInstance, uint32 localId, uint32 foreignId);
 	/** Create a 2-way message queue between 2 windows. 
 	  * Each ownerWindow / localId / foreignId triplet should be unique, repeated call with the same value will return false
 	  * as long as the message queue created from them is alive
@@ -57,12 +65,9 @@ public:
 	  * they must be undone in reverse order, or an assertion will be raised. The simplest thing is use the second form of init,
 	  * which will create an internal invisible window, thusavoiding this concern.
 	  *
-
 	  * return true on success
 	  */
 	bool init(HWND ownerWindow, uint32 localId, uint32 foreignId);
-	// initialize the message queue with its one internal window used for communication
-	bool init(HINSTANCE hInstance, uint32 localId, uint32 foreignId);
 	/** Release the msg queue
 	  * This will unhook the window, restoring its previous message procedure
 	  * Note than if the window was hooked by someone else, an assert will be raised

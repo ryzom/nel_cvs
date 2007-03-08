@@ -238,20 +238,32 @@ HWND CInterWindowMsgQueue::createInvisibleWindow(HINSTANCE hInstance)
 }
 
 //**************************************************************************************************
-bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreignId /*=NULL*/)
+bool CInterWindowMsgQueue::init(HWND ownerWindow, uint32 localId, uint32 foreignId)
 {
 	return initInternal(NULL, ownerWindow, localId, foreignId);
 }
 
 //**************************************************************************************************
-bool CInterWindowMsgQueue::init(HINSTANCE hInstance, uint32 localId, uint32 foreignId /*=NULL*/)
+bool CInterWindowMsgQueue::init(HINSTANCE hInstance, uint32 localId, uint32 foreignId)
 {
 	return initInternal(hInstance, NULL, localId, foreignId);
 }
 
 //**************************************************************************************************
-bool CInterWindowMsgQueue::initInternal(HINSTANCE hInstance, HWND ownerWindow,uint32 localId,uint32 foreignId /*=NULL*/)
-{		
+bool CInterWindowMsgQueue::initInternal(HINSTANCE hInstance, HWND ownerWindow, uint32 localId, uint32 foreignId)
+{			
+	if (!ownerWindow)
+	{
+		// see if 
+		nlassert(hInstance);
+		_InvisibleWindow = createInvisibleWindow(hInstance);
+		ownerWindow = _InvisibleWindow;
+	}
+	else
+	{
+		nlassert(ownerWindow);
+		nlassert(!hInstance);
+	}	
 	nlassert(localId != 0);
 	nlassert(foreignId != 0);
 	nlassert(localId != foreignId);
@@ -262,21 +274,11 @@ bool CInterWindowMsgQueue::initInternal(HINSTANCE hInstance, HWND ownerWindow,ui
 		std::auto_ptr<TAccessor> messageQueueMap(new TAccessor(&_MessageQueueMap));		
 		CMsgQueueIdent msgQueueIdent(ownerWindow, localId, foreignId);
 		if (messageQueueMap->value().count(msgQueueIdent))
-		{
+		{			
+			nlassert(!_InvisibleWindow); // invisible window has just been created, it can't be in the map now!			
 			// message queue already exists
 			return false;
-		}
-		if (!ownerWindow)
-		{
-			nlassert(hInstance);
-			_InvisibleWindow = createInvisibleWindow(hInstance);
-			ownerWindow = _InvisibleWindow;
-		}
-		else
-		{
-			nlassert(ownerWindow);
-			nlassert(!hInstance);
-		}	
+		}		
 		if (ownerWindow != _InvisibleWindow)
 		{
 			// subclass window
@@ -300,11 +302,12 @@ bool CInterWindowMsgQueue::initInternal(HINSTANCE hInstance, HWND ownerWindow,ui
 		_SendThread = IThread::create(_SendTask);
 		_SendThread->start();
 		// init the window handle in shared memory last,
-		// this way we are sure that the ne win proc has been installed, and can start received messages
+		// this way we are sure that the new win proc has been installed, and can start received messages
 		bool ok = _LocalWindow.init(localId) && _ForeignWindow.init(foreignId);
 		if (!ok)
 		{
 			release();
+			return false;
 		}
 		_LocalWindow.setWnd(ownerWindow);
 	}

@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.17 2007/03/09 09:49:31 boucher Exp $
+ * $Id: udp_sock.cpp,v 1.18 2007/03/09 15:09:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,26 +28,28 @@
 #include "nel/net/udp_sock.h"
 
 #ifdef NL_OS_WINDOWS
-#include <WinSock2.h>
-#include <windows.h>
-#define socklen_t int
-#define ERROR_NUM WSAGetLastError()
+# ifdef NL_COMP_VC8
+#  include <WinSock2.h>
+# endif
+# include <windows.h>
+# define socklen_t int
+# define ERROR_NUM WSAGetLastError()
 
 #elif defined NL_OS_UNIX
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <cerrno>
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/time.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netinet/tcp.h>
+# include <arpa/inet.h>
+# include <netdb.h>
+# include <cerrno>
 //#include <fcntl.h>
-#define SOCKET_ERROR -1
-#define INVALID_SOCKET -1
-#define ERROR_NUM errno
-#define ERROR_MSG strerror(errno)
+# define SOCKET_ERROR -1
+# define INVALID_SOCKET -1
+# define ERROR_NUM errno
+# define ERROR_MSG strerror(errno)
 typedef int SOCKET;
 
 #endif

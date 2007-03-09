@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * TODO: File description
  *
- * $Id: ps_color.h,v 1.12 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_color.h,v 1.13 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@
 namespace NL3D {
 
 
-
+template <>
 const char *CPSAttribMaker<NLMISC::CRGBA>::getType() { return "CRGBA"; }
 
 

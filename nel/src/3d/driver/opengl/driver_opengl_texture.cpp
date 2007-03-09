@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.82 2006/12/06 17:21:23 boucher Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.83 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1830,7 +1830,7 @@ bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width
 		_OldViewport = _CurrViewport;
 
 		_RenderTargetFBO = false;
-		return;
+		return false;
 	}
 	else if(tex && tex->isBloomTexture() && supportBloomEffect() /*&& activeFrameBufferObject(tex)*/)
 	{

@@ -1,7 +1,7 @@
 /** \file module_common.h
  * basic type and forward declaration for module system
  *
- * $Id: module_common.h,v 1.5 2006/05/31 12:03:14 boucher Exp $
+ * $Id: module_common.h,v 1.6 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,15 +65,27 @@ namespace NLNET
 	 *	Support in memory representation of parameter line like :
 	 *	'tag1(x=1 y=2 z=3) tag2=6 tag3(a=abc b=xyz tag4)'
 	 */
-	struct TParsedCommandLine
+	class TParsedCommandLine
 	{
+	public:
+
+		TParsedCommandLine()
+		{
+
+		};
+
+		~TParsedCommandLine();
+
 		/// The parameter name
 		std::string		ParamName;
 		/// The parameter value, empty in the case of a sub param header
 		std::string		ParamValue;
 
 		/// The list of sub parameters. Empty in the case of a single param.
-		std::vector<TParsedCommandLine>	SubParams;
+		std::vector<TParsedCommandLine*>	SubParams;
+
+		/// Cleanup
+		void clear();
 
 		/// Parse a NeL argument list to build a module init object.
 		bool parseParamList(const std::string &rawParamString);

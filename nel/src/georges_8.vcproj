@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="georges"
 	ProjectGUID="{9D284C6B-BE12-4549-87E5-2337D64F31BE}"
+	RootNamespace="georges"
 	>
 	<Platforms>
 		<Platform
@@ -41,6 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="__STL_DEBUG;_LIB;_DEBUG;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -122,6 +124,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="_LIB;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -196,7 +199,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -273,6 +277,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -324,49 +329,11 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="georges\form.cpp"
+			RelativePath=".\georges\form.cpp"
 			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="DebugFast|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
-				/>
-			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="georges\form.h"
+			RelativePath=".\georges\form.h"
 			>
 		</File>
 		<File

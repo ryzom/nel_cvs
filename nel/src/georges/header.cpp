@@ -1,7 +1,7 @@
 /** \file header.cpp
  * Georges header file class
  *
- * $Id: header.cpp,v 1.7 2003/11/17 14:26:38 distrib Exp $
+ * $Id: header.cpp,v 1.8 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,7 +132,7 @@ void CFileHeader::read (xmlNodePtr root)
 
 			// Throw exception
 			warning (true, "read", "XML Syntax error in TYPE block line %d, the Version argument is invalid.", 
-				(int)root->content);
+				(ptrdiff_t)root->content);
 		}
 
 		// Delete the value
@@ -182,7 +182,7 @@ void CFileHeader::read (xmlNodePtr root)
 
 			// Throw exception
 			warning (true, "read", "XML Syntax error in TYPE block line %d, the State argument is invalid.", 
-				(int)root->content);
+				(ptrdiff_t)root->content);
 		}
 
 		// Delete the value

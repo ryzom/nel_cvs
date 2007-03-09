@@ -1,7 +1,7 @@
 /** \file water_pool_manager.h
  * TODO: File description
  *
- * $Id: water_pool_manager.h,v 1.8 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: water_pool_manager.h,v 1.9 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/stream.h"
+
+#include "water_shape.h"
 
 #include <map>
 #include <vector>

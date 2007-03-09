@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.38 2006/12/06 17:21:23 boucher Exp $
+ * $Id: driver_direct3d.cpp,v 1.39 2007/03/09 09:49:30 boucher Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2720,6 +2720,8 @@ bool CDriverD3D::stretchRect(ITexture * srcText, NLMISC::CRect &srcRect, ITextur
 
 		return (hr==D3D_OK);
 	}
+
+	return false;
 }
 
 // ***************************************************************************

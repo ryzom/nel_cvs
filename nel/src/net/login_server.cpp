@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.42 2006/07/12 14:37:22 boucher Exp $
+ * $Id: login_server.cpp,v 1.43 2007/03/09 09:49:30 boucher Exp $
  *
  */
 
@@ -113,7 +113,7 @@ void CLoginServer::refreshPendingList ()
 }
 
 
-void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, TServiceId sid)
 {
 	// the WS call me that a new client want to come in my shard
 	string reason, userName, userPriv, userExtended;
@@ -175,7 +175,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	CUnifiedNetwork::getInstance()->send ("WS", msgout);
 }
 
-void cbWSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbWSDisconnectClient (CMessage &msgin, const std::string &serviceName, TServiceId sid)
 {
 	// the WS tells me that i have to disconnect a client
 

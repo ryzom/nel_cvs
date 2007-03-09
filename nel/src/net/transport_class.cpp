@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * TODO: File description
  *
- * $Id: transport_class.cpp,v 1.22 2005/03/22 14:41:39 besson Exp $
+ * $Id: transport_class.cpp,v 1.23 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -87,24 +87,23 @@ string typeToString (CTransportClass::TProp type)
 	return conv[type];
 }
 
-void CTransportClass::displayDifferentClass (uint8 sid, const string &className, const vector<CRegisteredBaseProp> &otherClass, const vector<CRegisteredBaseProp *> &myClass)
+void CTransportClass::displayDifferentClass (TServiceId sid, const string &className, const vector<CRegisteredBaseProp> &otherClass, const vector<CRegisteredBaseProp *> &myClass)
 {
-	nlinfo ("NETTC: Service with sid %u send me the TransportClass '%s' with differents properties:", sid, className.c_str());
-	uint i;
+	nlinfo ("NETTC: Service with sid %hu send me the TransportClass '%s' with differents properties:", sid.get(), className.c_str());
 	nlinfo ("NETTC:  My local TransportClass is:");
-	for (i = 0; i < myClass.size(); i++)
+	for (uint i = 0; i < myClass.size(); i++)
 	{
 		nlinfo ("NETTC:    Property: %d Name: '%s' type: '%s'", i, myClass[i]->Name.c_str(), typeToString(myClass[i]->Type).c_str());
 	}
 
 	nlinfo ("NETTC:  The other side TransportClass is:");
-	for (i = 0; i < otherClass.size(); i++)
+	for (uint i = 0; i < otherClass.size(); i++)
 	{
 		nlinfo ("NETTC:    Property: %d Name: '%s' type: '%s'", i, otherClass[i].Name.c_str(), typeToString(otherClass[i].Type).c_str());
 	}
 }
 
-void CTransportClass::registerOtherSideClass (uint8 sid, TOtherSideRegisteredClass &osrc)
+void CTransportClass::registerOtherSideClass (TServiceId sid, TOtherSideRegisteredClass &osrc)
 {
 	for (TOtherSideRegisteredClass::iterator it = osrc.begin(); it != osrc.end (); it++)
 	{
@@ -118,10 +117,10 @@ void CTransportClass::registerOtherSideClass (uint8 sid, TOtherSideRegisteredCla
 			continue;
 		}
 
-		if (sid >= (*res).second.Instance->States.size ())
-			(*res).second.Instance->States.resize (sid+1);
+		if (sid.get() >= (*res).second.Instance->States.size ())
+			(*res).second.Instance->States.resize (sid.get()+1);
 
-		(*res).second.Instance->States[sid].clear ();
+		(*res).second.Instance->States[sid.get()].clear ();
 
 		for (sint j = 0; j < (sint)(*it).second.size (); j++)
 		{
@@ -143,12 +142,12 @@ void CTransportClass::registerOtherSideClass (uint8 sid, TOtherSideRegisteredCla
 			if (k == (*res).second.Instance->Prop.size())
 			{
 				// not found, put -1
-				(*res).second.Instance->States[sid].push_back (make_pair (-1, (*it).second[j].Type));
+				(*res).second.Instance->States[sid.get()].push_back (make_pair (-1, (*it).second[j].Type));
 			}
 			else
 			{
 				// same, store the index
-				(*res).second.Instance->States[sid].push_back (make_pair (k, PropUKN));
+				(*res).second.Instance->States[sid.get()].push_back (make_pair (k, PropUKN));
 			}
 		}
 
@@ -251,7 +250,7 @@ void CTransportClass::displayLocalRegisteredClass ()
 	}
 }
 
-void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
+void cbTCReceiveMessage (CMessage &msgin, const string &name, TServiceId sid)
 {
 	nldebug ("NETTC: cbReceiveMessage");
 
@@ -264,19 +263,19 @@ void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 	CTransportClass::TRegisteredClass::iterator it = CTransportClass::LocalRegisteredClass.find (className);
 	if (it == CTransportClass::LocalRegisteredClass.end ())
 	{
-		nlwarning ("NETTC: Receive unknown transport class '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
+		nlwarning ("NETTC: Receive unknown transport class '%s' received from %s-%hu", className.c_str(), name.c_str(), sid.get());
 		return;
 	}
 
 	nlassert ((*it).second.Instance != NULL);
 	
-	if (!(*it).second.Instance->read (name, (uint8)sid))
+	if (!(*it).second.Instance->read (name, sid))
 	{
-		nlwarning ("NETTC: Can't read the transportclass '%s' received from %s-%hu (probably not registered on sender service)", className.c_str(), name.c_str(), sid);
+		nlwarning ("NETTC: Can't read the transportclass '%s' received from %s-%hu (probably not registered on sender service)", className.c_str(), name.c_str(), sid.get());
 	}
 }
 
-void cbTCReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)
+void cbTCReceiveOtherSideClass (CMessage &msgin, const string &name, TServiceId sid)
 {
 	nldebug ("NETTC: cbReceiveOtherSideClass");
 
@@ -310,7 +309,7 @@ void cbTCReceiveOtherSideClass (CMessage &msgin, const string &name, uint16 sid)
 	}
 
 	// we have the good structure
-	CTransportClass::registerOtherSideClass ((uint8)sid, osrc);
+	CTransportClass::registerOtherSideClass (sid, osrc);
 }
 
 static TUnifiedCallbackItem CallbackArray[] =
@@ -319,12 +318,12 @@ static TUnifiedCallbackItem CallbackArray[] =
 	{ "CT_MSG", cbTCReceiveMessage },
 };
 
-void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg)
+void cbTCUpService (const std::string &serviceName, TServiceId sid, void *arg)
 {
-	nldebug ("NETTC: CTransportClass Service %s %d is up", serviceName.c_str(), sid);
-	if (sid >= 256)
+	nldebug ("NETTC: CTransportClass Service %s %hu is up", serviceName.c_str(), sid.get());
+	if (sid.get() >= 256)
 		return;
-	CTransportClass::sendLocalRegisteredClass ((uint8)sid);
+	CTransportClass::sendLocalRegisteredClass (sid);
 }
 
 void CTransportClass::init ()

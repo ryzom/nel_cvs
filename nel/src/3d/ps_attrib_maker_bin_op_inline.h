@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op_inline.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.9 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.10 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,6 +123,7 @@ inline NLMISC::CRGBA PSBinOpSubtract(NLMISC::CRGBA t1, NLMISC::CRGBA t2)
 
 	
 //***********************************************************************
+template <>
 inline uint32 CPSAttribMakerBinOp<uint32>::getMinValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
@@ -147,6 +148,7 @@ inline uint32 CPSAttribMakerBinOp<uint32>::getMinValue(void) const
 }
 
 //***********************************************************************
+template <>
 inline uint32 CPSAttribMakerBinOp<uint32>::getMaxValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
@@ -171,6 +173,7 @@ inline uint32 CPSAttribMakerBinOp<uint32>::getMaxValue(void) const
 }
 
 //***********************************************************************
+template <>
 inline sint32 CPSAttribMakerBinOp<sint32>::getMinValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
@@ -197,6 +200,7 @@ inline sint32 CPSAttribMakerBinOp<sint32>::getMinValue(void) const
 }
 
 //***********************************************************************
+template <>
 inline sint32 CPSAttribMakerBinOp<sint32>::getMaxValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
@@ -223,6 +227,7 @@ inline sint32 CPSAttribMakerBinOp<sint32>::getMaxValue(void) const
 }
 
 //***********************************************************************
+template <>
 inline float CPSAttribMakerBinOp<float>::getMinValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
@@ -249,6 +254,7 @@ inline float CPSAttribMakerBinOp<float>::getMinValue(void) const
 }
 
 //***********************************************************************
+template <>
 inline float CPSAttribMakerBinOp<float>::getMaxValue(void) const
 {
 	nlassert(_Arg[0] && _Arg[1]);
@@ -319,6 +325,7 @@ inline CPSAttribMakerBinOp<T>::~CPSAttribMakerBinOp()
 
 //=================================================================================================================
 /// cplane basis template specialization for supportOp
+template <>
 inline bool CPSAttribMakerBinOp<CPlaneBasis>::supportOp(CPSBinOp::BinOp op) 
 { 
 	return  (op == CPSBinOp::selectArg1 || op == CPSBinOp::selectArg2 || op == CPSBinOp::modulate);

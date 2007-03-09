@@ -1,6 +1,6 @@
 /** \file debug_vb.cpp
  *
- * $Id: debug_vb.cpp,v 1.3 2005/02/22 10:19:10 besson Exp $
+ * $Id: debug_vb.cpp,v 1.4 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -34,7 +34,7 @@ static void checkRange(const uint8 *min, const uint8 *max, const uint8 *start, u
 {
 	if (start + length < min || start >= max)
 	{
-		nlwarning("Buffer start = %x, end = %x, accessed range = (%x, %x), %s", (int) min, (int) max, (int) start, (int) (start + length), msg.c_str());
+		nlwarning("Buffer start = %x, end = %x, accessed range = (%x, %x), %s", (ptrdiff_t) min, (ptrdiff_t) max, (ptrdiff_t) start, (ptrdiff_t) (start + length), msg.c_str());
 		nlassert(0);
 	}
 }

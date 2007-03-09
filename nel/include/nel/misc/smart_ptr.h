@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.35 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: smart_ptr.h,v 1.36 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -343,9 +343,6 @@ public:
 	 */
 	void	kill();
 
-
-	// No need to do any operator==. Leave the work to cast  operator T*(void).
-
 	// serial using serialPloyPtr
 	void serialPolyPtr(NLMISC::IStream &f) throw(NLMISC::EStream ) 
 	{ 
@@ -363,6 +360,26 @@ public:
 		}
 	}
 };
+
+// this operator only to compare with NULL value
+template <class T>
+bool operator == (const CRefPtr<T> &refPtr, int null)
+{
+	nlassert(null == NULL);
+	return (T*)refPtr == (T*)null;
+}
+
+template <class T>
+bool operator == (const CRefPtr<T> &refPtr, T *ptr)
+{
+	return (T*)refPtr == ptr;
+}
+
+template <class T>
+bool operator == (const CRefPtr<T> &leftRef, const CRefPtr<T> &rightRef)
+{
+	return (T*)leftRef == (T*) rightRef;
+}
 
 template <class T> 
 class CVirtualRefPtr

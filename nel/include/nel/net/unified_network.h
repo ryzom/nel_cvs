@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.55 2005/09/19 16:20:01 boucher Exp $
+ * $Id: unified_network.h,v 1.56 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -35,22 +35,163 @@
 #include "nel/misc/time_nl.h"
 #include "callback_client.h"
 #include "callback_server.h"
-#include "naming_client.h"
+//#include "service.h"
 
 namespace NLNET {
+
+/** This class encapsulate the serviceId format. */
+class TServiceId
+{
+	/// Service are identied by a 16 bits integer
+	uint16	_ServiceId;
+public:
+	typedef uint16	size_type;
+
+	/// Default constructor, set the id to 0 (no service should have 0)
+	TServiceId()
+		:	_ServiceId(0)
+	{}
+
+	/// Copy constructor
+	TServiceId(const TServiceId &other)
+		:	_ServiceId(other._ServiceId)
+	{}
+
+	/// Only explicit construction from an integer are allowed
+	explicit TServiceId(uint16 sid)
+		:	_ServiceId(sid)
+	{}
+
+	bool operator == (const TServiceId &other) const
+	{
+		return _ServiceId == other._ServiceId;
+	}
+	bool operator != (const TServiceId &other) const
+	{
+		return !(*this == other);
+	}
+	bool operator < (const TServiceId &other) const
+	{
+		return _ServiceId < other._ServiceId;
+	}
+
+	/// Getter, return the integer value of the service id
+	uint16 get() const		{	return _ServiceId;}
+	/// Setter, set the value of the service id
+	void set(uint16 sid)	{	_ServiceId = sid;}
+
+	void serial(NLMISC::IStream &s)
+	{
+		s.serial(_ServiceId);
+	}
+
+	std::string toString() const
+	{
+		return NLMISC::toString("%u", _ServiceId);
+	}
+
+	void fromString(const std::string &str)
+	{
+		_ServiceId = atoi(str.c_str());
+	}
+};
+
+/** This class encapsulate the 8 bits service id.
+ *	8 bits service id are used by service register on the naming service.
+ *	This service can be used in a NLMISC::CEntityId.
+ * 	Implicit constructor and conversion are provided with the 16 bits
+ *	version above, but the constructor will assert if the 8 bits range is
+ *	overflowed.
+ */
+class TServiceId8
+{
+	/// The 8bits service id
+	uint8	_ServiceId;
+public:
+	typedef uint8	size_type;
+
+	/// Default constructor, set the id to 0 (no service should have 0)
+	TServiceId8()
+		:	_ServiceId(0)
+	{}
+
+	/// Copy constructor
+	TServiceId8(const TServiceId8 &other)
+		:	_ServiceId(other._ServiceId)
+	{}
+
+	/// Only explicit construction from an integer are allowed
+	TServiceId8(const TServiceId &other)
+	{
+		nlassert(other.get() < 256);
+		_ServiceId = uint8(other.get());
+	}
+	explicit TServiceId8(uint8 sid)
+		:	_ServiceId(sid)
+	{}
+
+	/// implicit up cast to TServiceId (16bits)
+	operator TServiceId () const
+	{
+		return TServiceId(_ServiceId);
+	}
+
+	bool operator == (const TServiceId8 &other) const
+	{
+		return _ServiceId == other._ServiceId;
+	}
+	bool operator != (const TServiceId8 &other) const
+	{
+		return !(*this == other);
+	}
+	bool operator == (const TServiceId &other) const
+	{
+		return _ServiceId == other.get();
+	}
+	bool operator != (const TServiceId &other) const
+	{
+		return !(*this == other);
+	}
+	bool operator < (const TServiceId8 &other) const
+	{
+		return _ServiceId < other._ServiceId;
+	}
+
+	/// Getter, return the integer value of the service id
+	uint8 get()	const		{	return _ServiceId;}
+	/// Setter, set the value of the service id
+	void set(uint8 sid)		{	_ServiceId = sid;}
+
+	void serial(NLMISC::IStream &s)
+	{
+		s.serial(_ServiceId);
+	}
+
+	std::string toString() const
+	{
+		return NLMISC::toString("%u", _ServiceId);
+	}
+
+	void fromString(const std::string &str)
+	{
+		_ServiceId = atoi(str.c_str());
+	}
+};
+
+
 
 /** Callback function type for service up/down processing
  * \param serviceName name of the service that is un/registered to the naming service
  * \param arg a pointer initialized by the user
  */
-typedef void (*TUnifiedNetCallback) (const std::string &serviceName, uint16 sid, void *arg);
+typedef void (*TUnifiedNetCallback) (const std::string &serviceName, TServiceId sid, void *arg);
 
 /** Callback function type for message processing
  * \param msgin message received
  * \param serviceName name of the service that sent the message
  * \param sid id of the service that sent the message
  */
-typedef void (*TUnifiedMsgCallback) (CMessage &msgin, const std::string &serviceName, uint16 sid);
+typedef void (*TUnifiedMsgCallback) (CMessage &msgin, const std::string &serviceName, TServiceId sid);
 
 /// Callback items. See CMsgSocket::update() for an explanation on how the callbacks are called.
 struct TUnifiedCallbackItem
@@ -143,8 +284,8 @@ public:
 	 *
 	 * Warning: currently, this method must not be called within a network callback.
 	 */
-	void	addService(const std::string &name, const CInetAddress &addr, bool sendId = true, bool external = true, uint16 sid=0, bool autoRetry = true, bool shouldBeAlreayInserted = false);
-	void	addService(const std::string &name, const std::vector<CInetAddress> &addr, bool sendId = true, bool external = true, uint16 sid=0, bool autoRetry = true, bool shouldBeAlreayInserted = false);
+	void	addService(const std::string &name, const CInetAddress &addr, bool sendId = true, bool external = true, TServiceId sid=TServiceId(), bool autoRetry = true, bool shouldBeAlreayInserted = false);
+	void	addService(const std::string &name, const std::vector<CInetAddress> &addr, bool sendId = true, bool external = true, TServiceId sid=TServiceId(), bool autoRetry = true, bool shouldBeAlreayInserted = false);
 
 	/** Adds a callback array in the system. You can add callback only *after* adding the server, the client or the group.
 	 */
@@ -171,7 +312,7 @@ public:
 	 * \param nid Network Id specify to which network the message must pass throw (0xFF mean the default network)
 	 * \return true if the service was found (may return true even if the sending failed)
 	 */
-	bool	send (uint16 serviceId, const CMessage &msg, uint8 nid=0xFF);
+	bool	send (TServiceId serviceId, const CMessage &msg, uint8 nid=0xFF);
 
 	/** Broadcasts a message to all connected services.
 	 * \param msg the message you want to send.
@@ -247,16 +388,16 @@ public:
 	void	clearDefaultNetwork () { _DefaultNetwork.clear (); }
 
 	/// Returns true if the sid service is on the same computer than this service
-	bool	isServiceLocal (uint16 sid);
+	bool	isServiceLocal (TServiceId sid);
 
 	/// Returns true if the serviceName service is on the same computer than this service
 	bool	isServiceLocal (const std::string &serviceName);
 
 	/// Return the name of the specified service, or "" if not found
-	std::string			getServiceName(uint16 sid);
+	std::string			getServiceName(TServiceId sid);
 
 	/// Return a string identifying the service, using the format "NAME-sid" (or "sid" only if not found)
-	std::string			getServiceUnifiedName(uint16 sid);
+	std::string			getServiceUnifiedName(TServiceId sid);
 
 	
 	/// \warning You should not use getNetBase functions because it could have more than one connection to a service and in this case
@@ -266,7 +407,7 @@ public:
 	CCallbackNetBase	*getNetBase(const std::string &name, TSockId &host, uint8 nid=0xFF);
 
 	/// Gets the CCallbackNetBase of the service
-	CCallbackNetBase	*getNetBase(uint16 sid, TSockId &host, uint8 nid=0xFF);
+	CCallbackNetBase	*getNetBase(TServiceId sid, TSockId &host, uint8 nid=0xFF);
 
 	/// Gets the total number of bytes sent
 	uint64				getBytesSent ();
@@ -284,11 +425,11 @@ public:
 	TUnifiedMsgCallback findCallback (const std::string &callbackName);
 
 	/// Return the service ids of the active connections
-	const std::vector<uint16>&	getConnectionList() const { return _UsedConnection; }
+	const std::vector<TServiceId>&	getConnectionList() const { return _UsedConnection; }
 
 	void				displayInternalTables (NLMISC::CLog *log = NLMISC::InfoLog);
 
-	void				displayUnifiedConnection (uint16 sid, NLMISC::CLog *log = NLMISC::InfoLog)
+	void				displayUnifiedConnection (TServiceId sid, NLMISC::CLog *log = NLMISC::InfoLog)
 	{
 		getUnifiedConnection(sid)->display(false, log);
 	}
@@ -296,7 +437,7 @@ public:
 private:
 
 	/// A map of service ids, referred by a service name
-	struct TNameMappedConnection : public std::hash_multimap<std::string, uint16> {};
+	struct TNameMappedConnection : public std::hash_multimap<std::string, TServiceId> {};
 
 	/// A map of callbacks, refered by message name
 	typedef std::map<std::string, TUnifiedMsgCallback>			TMsgMappedCallback;
@@ -367,7 +508,7 @@ private:
 		/// The name of the service (may not be unique)
 		std::string					ServiceName;
 		/// The id of the service (is unique)
-		uint16						ServiceId;
+		TServiceId					ServiceId;
 		/// If the service entry is used
 		TState						State;
 		/// If the connection is extern to the naming service
@@ -395,7 +536,7 @@ private:
 
 		CUnifiedConnection() { reset(); }
 
-		CUnifiedConnection(const std::string &name, uint16 id, bool isExternal) 
+		CUnifiedConnection(const std::string &name, TServiceId id, bool isExternal) 
 		{
 			reset ();
 			ServiceName = name;
@@ -404,7 +545,7 @@ private:
 			IsExternal = isExternal;
 		}
 
-		CUnifiedConnection(const std::string &name, uint16 id, CCallbackClient *cbc)
+		CUnifiedConnection(const std::string &name, TServiceId id, CCallbackClient *cbc)
 		{
 			reset ();
 			ServiceName = name;
@@ -418,7 +559,7 @@ private:
 		void reset()
 		{
 			ServiceName = "DEAD";
-			ServiceId = 0xDEAD;
+			ServiceId = TServiceId(0xDEAD);
 			State = NotUsed;
 			IsExternal = false;
 			ValidExternal = false;
@@ -439,9 +580,9 @@ private:
 		// different index
 		void setupNetworkAssociation (const std::vector<uint32> &networkAssociations, const std::vector<std::string> &defaultNetwork)
 		{
-			for (uint8 i = 0; i < networkAssociations.size (); i++)
+			for (uint i = 0; i < networkAssociations.size (); i++)
 			{
-				uint8 j;
+				uint j;
 				for (j = 0; j < ExtAddress.size (); j++)
 				{
 					if (ExtAddress[j].internalNetAddress() == networkAssociations[i])
@@ -451,13 +592,13 @@ private:
 							NetworkConnectionAssociations.resize (i+1);
 
 						NetworkConnectionAssociations[i] = j;
-						nlinfo ("HNETL5: nid %hu will be use connection %hu", (uint16)i, (uint16)j);
+						nlinfo ("HNETL5: nid %u will be use connection %u", i, j);
 						break;
 					}
 				}
 				if (j == ExtAddress.size ())
 				{
-					nlinfo ("HNETL5: nid %hu is not found", (uint16)i);
+					nlinfo ("HNETL5: nid %u is not found", i);
 				}
 			}
 			// find the default network
@@ -508,10 +649,10 @@ private:
 	std::vector<CUnifiedConnection>				_IdCnx	;
 
 	/// Vector of closed connection to reset outside of the client update loop
-	std::vector<uint16>							_ConnectionToReset;
+	std::vector<TServiceId>						_ConnectionToReset;
 
 	/// This vector contains only an index to the unified connection. It is used to have quick access on the available connections
-	std::vector<uint16>							_UsedConnection;
+	std::vector<TServiceId>						_UsedConnection;
 
 	/// Map of connections by service name
 	TNameMappedConnection						_NamedCnx;
@@ -538,7 +679,7 @@ private:
 	uint16										_ServerPort;
 
 	/// Used for external service
-	uint16										_ExtSId;
+	TServiceId									_ExtSId;
 
 	/// Last time of retry
 	NLMISC::TTime								_LastRetry;
@@ -587,17 +728,17 @@ private:
 
 	// Return the unified connection if available or NULL.
 	// Don't keep the pointer because it can be invalid if the table is resized.
-	CUnifiedConnection	*getUnifiedConnection (uint16 sid, bool warn=true);
+	CUnifiedConnection	*getUnifiedConnection (TServiceId sid, bool warn=true);
 
-	bool haveNamedCnx (const std::string &name, uint16 sid);
-	void addNamedCnx (const std::string &name, uint16 sid);
-	void removeNamedCnx (const std::string &name, uint16 sid);
+	bool haveNamedCnx (const std::string &name, TServiceId sid);
+	void addNamedCnx (const std::string &name, TServiceId sid);
+	void removeNamedCnx (const std::string &name, TServiceId sid);
 
 	// with a sid and a nid, find a good connection to send a message
-	uint8 findConnectionId (uint16 sid, uint8 nid);
+	uint8 findConnectionId (TServiceId sid, uint8 nid);
 
-	void callServiceUpCallback (const std::string &serviceName, uint16 sid, bool callGlobalCallback = true);
-	void callServiceDownCallback (const std::string &serviceName, uint16 sid, bool callGlobalCallback = true);
+	void callServiceUpCallback (const std::string &serviceName, TServiceId sid, bool callGlobalCallback = true);
+	void callServiceDownCallback (const std::string &serviceName, TServiceId sid, bool callGlobalCallback = true);
 	
 	friend void	uncbConnection(TSockId from, void *arg);
 	friend void	uncbDisconnection(TSockId from, void *arg);

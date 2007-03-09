@@ -1,7 +1,7 @@
 /** \file module_builder_parts.h
  * Template module building blocks.
  *
- * $Id: module_builder_parts.h,v 1.6 2006/05/31 12:03:14 boucher Exp $
+ * $Id: module_builder_parts.h,v 1.7 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,9 +37,9 @@ namespace NLNET
 	class CEmptyModuleServiceBehav : public T
 	{
 	public:
-		virtual void				onServiceUp(const std::string &serviceName, uint16 serviceId)
+		virtual void				onServiceUp(const std::string &serviceName, NLNET::TServiceId serviceId)
 		{}
-		virtual void				onServiceDown(const std::string &serviceName, uint16 serviceId)
+		virtual void				onServiceDown(const std::string &serviceName, NLNET::TServiceId serviceId)
 		{}
 		virtual void				onModuleUpdate()
 		{}

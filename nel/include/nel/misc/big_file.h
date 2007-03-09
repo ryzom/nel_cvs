@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.10 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: big_file.h,v 1.11 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -50,9 +50,9 @@ class CBigFile
 	CBigFile() {}
 	~CBigFile() {};
 
+public:
 	// release memory
 	static void releaseInstance();
-public:
 
 	// Retrieve the global instance
 //	static CBigFile &getInstance ();
@@ -137,10 +137,20 @@ private:
 	class CBNPFileComp
 	{
 	public:
-		bool operator()(const BNPFile &f, const char *s)
-		{
-			return strcmp(f.Name,s) < 0;
-		}
+
+		// Debug : Sept 01 2006
+		#if _STLPORT_VERSION >= 0x510
+			bool operator()(const BNPFile &f, const BNPFile &s )
+			{
+				return strcmp( f.Name, s.Name ) < 0;
+			}
+		#else
+			bool operator()(const BNPFile &f, const char *s)
+			{
+				return strcmp(f.Name,s) < 0;
+			}
+		#endif //_STLPORT_VERSION
+
 	};
 
 	// A BNP structure

@@ -190,7 +190,7 @@ CLibrary::CLibrary(const std::string &libName, bool addNelDecoration, bool tryLi
 {
 	loadLibrary(libName, addNelDecoration, tryLibPath, ownership);
 	// Assert here !
-	nlassert(_LibHandle);
+	nlassert(_LibHandle != NULL);
 }
 
 

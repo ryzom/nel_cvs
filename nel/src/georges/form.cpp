@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.19 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: form.cpp,v 1.20 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,7 +198,7 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const cha
 	{
 		// Make an error message
 		warning (true, "read", "XML Syntax error in block line %d, node (%s) should be FORM.", 
-			(int)node->content, node->name);
+			(ptrdiff_t)node->content, node->name);
 	}
 
 	// Get first struct node
@@ -207,7 +207,7 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const cha
 	{
 		// Throw exception
 		warning (true, "read", "Syntax error in block line %d, node (%s) should have a STRUCT child node.", 
-			(int)node->content, node->name);
+			(ptrdiff_t)node->content, node->name);
 	}
 
 	// Read the struct

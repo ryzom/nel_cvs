@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.57 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.58 2007/03/09 09:49:30 boucher Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -672,7 +672,7 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 			{
 				case CVertexBufferInfo::HwATI: 
 					nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, numTexCoord, GL_FLOAT, VB.VertexSize, VB.VertexObjectId, 
-						              (uint) VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
+						              /*(uint)*/ (ptrdiff_t) VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 				break;
 				case CVertexBufferInfo::HwARB:
 					_DriverGLStates.bindARBVertexBuffer(VB.VertexObjectId);
@@ -936,7 +936,7 @@ void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 			nlassert (numVertexCoord >= 2);
 			
 			_DriverGLStates.enableVertexArray(true);			
-			nglArrayObjectATI(GL_VERTEX_ARRAY, numVertexCoord, GL_FLOAT, vb.VertexSize, vb.VertexObjectId, (uint)  vb.ValuePtr[CVertexBuffer::Position]);						
+			nglArrayObjectATI(GL_VERTEX_ARRAY, numVertexCoord, GL_FLOAT, vb.VertexSize, vb.VertexObjectId, (ptrdiff_t)  vb.ValuePtr[CVertexBuffer::Position]);						
 			// setup normal ptr.
 			//-----------
 			// Check for normal param in vertex buffer
@@ -945,7 +945,7 @@ void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 				// Check type
 				nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);				
 				_DriverGLStates.enableNormalArray(true);				
-					nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GL_FLOAT, vb.VertexSize, vb.VertexObjectId, (uint)  vb.ValuePtr[CVertexBuffer::Normal]);				
+					nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GL_FLOAT, vb.VertexSize, vb.VertexObjectId, (ptrdiff_t)  vb.ValuePtr[CVertexBuffer::Normal]);				
 			}
 			else
 			{
@@ -962,7 +962,7 @@ void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 				nlassert (vb.Type[CVertexBuffer::PrimaryColor]==CVertexBuffer::UChar4);
 				
 				_DriverGLStates.enableColorArray(true);				
-				nglArrayObjectATI(GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, vb.VertexSize, vb.VertexObjectId, (uint)  vb.ValuePtr[CVertexBuffer::PrimaryColor]);				
+				nglArrayObjectATI(GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, vb.VertexSize, vb.VertexObjectId, (ptrdiff_t)  vb.ValuePtr[CVertexBuffer::PrimaryColor]);				
 			}
 			else
 				_DriverGLStates.enableColorArray(false);			
@@ -1283,7 +1283,7 @@ void		CDriverGL::setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb)
 					{
 						mustNormalize = ARBVertexProgramMustNormalizeAttrib[value];
 					}
-					nglVertexAttribArrayObjectATI(glIndex, NumCoordinatesType[type], GLType[type], mustNormalize, vb.VertexSize, vb.VertexObjectId, (GLuint) vb.ValuePtr[value]);
+					nglVertexAttribArrayObjectATI(glIndex, NumCoordinatesType[type], GLType[type], mustNormalize, vb.VertexSize, vb.VertexObjectId, (ptrdiff_t) vb.ValuePtr[value]);
 				}
 				else
 				{
@@ -1370,46 +1370,46 @@ void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
 					case CVertexBuffer::Position: // position 
 					{					
 						nlassert(NumCoordinatesType[type] >= 2);
-						nglArrayObjectATI(GL_VERTEX_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint)  vb.ValuePtr[CVertexBuffer::Position]);						
+						nglArrayObjectATI(GL_VERTEX_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t)  vb.ValuePtr[CVertexBuffer::Position]);						
 					}
 					break;
 					case CVertexBuffer::Weight: // skin weight
 					{
 						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
-						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSSkinWeightVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint) vb.ValuePtr[CVertexBuffer::Weight]);						
+						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSSkinWeightVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t) vb.ValuePtr[CVertexBuffer::Weight]);						
 					}
 					break;
 					case CVertexBuffer::Normal: // normal
 					{
 						nlassert(NumCoordinatesType[type] == 3); // must have 3 components for normals
-						nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GLType[type], vb.VertexSize, vb.VertexObjectId, (uint) vb.ValuePtr[value]);						
+						nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t) vb.ValuePtr[value]);						
 					}
 					break;
 					case CVertexBuffer::PrimaryColor: // color
 					{
 						nlassert(NumCoordinatesType[type] >= 3); // must have 3 or 4 components for primary color
-						nglArrayObjectATI(GL_COLOR_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint)  vb.ValuePtr[CVertexBuffer::PrimaryColor]);						
+						nglArrayObjectATI(GL_COLOR_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t)  vb.ValuePtr[CVertexBuffer::PrimaryColor]);						
 					}						
 					break;
 					case CVertexBuffer::SecondaryColor: // secondary color
 					{								
 						// implemented using a variant, as not available with EXTVertexShader
 						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
-						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSSecondaryColorVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint) vb.ValuePtr[CVertexBuffer::SecondaryColor]);						
+						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSSecondaryColorVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t) vb.ValuePtr[CVertexBuffer::SecondaryColor]);						
 					}						
 					break;
 					case CVertexBuffer::Fog: // fog coordinate
 					{
 						// implemented using a variant
 						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
-						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSFogCoordsVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint)  vb.ValuePtr[CVertexBuffer::Fog]);						
+						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSFogCoordsVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t)  vb.ValuePtr[CVertexBuffer::Fog]);						
 					}						
 					break;
 					case CVertexBuffer::PaletteSkin: // palette skin
 					{					
 						// implemented using a variant
 						nlassert(NumCoordinatesType[type] == 4); // variant, only 4 component supported
-						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSPaletteSkinVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint) vb.ValuePtr[CVertexBuffer::PaletteSkin]);						
+						nglVariantArrayObjectATI(drvInfo->Variants[CDriverGL::EVSPaletteSkinVariant], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t) vb.ValuePtr[CVertexBuffer::PaletteSkin]);						
 					}
 					break;
 					case CVertexBuffer::Empty: // empty
@@ -1425,7 +1425,7 @@ void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
 					case CVertexBuffer::TexCoord7:
 					{			
 						_DriverGLStates.clientActiveTextureARB(value - CVertexBuffer::TexCoord0);
-						nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint)  vb.ValuePtr[value]);						
+						nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t)  vb.ValuePtr[value]);						
 					}
 					break;
 					default:
@@ -1495,7 +1495,7 @@ void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
 						case CVertexBuffer::TexCoord7:
 						{			
 							_DriverGLStates.clientActiveTextureARB(value - CVertexBuffer::TexCoord0);
-							nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (uint) vb.ValuePtr[value]);
+							nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.VertexObjectId, (ptrdiff_t) vb.ValuePtr[value]);
 						}
 						break;
 						default:

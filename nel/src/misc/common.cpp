@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.74 2006/05/31 12:03:17 boucher Exp $
+ * $Id: common.cpp,v 1.75 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,49 +45,101 @@
 using namespace std;
 
 #ifdef NL_OS_WINDOWS
-#  ifdef __STL_DEBUG
-#    define STL_MODE "debug"
-#  else
-#    define STL_MODE "normal"
-#  endif // __STL_DEBUG
-#  if(__SGI_STL_PORT < 0x400)
-#    define STL_STR_VER "< 4.0.0"
-#  elif(__SGI_STL_PORT == 0x400)
-#    define STL_STR_VER "4.0.0"
-#  elif(__SGI_STL_PORT == 0x450)
-#    define STL_STR_VER "4.5.0"
-#  elif(__SGI_STL_PORT == 0x451)
-#    define STL_STR_VER "4.5.1"
-#  elif(__SGI_STL_PORT == 0x452)
-#    define STL_STR_VER "4.5.3"
-#  elif(__SGI_STL_PORT == 0x460)
-#    define STL_STR_VER "4.6.0"
-#  elif(__SGI_STL_PORT == 0x461)
-#    define STL_STR_VER "4.6.1 or 4.6.2"
-#  elif(__SGI_STL_PORT == 0x500)
-#    define STL_STR_VER "5.0.0"
-#  elif(__SGI_STL_PORT > 0x500)
-#    define STL_STR_VER "> 5.0.0"
-#  else
-#    define STL_STR_VER "Unknown"
-#  endif // __SGI_STL_PORT
-#  pragma message("Using STLport version "STL_STR_VER" in "STL_MODE" mode")
+	#ifdef __STL_DEBUG
+		#define STL_MODE "debug"
+	#else
+		#define STL_MODE "normal"
+	#endif // __STL_DEBUG
 
-#if FINAL_VERSION
-#  pragma message("Using **** FINAL_VERSION ****")
-#else
-#  pragma message("Not using FINAL_VERSION")
-#endif
+	#if(_STLPORT_MAJOR == 0)
+		#define STL_STR_MAJOR "0"
+	#elif(_STLPORT_MAJOR == 1)
+		#define STL_STR_MAJOR "1"
+	#elif(_STLPORT_MAJOR == 2)
+		#define STL_STR_MAJOR "2"
+	#elif(_STLPORT_MAJOR == 3)
+		#define STL_STR_MAJOR "3"
+	#elif(_STLPORT_MAJOR == 4)
+		#define STL_STR_MAJOR "4"
+	#elif(_STLPORT_MAJOR == 5)
+		#define STL_STR_MAJOR "5"
+	#elif(_STLPORT_MAJOR == 6)
+		#define STL_STR_MAJOR "6"
+	#elif(_STLPORT_MAJOR == 7)
+		#define STL_STR_MAJOR "7"
+	#elif(_STLPORT_MAJOR == 8)
+		#define STL_STR_MAJOR "8"
+	#elif(_STLPORT_MAJOR == 9)
+		#define STL_STR_MAJOR "9"
+	#endif // _STLPORT_MAJOR
 
-#ifdef ASSERT_THROW_EXCEPTION
-#  pragma message("nlassert throws an exception")
-#else
-#  pragma message("nlassert doesn't throw an exception")
-#endif
+	#if(_STLPORT_MINOR == 0)
+		#define STL_STR_MINOR "0"
+	#elif(_STLPORT_MINOR == 1)
+		#define STL_STR_MINOR "1"
+	#elif(_STLPORT_MINOR == 2)
+		#define STL_STR_MINOR "2"
+	#elif(_STLPORT_MINOR == 3)
+		#define STL_STR_MINOR "3"
+	#elif(_STLPORT_MINOR == 4)
+		#define STL_STR_MINOR "4"
+	#elif(_STLPORT_MINOR == 5)
+		#define STL_STR_MINOR "5"
+	#elif(_STLPORT_MINOR == 6)
+		#define STL_STR_MINOR "6"
+	#elif(_STLPORT_MINOR == 7)
+		#define STL_STR_MINOR "7"
+	#elif(_STLPORT_MINOR == 8)
+		#define STL_STR_MINOR "8"
+	#elif(_STLPORT_MINOR == 9)
+		#define STL_STR_MINOR "9"
+	#endif // _STLPORT_MINOR
+
+	#if(_STLPORT_PATCHLEVEL == 0)
+		#define STL_STR_PATCHLEVEL "0"
+	#elif(_STLPORT_PATCHLEVEL == 1)
+		#define STL_STR_PATCHLEVEL "1"
+	#elif(_STLPORT_PATCHLEVEL == 2)
+		#define STL_STR_PATCHLEVEL "2"
+	#elif(_STLPORT_PATCHLEVEL == 3)
+		#define STL_STR_PATCHLEVEL "3"
+	#elif(_STLPORT_PATCHLEVEL == 4)
+		#define STL_STR_PATCHLEVEL "4"
+	#elif(_STLPORT_PATCHLEVEL == 5)
+		#define STL_STR_PATCHLEVEL "5"
+	#elif(_STLPORT_PATCHLEVEL == 6)
+		#define STL_STR_PATCHLEVEL "6"
+	#elif(_STLPORT_PATCHLEVEL == 7)
+		#define STL_STR_PATCHLEVEL "7"
+	#elif(_STLPORT_PATCHLEVEL == 8)
+		#define STL_STR_PATCHLEVEL "8"
+	#elif(_STLPORT_PATCHLEVEL == 9)
+		#define STL_STR_PATCHLEVEL "9"
+	#endif // _STLPORT_PATCHLEVEL
+
+	#pragma message( " " )
+
+	#pragma message( "Using STLPort version "STL_STR_MAJOR"."STL_STR_MINOR"."STL_STR_PATCHLEVEL" in "STL_MODE" mode" )
+
+	#if FINAL_VERSION
+		#pragma message( "************************" )
+		#pragma message( "**** FINAL_VERSION *****" )
+		#pragma message( "************************" )
+	#else
+		#pragma message( "Not using FINAL_VERSION")
+	#endif // FINAL_VERSION
+
+	#ifdef ASSERT_THROW_EXCEPTION
+		#pragma message( "nlassert throws exceptions" )
+	#else
+		#pragma message( "nlassert does not throw exceptions" )
+	#endif // ASSERT_THROW_EXCEPTION
+
+	#pragma message( " " )
 
 #endif // NL_OS_WINDOWS
 
-namespace	NLMISC
+namespace NLMISC
 {
 
 /*

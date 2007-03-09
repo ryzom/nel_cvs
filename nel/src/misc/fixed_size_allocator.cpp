@@ -1,6 +1,6 @@
 /** \file fixed_size_allocator.cpp
  *
- * $Id: fixed_size_allocator.cpp,v 1.3 2004/05/18 14:35:32 vizerie Exp $
+ * $Id: fixed_size_allocator.cpp,v 1.4 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -77,7 +77,7 @@ void CFixedSizeAllocator::free(void *block)
 	/// get the node from the object	
 	CNode *node = (CNode *) ((uint8 *) block - offsetof(CNode, Next));
 	//	
-	nlassert(node->Chunk);
+	nlassert(node->Chunk != NULL);
 	nlassert(node->Chunk->Allocator == this);
 	//	
 	--_NumAlloc;
@@ -87,7 +87,7 @@ void CFixedSizeAllocator::free(void *block)
 //*****************************************************************************************************************
 uint CFixedSizeAllocator::CChunk::getBlockSizeWithOverhead() const
 {
-	return std::max(sizeof(CNode) - offsetof(CNode, Next), Allocator->getNumBytesPerBlock()) + offsetof(CNode, Next);	
+	return std::max((uint)(sizeof(CNode) - offsetof(CNode, Next)),(uint)(Allocator->getNumBytesPerBlock())) + offsetof(CNode, Next);	
 }
 
 //*****************************************************************************************************************
@@ -100,7 +100,7 @@ CFixedSizeAllocator::CChunk::CChunk()
 //*****************************************************************************************************************
 CFixedSizeAllocator::CChunk::~CChunk()
 {		
-	nlassert(Allocator);
+	nlassert(Allocator != NULL);
 	for (uint k = 0; k < Allocator->getNumBlockPerChunk(); ++k)
 	{
 		getNode(k).unlink();
@@ -115,7 +115,7 @@ CFixedSizeAllocator::CChunk::~CChunk()
 void CFixedSizeAllocator::CChunk::init(CFixedSizeAllocator *alloc)
 {
 	nlassert(!Allocator);
-	nlassert(alloc);
+	nlassert(alloc != NULL);
 	Allocator = alloc;
 	//
 	Mem = new uint8[getBlockSizeWithOverhead() * alloc->getNumBlockPerChunk()];	
@@ -145,7 +145,7 @@ void CFixedSizeAllocator::CChunk::init(CFixedSizeAllocator *alloc)
 //*****************************************************************************************************************
 CFixedSizeAllocator::CNode &CFixedSizeAllocator::CChunk::getNode(uint index)
 {
-	nlassert(Allocator);
+	nlassert(Allocator != NULL);
 	nlassert(index < Allocator->getNumBlockPerChunk());
 	return *(CNode *) ((uint8 *) Mem + index * getBlockSizeWithOverhead());
 }

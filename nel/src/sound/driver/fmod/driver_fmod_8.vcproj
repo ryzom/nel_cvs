@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="driver_fmod"
 	ProjectGUID="{9440443B-97BA-43C2-A762-31EEC8958BEE}"
-	SignManifests="true"
+	RootNamespace="driver_fmod"
 	>
 	<Platforms>
 		<Platform
@@ -49,6 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;_USRDLL;DRIVER_FMOD_EXPORTS;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -143,7 +144,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="NL_RELEASE_DEBUG;_WINDOWS;_USRDLL;DRIVER_FMOD_EXPORTS;WIN32;NDEBUG;LIBXML_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -240,6 +242,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="NDEBUG;NLSOUND_PROFILE;_WINDOWS;_USRDLL;DRIVER_FMOD_EXPORTS;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -332,6 +335,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_DEBUG;__STL_DEBUG;_WINDOWS;_USRDLL;DRIVER_FMOD_EXPORTS;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -445,6 +449,38 @@
 		<File
 			RelativePath="driver_fmod.def"
 			>
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="listener_fmod.cpp"

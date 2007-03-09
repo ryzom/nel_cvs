@@ -1,7 +1,7 @@
 /** \file lod_character_shape_bank.h
  * TODO: File description
  *
- * $Id: lod_character_shape_bank.h,v 1.2 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_shape_bank.h,v 1.3 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,10 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 
+#include "lod_character_shape.h"
 
 namespace NL3D {
 
-class	CLodCharacterShape;
+
 
 // ***************************************************************************
 /**

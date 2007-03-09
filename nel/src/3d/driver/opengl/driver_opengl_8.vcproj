@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="driver_opengl"
 	ProjectGUID="{1D9576F6-3321-4036-8C86-B5361CCCD4FB}"
 	RootNamespace="driver_opengl"
-	SignManifests="true"
 	>
 	<Platforms>
 		<Platform
@@ -50,6 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -153,6 +153,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="FINAL_VERSION;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_WINDLL;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -249,7 +250,8 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/D &quot;NL_DISABLE_MENU&quot;"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_WINDLL;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -347,6 +349,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -456,8 +459,40 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="driver_opengl.def"
+			RelativePath=".\driver_opengl.def"
 			>
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="driver_opengl.h"

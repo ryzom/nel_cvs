@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="driver_direct3d"
 	ProjectGUID="{263C0F2E-112D-437F-A6AB-DEA151A7A1F0}"
-	SignManifests="true"
+	RootNamespace="driver_direct3d"
 	>
 	<Platforms>
 		<Platform
@@ -49,6 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -146,7 +147,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -176,7 +177,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="d3dx9.lib d3d9.lib dinput.lib dxguid.lib"
 				OutputFile="../../../../lib/nel_drv_direct3d_win_d.dll"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\driver_direct3d.def"
 				GenerateDebugInformation="true"
@@ -249,7 +250,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="FINAL_VERSION;_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_WINDLL;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -345,8 +346,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="../../"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\..\include"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;_WINDLL;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -560,6 +561,38 @@
 		<File
 			RelativePath="driver_direct3d.def"
 			>
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="driver_direct3d.h"

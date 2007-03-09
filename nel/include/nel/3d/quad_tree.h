@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.18 2004/10/06 06:36:22 lecroart Exp $
+ * $Id: quad_tree.h,v 1.19 2007/03/09 09:49:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -671,7 +671,7 @@ template<class T>	void CQuadTree<T>::changeBase(const NLMISC::CMatrix& base)
 	_ChangeBasis=base;
 }
 // ============================================================================================
-template<class T>	CQuadTree<T>::~CQuadTree<T>()
+template<class T>	CQuadTree<T>::~CQuadTree NL_TMPL_PARAM_ON_METHOD_1(T)()
 {
 	clear();
 }

@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.9 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: module_gateway_transport.cpp,v 1.10 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,7 +201,7 @@ namespace NLNET
 			if (command.SubParams.size() < 1)
 				throw  EInvalidCommand();
 
-			const std::string &commandName = command.SubParams[0].ParamName;
+			const std::string &commandName = command.SubParams[0]->ParamName;
 			if (commandName == "open")
 			{
 				const TParsedCommandLine *portParam = command.getParam("port");
@@ -624,7 +624,7 @@ namespace NLNET
 			if (command.SubParams.size() < 1)
 				throw  EInvalidCommand();
 
-			const std::string &commandName = command.SubParams[0].ParamName;
+			const std::string &commandName = command.SubParams[0]->ParamName;
 			if (commandName == "connect")
 			{
 				const TParsedCommandLine *addrParam = command.getParam("addr");
@@ -647,7 +647,7 @@ namespace NLNET
 			}
 			else if (commandName == "retryInterval")
 			{
-				_RetryInterval = uint(max(int(MIN_RETRY_INTERVAL), atoi(command.SubParams[0].ParamValue.c_str())));
+				_RetryInterval = uint(max(int(MIN_RETRY_INTERVAL), atoi(command.SubParams[0]->ParamValue.c_str())));
 
 				nldebug("CGatewayL3ClientTransport : setting retry interval to %u", _RetryInterval);
 			}

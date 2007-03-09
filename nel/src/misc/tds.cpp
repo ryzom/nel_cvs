@@ -1,7 +1,7 @@
 /** \file tds.cpp
  * Thread dependant storage class
  *
- * $Id: tds.cpp,v 1.4 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: tds.cpp,v 1.5 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -57,7 +57,7 @@ CTDS::CTDS ()
 CTDS::~CTDS ()
 {
 #ifdef NL_OS_WINDOWS
-	nlverify (TlsFree (_Handle));
+	nlverify (TlsFree (_Handle) != 0);
 #else // NL_OS_WINDOWS
 //	nldebug("CTDS::~CTDS : deleting key %u", _Key);
 	nlverify (pthread_key_delete (_Key) == 0);
@@ -83,7 +83,7 @@ void *CTDS::getPointer () const
 void CTDS::setPointer (void* pointer)
 {
 #ifdef NL_OS_WINDOWS
-	nlverify (TlsSetValue (_Handle, pointer));
+	nlverify (TlsSetValue (_Handle, pointer) != 0);
 #else // NL_OS_WINDOWS
 //	nldebug("CTDS::setPointer for key %u to value %p", _Key, pointer);
 	nlverify (pthread_setspecific (_Key, pointer) == 0);

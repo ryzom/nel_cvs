@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.23 2006/05/31 12:03:17 boucher Exp $
+ * $Id: admin.cpp,v 1.24 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ namespace NLNET {
 
 struct CRequest
 {
-	CRequest (uint32 id, uint16 sid) : Id(id), NbWaiting(0), NbReceived(0), SId(sid)
+	CRequest (uint32 id, TServiceId sid) : Id(id), NbWaiting(0), NbReceived(0), SId(sid)
 	{
 		nldebug ("ADMIN: ++ NbWaiting %d NbReceived %d", NbWaiting, NbReceived);
 		Time = CTime::getSecondsSince1970 ();
@@ -68,7 +68,7 @@ struct CRequest
 	uint32			Id;
 	uint			NbWaiting;
 	uint32			NbReceived;
-	uint16			SId;
+	TServiceId			SId;
 	uint32			Time;	// when the request was ask
 	
 	TAdminViewResult Answers;
@@ -97,7 +97,7 @@ uint32 RequestTimeout = 4;	// in second
 // Callbacks
 //
 
-static void cbInfo (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbInfo (CMessage &msgin, const std::string &serviceName, TServiceId sid)
 {
 	nlinfo ("ADMIN: Updating admin informations");
 
@@ -109,7 +109,7 @@ static void cbInfo (CMessage &msgin, const std::string &serviceName, uint16 sid)
 	setInformations (alarms, graphupdate);
 }	
 
-static void cbServGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbServGetView (CMessage &msgin, const std::string &serviceName, TServiceId sid)
 {
 	uint32 rid;
 	string rawvarpath;
@@ -125,7 +125,7 @@ static void cbServGetView (CMessage &msgin, const std::string &serviceName, uint
 	nlassert (answer.empty());
 }
 
-static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbExecCommand (CMessage &msgin, const std::string &serviceName, TServiceId sid)
 {
 	// create a displayer to gather the output of the command
 	class CStringDisplayer: public IDisplayer
@@ -164,21 +164,21 @@ static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint
 
 
 // AES wants to know if i'm not dead, I have to answer faster as possible or i'll be killed
-static void cbAdminPing (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbAdminPing (CMessage &msgin, const std::string &serviceName, TServiceId sid)
 {
 	// Send back a pong to say to the AES that I'm alive
 	CMessage msgout("ADMIN_PONG");
 	CUnifiedNetwork::getInstance()->send(sid, msgout);
 }
 
-static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbStopService (CMessage &msgin, const std::string &serviceName, TServiceId sid)
 {
-	nlinfo ("ADMIN: Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
+	nlinfo ("ADMIN: Receive a stop from service %s-%hu, need to quit", serviceName.c_str(), sid.get());
 	IService::getInstance()->exit (0xFFFF);
 }
 
 
-void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
+void cbAESConnection (const string &serviceName, TServiceId sid, void *arg)
 {
 	// established a connection to the AES, identify myself
 
@@ -186,7 +186,10 @@ void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
 	// Sends the identification message with the name of the service and all commands available on this service
 	//
 
-	nlinfo("cbAESConnection: Identifying self as: AliasName='%s' LongName='%s' PId=%u",IService::getInstance()->_AliasName.c_str(),IService::getInstance()->_LongName.c_str(), getpid ());
+	nlinfo("cbAESConnection: Identifying self as: AliasName='%s' LongName='%s' PId=%u",
+		IService::getInstance()->_AliasName.c_str(),
+		IService::getInstance()->_LongName.c_str(), 
+		getpid ());
 	CMessage msgout ("SID");
 	uint32 pid = getpid ();
 	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_LongName, pid);
@@ -201,9 +204,9 @@ void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
 }
 
 
-static void cbAESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
+static void cbAESDisconnection (const std::string &serviceName, TServiceId sid, void *arg)
 {
-	nlinfo("Lost connection to the %s-%hu", serviceName.c_str(), sid);
+	nlinfo("Lost connection to the %s-%hu", serviceName.c_str(), sid.get());
 }
 
 
@@ -322,7 +325,7 @@ static void cleanRequest ()
 				msgout.serialCont (Requests[i].Answers[j].Values);
 			}
 
-			if (Requests[i].SId == 0)
+			if (Requests[i].SId.get() == 0)
 			{
 				nlinfo ("ADMIN: Receive an answer for the fake request %d with %d answers", Requests[i].Id, Requests[i].Answers.size ());
 				for (uint j = 0; j < Requests[i].Answers.size (); j++)

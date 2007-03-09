@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.15 2006/09/14 16:56:08 cado Exp $
+ * $Id: win_thread.cpp,v 1.16 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,13 @@
 
 #include "nel/misc/win_thread.h"
 #include <windows.h>
-#include <typeinfo.h>
+
+// Debug : Sept 01 2006
+#if _STLPORT_VERSION >= 0x510
+	#include <typeinfo>
+#else
+	#include <typeinfo.h>
+#endif
 
 namespace NLMISC {
 
@@ -62,7 +68,7 @@ static unsigned long __stdcall ProxyFunc (void *arg)
 	nlassert (TLSThreadPointer != 0xffffffff);
 
 	// Set the thread pointer in TLS memory
-	nlverify (TlsSetValue (TLSThreadPointer, (void*)parent));
+	nlverify (TlsSetValue (TLSThreadPointer, (void*)parent) != 0);
 
 	// Run the thread
 	parent->Runnable->run();
@@ -91,7 +97,7 @@ CWinThread::CWinThread (void* threadHandle, uint32 threadId)
 	nlassert (TLSThreadPointer!=0xffffffff);
  
 	// Set the thread pointer in TLS memory
-	nlverify (TlsSetValue (TLSThreadPointer, (void*)this));
+	nlverify (TlsSetValue (TLSThreadPointer, (void*)this) != 0);
 }
 
 CWinThread::~CWinThread ()

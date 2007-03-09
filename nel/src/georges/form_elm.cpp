@@ -1,7 +1,7 @@
 /** \file form_elm.cpp
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.45 2004/11/15 10:24:57 lecroart Exp $
+ * $Id: form_elm.cpp,v 1.46 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1901,7 +1901,7 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, const CFormDfn 
 						{
 							// Make a warning message
 							warning (false, "read", "In block line %d, node (%s) type in DFN have changed.",
-								(int)child->content, child->name);
+								(ptrdiff_t)child->content, child->name);
 						}
 					}
 					else
@@ -1914,7 +1914,7 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, const CFormDfn 
 
 						// Throw exception
 						warning (true, "read", "XML Syntax error in block line %d, node (%s) name should be STRUCT, ATOM or ARRAY.", 
-							(int)child->content, child->name);
+							(ptrdiff_t)child->content, child->name);
 					}
 				}
 
@@ -2196,7 +2196,7 @@ void CFormElmVirtualStruct::read (xmlNodePtr node, CFormLoader &loader, CForm *f
 	{
 		// Throw exception
 		warning (true, "read", "XML Syntax error in virtual struct in block line %d, should have a DfnName property.", 
-			(int)node->content, node->name);
+			(ptrdiff_t)node->content, node->name);
 	}
 
 	// Read the parent

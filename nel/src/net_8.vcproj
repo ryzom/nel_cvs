@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="net"
 	ProjectGUID="{67AF56A4-A228-4BFB-BDA8-026CBEDE8BF9}"
+	RootNamespace="net"
 	>
 	<Platforms>
 		<Platform
@@ -41,6 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_LIB;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -115,7 +117,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -192,6 +195,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_LIB;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -273,6 +277,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="FINAL_VERSION;_LIB;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG;ASSERT_THROW_EXCEPTION;$(NOINHERIT)"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -1077,12 +1082,8 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Modules"
+			Name="Interfaces"
 			>
-			<File
-				RelativePath=".\net\module.cpp"
-				>
-			</File>
 			<File
 				RelativePath="..\include\nel\net\module.h"
 				>
@@ -1092,23 +1093,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\net\module_common.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\include\nel\net\module_common.h"
 				>
 			</File>
 			<File
-				RelativePath=".\net\module_gateway.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\include\nel\net\module_gateway.h"
-				>
-			</File>
-			<File
-				RelativePath=".\net\module_manager.cpp"
 				>
 			</File>
 			<File
@@ -1120,11 +1109,47 @@
 				>
 			</File>
 			<File
-				RelativePath=".\net\module_socket.cpp"
+				RelativePath="..\include\nel\net\module_socket.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Implementations"
+			>
+			<File
+				RelativePath=".\net\module.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\nel\net\module_socket.h"
+				RelativePath=".\net\module_common.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\net\module_gateway.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\net\module_gateway_transport.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\net\module_l5_transport.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\net\module_local_gateway.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\net\module_manager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\net\module_message.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\net\module_socket.cpp"
 				>
 			</File>
 		</Filter>
@@ -1225,10 +1250,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\net\login_client.cpp"
-			>
-		</File>
-		<File
 			RelativePath="..\include\nel\net\login_client.h"
 			>
 		</File>
@@ -1279,46 +1300,8 @@
 			>
 		</File>
 		<File
-			RelativePath="net\login_server.cpp"
+			RelativePath=".\net\login_server.cpp"
 			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="DebugFast|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""
-				/>
-			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\include\nel\net\login_server.h"
@@ -1555,11 +1538,15 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\doc\net\service.dxt"
+			RelativePath="..\include\nel\net\service.h"
 			>
 		</File>
 		<File
-			RelativePath="..\include\nel\net\service.h"
+			RelativePath=".\net\stdin_monitor_thread.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\net\stdin_monitor_thread.h"
 			>
 		</File>
 		<File

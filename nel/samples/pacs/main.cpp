@@ -1,7 +1,7 @@
 /** \file pacs/main.cpp
  * Pacs sample using user interface.
  *
- * $Id: main.cpp,v 1.6 2004/12/28 12:43:31 lecroart Exp $
+ * $Id: main.cpp,v 1.7 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,6 +136,8 @@ int main ()
 #endif // NL_OS_WINDOWS
 
 {
+	NLMISC::CApplicationContext myApplicationContext;
+
 	try
 	{
 		// Init search pathes

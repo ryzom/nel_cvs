@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * TODO: File description
  *
- * $Id: vegetable_instance_group.h,v 1.14 2005/02/22 10:19:12 besson Exp $
+ * $Id: vegetable_instance_group.h,v 1.15 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@ namespace NL3D
 
 class	CVegetableManager;
 class	CVegetableClipBlock;
+class	CVegetableSortBlock;
 class	CVegetableVBAllocator;
 class	CVegetableShape;
 

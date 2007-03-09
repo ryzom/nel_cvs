@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.13 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: module_gateway.cpp,v 1.14 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -499,15 +499,15 @@ namespace NLNET
 		{
 			for (uint i=1; i<commandLine.SubParams.size(); ++i)
 			{
-				const TParsedCommandLine &subParam = commandLine.SubParams[i];
+				const TParsedCommandLine * subParam = commandLine.SubParams[i];
 				
-				string transportName = subParam.ParamName;
+				std::string transportName = subParam->ParamName;
 				TTransportList::const_iterator it(_Transports.find(transportName));
 				if (it == _Transports.end())
 				{
 					nlwarning("Unknown transport named '%s', ignoring command.", transportName.c_str());
 				}
-				else if (subParam.SubParams.empty())
+				else if (subParam->SubParams.empty())
 				{
 					nlwarning("Can't find sub param list for transport '%s' command", transportName.c_str());
 				}
@@ -516,7 +516,7 @@ namespace NLNET
 					nldebug("NETL6: Gateway transport %s, sending command '%s'", transportName.c_str(), commandLine.toString().c_str());
 					// ok, we have a valid transport, send the command
 					IGatewayTransport *transport = it->second;
-					if (!transport->onCommand(subParam))
+					if (!transport->onCommand(*subParam))
 						return;
 				}
 			}
@@ -1448,10 +1448,10 @@ namespace NLNET
 		}
 
 
-		void				onServiceUp(const std::string &serviceName, uint16 serviceId)
+		void				onServiceUp(const std::string &serviceName, NLNET::TServiceId serviceId)
 		{
 		}
-		void				onServiceDown(const std::string &serviceName, uint16 serviceId)
+		void				onServiceDown(const std::string &serviceName, NLNET::TServiceId serviceId)
 		{
 		}
 		void				onModuleUpdate()
@@ -2142,7 +2142,7 @@ namespace NLNET
 				return true;
 			}
 
-			sendSecurityCommand(command.SubParams[1]);
+			sendSecurityCommand(*command.SubParams[1]);
 
 			return true;
 		}
@@ -2219,7 +2219,7 @@ namespace NLNET
 			if (cl.SubParams.size() != 2)
 				return false;
 
-			string transName = cl.SubParams[1].ParamName;
+			string transName = cl.SubParams[1]->ParamName;
 			if (_Transports.find(transName) == _Transports.end())
 			{
 				log.displayNL("unknown transport '%s'", transName.c_str());
@@ -2229,13 +2229,13 @@ namespace NLNET
 			IGatewayTransport *transport = _Transports.find(transName)->second;
 
 			// check for peer invisible
-			if (cl.SubParams[1].getParam("PeerInvisible"))
+			if (cl.SubParams[1]->getParam("PeerInvisible"))
 				setTransportPeerInvisible(transName, true);
 			else
 				setTransportPeerInvisible(transName, false);
 
 			// check for firewall mode
-			if (cl.SubParams[1].getParam("Firewalled"))
+			if (cl.SubParams[1]->getParam("Firewalled"))
 				setTransportFirewallMode(transName, true);
 			else
 				setTransportFirewallMode(transName, false);

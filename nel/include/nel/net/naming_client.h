@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.37 2005/02/22 10:14:13 besson Exp $
+ * $Id: naming_client.h,v 1.38 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,12 +34,13 @@
 
 #include "inet_address.h"
 #include "callback_client.h"
+#include "service.h"
 
 
 namespace NLNET {
 
 
-typedef uint8 TServiceId;
+//typedef uint16 TServiceId;
 
 typedef void (*TBroadcastCallback)(const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
 
@@ -175,7 +176,7 @@ public:
 		log->displayNL ("Display the %d registered services :", RegisteredServices.size());
 		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 		{
-			log->displayNL (" > %s-%hu %d addr", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.size());
+			log->displayNL (" > %s-%hu %d addr", (*it).Name.c_str(), (*it).SId.get(), (*it).Addr.size());
 			for(uint i = 0; i < (*it).Addr.size(); i++)
 				log->displayNL ("            '%s'", (*it).Addr[i].asString().c_str());
 		}

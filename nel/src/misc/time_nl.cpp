@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.21 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: time_nl.cpp,v 1.22 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NLMISC
  */
 uint32 CTime::getSecondsSince1970 ()
 {
-	return (uint32) time (NULL);
+	return nl_time (NULL);
 }
 
 /** Return the number of second since midnight (00:00:00), January 1, 1970,
@@ -62,7 +62,7 @@ uint32	CTime::getSecondsSince1970UTC ()
 	// convert it to GMT time (UTC)
 	struct tm * timeinfo;
 	timeinfo = gmtime(&nowLocal);
-	return mktime(timeinfo);
+	return nl_mktime(timeinfo);
 }
 
 /* Return the local time in milliseconds.

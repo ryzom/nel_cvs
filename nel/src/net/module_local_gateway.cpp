@@ -1,7 +1,7 @@
 /** \file module_local_gateway.h
  * module gateway interface
  *
- * $Id: module_local_gateway.cpp,v 1.5 2006/05/31 12:03:17 boucher Exp $
+ * $Id: module_local_gateway.cpp,v 1.6 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -334,10 +334,10 @@ namespace NLNET
 			return string();
 		}
 
-		void				onServiceUp(const std::string &serviceName, uint16 serviceId)
+		void				onServiceUp(const std::string &serviceName, NLNET::TServiceId serviceId)
 		{
 		}
-		void				onServiceDown(const std::string &serviceName, uint16 serviceId)
+		void				onServiceDown(const std::string &serviceName, NLNET::TServiceId serviceId)
 		{
 		}
 		void				onModuleUpdate()

@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * TODO: File description
  *
- * $Id: transport_class.h,v 1.24 2005/03/22 14:39:28 besson Exp $
+ * $Id: transport_class.h,v 1.25 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -123,7 +123,7 @@ public:
 	/** This function will be call when we receive this class from the network. It will use the instance given at the
 	 * registration process. By default, it does nothing.
 	 */
-	virtual void callback (const std::string &name, uint8 sid) { };
+	virtual void callback (const std::string &name, NLNET::TServiceId sid) { };
 
 
 	//
@@ -131,10 +131,10 @@ public:
 	//
 
 	/// send the transport class to a specified service using the service id
-	void send (uint8 sid);
+	void send (NLNET::TServiceId sid);
 
 	/// send the transport class to a specified service using the service name
-	void send (std::string serviceName);
+	void send (const std::string &serviceName);
 
 	/** The name of the transport class. Must be uniq for each class.
 	 */
@@ -340,7 +340,7 @@ protected:
 	//
 	
 	// Read the TempMessage and call the callback
-	bool read (const std::string &name, uint8 sid);
+	bool read (const std::string &name, NLNET::TServiceId sid);
 
 	// Used to create a TempMessage with this class
 	NLNET::CMessage &write ();
@@ -375,32 +375,32 @@ protected:
 	static void unregisterClass ();
 
 	// Fill the States merging local and other side class
-	static void registerOtherSideClass (uint8 sid, TOtherSideRegisteredClass &osrc);
+	static void registerOtherSideClass (NLNET::TServiceId sid, TOtherSideRegisteredClass &osrc);
 
 	// Create a message with local transport classes to send to the other side
 	static void createLocalRegisteredClassMessage ();
 
 	// Send the local transport classes to another service using the service id
-	static void sendLocalRegisteredClass (uint8 sid)
+	static void sendLocalRegisteredClass (NLNET::TServiceId sid)
 	{
 		nlassert (Init);
-		nldebug ("NETTC: sendLocalRegisteredClass to %d", sid);
+		nldebug ("NETTC: sendLocalRegisteredClass to %hu", sid.get());
 		createLocalRegisteredClassMessage ();
 		NLNET::CUnifiedNetwork::getInstance()->send (sid, TempMessage);
 	}
 
 	// Display a specific registered class (debug purpose)
 	static void displayLocalRegisteredClass (CRegisteredClass &c);
-	static void displayDifferentClass (uint8 sid, const std::string &className, const std::vector<CRegisteredBaseProp> &otherClass, const std::vector<CRegisteredBaseProp *> &myClass);
+	static void displayDifferentClass (NLNET::TServiceId sid, const std::string &className, const std::vector<CRegisteredBaseProp> &otherClass, const std::vector<CRegisteredBaseProp *> &myClass);
 
 
 	//
 	// Friends
 	//
 
-	friend void cbTCReceiveMessage (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
-	friend void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg);
-	friend void cbTCReceiveOtherSideClass (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
+	friend void cbTCReceiveMessage (NLNET::CMessage &msgin, const std::string &name, NLNET::TServiceId sid);
+	friend void cbTCUpService (const std::string &serviceName, NLNET::TServiceId sid, void *arg);
+	friend void cbTCReceiveOtherSideClass (NLNET::CMessage &msgin, const std::string &name, NLNET::TServiceId sid);
 };
 
 
@@ -446,14 +446,14 @@ inline void CTransportClass::className (const std::string &name)
 }
 
 
-inline void CTransportClass::send (uint8 sid)
+inline void CTransportClass::send (NLNET::TServiceId sid)
 {
 	nlassert (Init);
 	NLNET::CUnifiedNetwork::getInstance()->send (sid, write ());
 }
 
 
-inline void CTransportClass::send (std::string serviceName)
+inline void CTransportClass::send (const std::string &serviceName)
 {
 	nlassert (Init);
 	NLNET::CUnifiedNetwork::getInstance()->send (serviceName, write ());
@@ -500,13 +500,13 @@ inline NLNET::CMessage &CTransportClass::write ()
 	return TempMessage;
 }
 
-inline bool CTransportClass::read (const std::string &name, uint8 sid)
+inline bool CTransportClass::read (const std::string &name, NLNET::TServiceId sid)
 {
 	nlassert (Init);
 	nlassert (Mode == 0);
 	
 	// there's no info about how to read this message from this sid, give up
-	if (sid >= States.size())
+	if (sid.get() >= States.size())
 		return false;
 
 	// set flag of all prop
@@ -516,18 +516,18 @@ inline bool CTransportClass::read (const std::string &name, uint8 sid)
 
 	// init prop from the stream
 	uint i;
-	for (i = 0; i < States[sid].size(); i++)
+	for (i = 0; i < States[sid.get()].size(); i++)
 	{
-		if (States[sid][i].first == -1)
+		if (States[sid.get()][i].first == -1)
 		{
 			// skip the value from the stream
-			DummyProp[States[sid][i].second]->serialDefaultValue (TempMessage);
+			DummyProp[States[sid.get()][i].second]->serialDefaultValue (TempMessage);
 		}
 		else
 		{
 			// get the good value
-			Prop[States[sid][i].first]->serialValue (TempMessage);
-			bitfield[States[sid][i].first] = 1;
+			Prop[States[sid.get()][i].first]->serialValue (TempMessage);
+			bitfield[States[sid.get()][i].first] = 1;
 		}
 	}
 

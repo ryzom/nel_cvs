@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="ligo"
 	ProjectGUID="{1DDC11C7-AF79-40F3-A6D4-F84BA8644B5C}"
+	RootNamespace="ligo"
 	>
 	<Platforms>
 		<Platform
@@ -41,7 +42,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -116,6 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_LIB;NDEBUG;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -188,6 +191,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="__STL_DEBUG;_LIB;_DEBUG;WIN32;LIBXML_STATIC"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -267,6 +271,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\include"
 				PreprocessorDefinitions="_LIB;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

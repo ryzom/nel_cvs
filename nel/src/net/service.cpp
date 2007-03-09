@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.243 2006/09/14 16:56:08 cado Exp $
+ * $Id: service.cpp,v 1.244 2007/03/09 09:49:30 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -286,7 +286,7 @@ void cbDirectoryChanged (IVariable &var)
 // Service built-in callbacks
 //
 
-void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 serviceId)
+void cbReceiveShardId (CMessage& msgin, const string &serviceName, TServiceId serviceId)
 {
 	uint32 shardId;
 	msgin.serial(shardId);
@@ -299,7 +299,7 @@ void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 servic
 
 	if (serviceName != "WS")
 	{
-		nlwarning("SERVICE: received unauthorized R_SH_ID callback from service %s-%d asking to set ShardId to %d", serviceName.c_str(), serviceId, shardId);
+		nlwarning("SERVICE: received unauthorized R_SH_ID callback from service %s-%uh asking to set ShardId to %d", serviceName.c_str(), serviceId.get(), shardId);
 		return;
 	}
 
@@ -998,17 +998,17 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			if (sid<=0 || sid>255)
 			{
 				nlwarning("SERVICE: Bad SId value in the config file, %d is not in [0;255] range", sid);
-				_SId = 0;
+				_SId.set(0);
 			}
 			else
 			{
-				_SId = (uint8) sid;
+				_SId.set(sid);
 			}
 		}
 		else
 		{
 			// ok, SId not found, use dynamic sid
-			_SId = 0;
+			_SId.set(0);
 		}
 
 
@@ -1111,7 +1111,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if(!_DontUseNS)
 		{
-			nlassert (_SId != 0);
+			nlassert (_SId.get() != 0);
 		}
 
 		//
@@ -1151,10 +1151,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Now we have the service id, we can set the entites id generator
 		//
 
-		NLMISC::CEntityId::setServiceId(_SId);
+		NLMISC::CEntityId::setServiceId(TServiceId8(_SId).get());
 
 		// Set the localhost name and service name and the sid
-		CLog::setProcessName (localhost+"/"+_ShortName+"-"+toString((uint16)_SId));
+		CLog::setProcessName (localhost+"/"+_ShortName+"-"+toString(_SId.get()));
 
 
 		//
@@ -1679,10 +1679,10 @@ std::string IService::getServiceUnifiedName () const
 		res = _AliasName+"/";
 	}
 	res += _ShortName;
-	if (_SId != 0)
+	if (_SId.get() != 0)
 	{
 		res += "-";
-		res += toString (_SId);
+		res += toString (_SId.get());
 	}
 	return res;
 }
@@ -1799,7 +1799,7 @@ NLMISC_CATEGORISED_COMMAND(nel, serviceInfo, "display information about this ser
 	log.displayNL ("Service save files directory: '%s'", IService::getInstance()->SaveFilesDirectory.c_str());
 	log.displayNL ("Service write files directory: '%s'", IService::getInstance()->WriteFilesDirectory.c_str());
 	log.displayNL ("Service config directory: '%s' config filename: '%s.cfg'", IService::getInstance()->ConfigDirectory.c_str(), IService::getInstance()->_LongName.c_str());
-	log.displayNL ("Service id: %d", IService::getInstance()->_SId);
+	log.displayNL ("Service id: %hu", IService::getInstance()->_SId.get());
 	log.displayNL ("Service update timeout: %dms", IService::getInstance()->_UpdateTimeout);
 	log.displayNL ("Service %suse naming service", IService::getInstance()->_DontUseNS?"don't ":"");
 	log.displayNL ("Service %suse admin executor service", IService::getInstance()->_DontUseAES?"don't ":"");

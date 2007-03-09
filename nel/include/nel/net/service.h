@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.91 2006/05/31 12:03:14 boucher Exp $
+ * $Id: service.h,v 1.92 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,6 @@ namespace NLNET
 
 class CCallbackServer;
 class IServiceUpdatable;
-
 
 
 //
@@ -155,7 +154,7 @@ int main(int argc, const char **argv) \
 // Typedefs
 //
 
-typedef uint8 TServiceId;
+//typedef uint16 TServiceId;
 
 /// Callback where you can return true for direct clearance, or false for later clearance.
 typedef bool (*TRequestClosureClearanceCallback) ();
@@ -520,11 +519,11 @@ private:
 	NLMISC::IVariableChangedCallback*	_DirectoryChangedCBI;
 
 	friend void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::string> &vara, std::vector<std::string> &vala);
-	friend void cbAESConnection (const std::string &serviceName, uint16 sid, void *arg);
+	friend void cbAESConnection (const std::string &serviceName, TServiceId sid, void *arg);
 	friend struct nel_serviceInfoClass;
 	friend struct nel_getWinDisplayerInfoClass;
 	friend void cbDirectoryChanged (NLMISC::IVariable &var);
-	friend void cbReceiveShardId (NLNET::CMessage& msgin, const std::string &serviceName, uint16 serviceId);
+	friend void cbReceiveShardId (NLNET::CMessage& msgin, const std::string &serviceName, TServiceId serviceId);
 
 	NLMISC_CATEGORISED_DYNVARIABLE_FRIEND(nel, State);
 };

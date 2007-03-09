@@ -1,7 +1,7 @@
 /** \file module_common.cpp
  * basic type and forward declaration for module system
  *
- * $Id: module_common.cpp,v 1.5 2006/05/31 12:03:17 boucher Exp $
+ * $Id: module_common.cpp,v 1.6 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,12 +34,26 @@ using namespace NLMISC;
 namespace NLNET
 {
 
+	TParsedCommandLine::~TParsedCommandLine()
+	{
+		clear();
+	};
+
+	void TParsedCommandLine::clear()
+	{
+		for (std::vector<TParsedCommandLine*>::iterator it=SubParams.begin(); it!=SubParams.end(); ++it)
+		{
+			delete (*it);
+		}
+		SubParams.clear();
+		ParamName.clear();
+		ParamValue.clear();
+	}
+
 	bool TParsedCommandLine::parseParamList(const std::string &rawParamString)
 	{
 		// Cleanup the struct
-		SubParams.clear();
-		ParamName.resize(0);
-		ParamValue.resize(0);
+		clear();
 
 		return _parseParamList(rawParamString);
 	}
@@ -62,7 +76,7 @@ namespace NLNET
 			{
 				if (i >0)
 					ret += " ";
-				ret += SubParams[i].toString();
+				ret += SubParams[i]->toString();
 			}
 
 			ret += " ) ";
@@ -84,16 +98,16 @@ namespace NLNET
 			if (part[0] == '(')
 			{
 				// this is a sub parameter list
-				if (SubParams.empty() || SubParams.back().ParamName.empty())
+				if (SubParams.empty() || SubParams.back()->ParamName.empty())
 				{
 					nlwarning("While parsing param string '%s', missing param header", rawParamString.c_str());
 					return false;
 				}
-				if (!SubParams.back().ParamValue.empty())
+				if (!SubParams.back()->ParamValue.empty())
 				{
 					nlwarning("While parsing param string '%s', Invalid sub param header '%s' for sub part '%s', must not define value",
 						rawParamString.c_str(),
-						SubParams.back().ParamName.c_str(),
+						SubParams.back()->ParamName.c_str(),
 						part.c_str());
 
 					return false;
@@ -110,10 +124,10 @@ namespace NLNET
 
 				part = part.stripBlockDelimiters();
 
-				if (!SubParams.back()._parseParamList(part))
+				if (!SubParams.back()->_parseParamList(part))
 				{
 					nlwarning("Error parsing sub param list for header '%s' in '%s'", 
-						SubParams.back().ParamName.c_str(),
+						SubParams.back()->ParamName.c_str(),
 						rawParamString.c_str());
 					return false;
 				}
@@ -129,15 +143,15 @@ namespace NLNET
 			else if (part[0] == '\"')
 			{
 				// this is a quoted parameter value
-				if (SubParams.empty() || !SubParams.back().ParamValue.empty())
+				if (SubParams.empty() || !SubParams.back()->ParamValue.empty())
 				{
 					nlwarning("While parsing param string '%s', param '%s' already have the value '%s'", 
 						rawParamString.c_str(),
-						SubParams.back().ParamName.c_str(),
-						SubParams.back().ParamValue.c_str());
+						SubParams.back()->ParamName.c_str(),
+						SubParams.back()->ParamValue.c_str());
 					return false;
 				}
-				SubParams.back().ParamValue = part.unquote();
+				SubParams.back()->ParamValue = part.unquote();
 			}
 			else
 			{
@@ -152,9 +166,9 @@ namespace NLNET
 				}
 				CSString value = part.strtok("=");
 
-				SubParams.push_back(TParsedCommandLine());
-				SubParams.back().ParamName = name;
-				SubParams.back().ParamValue = value;
+				SubParams.push_back( new TParsedCommandLine() );
+				SubParams.back()->ParamName = name;
+				SubParams.back()->ParamValue = value;
 			}
 		}
 
@@ -181,10 +195,10 @@ namespace NLNET
 			TParsedCommandLine *sub = _getParam(parts.begin(), (parts.begin()+1));
 			if (sub == NULL)
 			{
-				TParsedCommandLine newElem;
-				newElem.ParamName = parts[0];
+				TParsedCommandLine * newElem = new TParsedCommandLine();
+				newElem->ParamName = parts[0];
 				SubParams.push_back(newElem);
-				sub = &(SubParams.back());
+				sub = SubParams.back();
 			}
 
 			if (name.size() > 0)
@@ -219,8 +233,8 @@ namespace NLNET
 		// look for sub param
 		for (uint i=0; i<SubParams.size(); ++i)
 		{
-			if (SubParams[i].ParamName == *it)
-				return SubParams[i]._getParam(++it, end);
+			if (SubParams[i]->ParamName == *it)
+				return SubParams[i]->_getParam(++it, end);
 		}
 
 		// parameter not found

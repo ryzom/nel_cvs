@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.86 2005/11/07 15:20:53 guignot Exp $
+ * $Id: debug.h,v 1.87 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,9 +40,11 @@ namespace NLMISC
 {	
 
 #ifdef ASSERT_THROW_EXCEPTION
-#define ASSERT_THROW_EXCEPTION_CODE(exp) if(!(exp)) throw NLMISC::Exception(#exp" returns false");
+#define ASSERT_THROW_EXCEPTION_CODE(exp) ASSERT_THROW_EXCEPTION_CODE_EX(exp, #exp)
+#define ASSERT_THROW_EXCEPTION_CODE_EX(exp, str) if(!(exp)) throw NLMISC::Exception(str" returns false");
 #else
 #define ASSERT_THROW_EXCEPTION_CODE(exp)
+#define ASSERT_THROW_EXCEPTION_CODE_EX(exp, str)
 #endif
 
 /** Imposter class to wrap all global access to the nel context for backward compatibility
@@ -414,11 +416,12 @@ if(false)
 #define nlassert(exp) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!ignoreNextTime && !(exp)) { \
+	bool _expResult_ = (exp) ? true : false; \
+	if (!ignoreNextTime && !_expResult_) { \
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
-	ASSERT_THROW_EXCEPTION_CODE(exp) \
+	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
 }
 
 #define nlassertonce(exp) \
@@ -434,29 +437,32 @@ if(false)
 #define nlassertex(exp, str) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!ignoreNextTime && !(exp)) { \
+	bool _expResult_ = (exp) ? true : false; \
+	if (!ignoreNextTime && !_expResult_) { \
 		NLMISC::_assertex_stop_0(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
 		if(NLMISC::_assertex_stop_1(ignoreNextTime)) \
 			NLMISC_BREAKPOINT; \
 	} \
-	ASSERT_THROW_EXCEPTION_CODE(exp) \
+	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
 }
 
 #define nlverify(exp) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!(exp) && !ignoreNextTime) { \
+	bool _expResult_ = (exp) ? true : false; \
+	if (!_expResult_ && !ignoreNextTime) { \
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
-	ASSERT_THROW_EXCEPTION_CODE(exp) \
+	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
 }
 
 #define nlverifyonce(exp) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!(exp) && !ignoreNextTime) { \
+	bool _expResult_ = (exp) ? true : false; \
+	if (!_expResult_ && !ignoreNextTime) { \
 		ignoreNextTime = true; \
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
@@ -466,13 +472,14 @@ if(false)
 #define nlverifyex(exp, str) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!(exp) && !ignoreNextTime) { \
+	bool _expResult_ = (exp) ? true : false; \
+	if (!_expResult_ && !ignoreNextTime) { \
 		NLMISC::_assertex_stop_0(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
 		if(NLMISC::_assertex_stop_1(ignoreNextTime)) \
 			NLMISC_BREAKPOINT; \
 	} \
-	ASSERT_THROW_EXCEPTION_CODE(exp) \
+	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
 }
 #endif // NL_OS_UNIX
 
@@ -672,6 +679,9 @@ struct TInstanceCounterData
 
 	~TInstanceCounterData();
 };
+
+// forward declaration for members of CInstanceCounterManager
+class CInstanceCounterLocalManager;
 
 // The singleton used to display the instance counter
 class CInstanceCounterManager

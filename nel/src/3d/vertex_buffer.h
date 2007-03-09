@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * TODO: File description
  *
- * $Id: vertex_buffer.h,v 1.21 2006/07/12 14:37:22 boucher Exp $
+ * $Id: vertex_buffer.h,v 1.22 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,9 @@ using NLMISC::CUV;
 
 
 class	IDriver;
+class	CVertexBufferReadWrite;
+class	CVertexBufferRead;
+
 
 // --------------------------------------------------
 

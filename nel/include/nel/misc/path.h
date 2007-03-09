@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.54 2006/05/31 12:03:13 boucher Exp $
+ * $Id: path.h,v 1.55 2007/03/09 09:49:29 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -296,16 +296,16 @@ private:
 	class CMCFileComp
 	{
 	public:
-		// rhs MUST BE LOWERED
 		sint specialCompare(const CMCFileEntry &fe, const char *rhs)
 		{
 			char *lhs = fe.Name;
+
 			uint8 lchar, rchar;
 			while (*lhs != '\0' && *rhs != '\0')
 			{
 				// lower case compare because name is in normal case
 				lchar = ::tolower(*lhs);
-				rchar = *rhs;
+				rchar = ::tolower(*rhs);
 				if (lchar != rchar) return ((sint)lchar) - ((sint)rchar);
 				++lhs;
 				++rhs;
@@ -315,10 +315,20 @@ private:
 			return 0;
 		}
 
-		bool operator()(const CMCFileEntry &fe, const char *rhs)
-		{
-			return specialCompare(fe, rhs) < 0;
-		}
+
+		// Debug : Sept 01 2006
+		#if _STLPORT_VERSION >= 0x510
+			bool operator()( const CMCFileEntry &fe, const CMCFileEntry &rhs )
+			{
+				return specialCompare( fe, rhs.Name ) < 0;
+			}
+		#else
+			bool operator()( const CMCFileEntry &fe, const char *rhs )
+			{
+				return specialCompare( fe, rhs ) < 0;
+			}
+		#endif //_STLPORT_VERSION
+
 	};
 
 	/// first ext1, second ext2 (ext1 could remplace ext2)

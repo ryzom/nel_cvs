@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.9 2006/09/14 16:56:08 cado Exp $
+ * $Id: co_task.cpp,v 1.10 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #else //NL_USE_THREAD_COTASK
 // some platform specifics
 #if defined (NL_OS_WINDOWS)
+# define _WIN32_WINNT 0x0500
 # define NL_WIN_CALLBACK CALLBACK
 // Visual .NET won't allow Fibers for a Windows version older than 2000. However the basic features are sufficient for us, we want to compile them for all Windows >= 95
 # if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0400)

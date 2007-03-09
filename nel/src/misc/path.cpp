@@ -1,7 +1,7 @@
 	/** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.122 2007/02/01 16:24:41 boucher Exp $
+ * $Id: path.cpp,v 1.123 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -244,7 +244,13 @@ CPath::CMCFileEntry *CPath::MCfind (const std::string &filename)
 	CPath *inst = CPath::getInstance();
 	nlassert(inst->_MemoryCompressed);
 	vector<CMCFileEntry>::iterator it;
-	it = lower_bound(inst->_MCFiles.begin(), inst->_MCFiles.end(), filename.c_str(), CMCFileComp());
+	#if _STLPORT_VERSION >= 0x510
+		CMCFileEntry temp_cmc_file;
+		temp_cmc_file.Name = (char*)filename.c_str();
+		it = lower_bound(inst->_MCFiles.begin(), inst->_MCFiles.end(), temp_cmc_file, CMCFileComp());
+	#else
+		it = lower_bound(inst->_MCFiles.begin(), inst->_MCFiles.end(), filename.c_str(), CMCFileComp());
+	#endif //_STLPORT_VERSION
 	if (it != inst->_MCFiles.end())
 	{
 		CMCFileComp FileComp;

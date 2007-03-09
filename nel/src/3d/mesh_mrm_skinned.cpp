@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.14 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.15 2007/03/09 09:49:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2356,7 +2356,7 @@ public:
 				throw Exception("SSE Allocation Failed");
 
 			// Align ptr
-			newData= (void*) ( ((uint32)newAllocData+NL3D_SSE_ALIGNEMENT-1) & (~(NL3D_SSE_ALIGNEMENT-1)) );
+			newData= (void*) ( ((ptrdiff_t)newAllocData+NL3D_SSE_ALIGNEMENT-1) & (~(NL3D_SSE_ALIGNEMENT-1)) );
 
 			// copy valid data from old to new.
 			memcpy(newData, _Data, size() * sizeof(CMatrix3x4SSE) );

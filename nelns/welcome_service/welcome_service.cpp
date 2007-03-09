@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.52 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: welcome_service.cpp,v 1.53 2007/03/09 09:50:54 boucher Exp $
  *
  */
 
@@ -376,7 +376,7 @@ bool	openNewFES()
 	{
 		if ((*it).State == PatchOnly)
 		{
-			nlinfo("openNewFES: ask the FS %d to accept clients", (*it).SId);
+			nlinfo("openNewFES: ask the FS %d to accept clients", it->SId.get());
 
 			// switch FES to AcceptClientOnly
 			(*it).setToAcceptClients();
@@ -394,7 +394,7 @@ void displayFES ()
 	nlinfo ("There's %d FES in the list:", FESList.size());
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
-		nlinfo(" > %u NbUser:%d NbEstUser:%d", (*it).SId, (*it).NbUser, (*it).NbEstimatedUser);
+		nlinfo(" > %u NbUser:%d NbEstUser:%d", (*it).SId.get(), (*it).NbUser, (*it).NbEstimatedUser);
 	}
 	nlinfo ("End of the list");
 }
@@ -410,7 +410,7 @@ void displayFES ()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	// the WS answer a user authorize
 	string reason;
@@ -464,7 +464,7 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 
 	if (PendingFeResponse.find(cookie) != PendingFeResponse.end())
 	{
-		nldebug( "ERLOG: SCS recvd from %s-%hu => sending %s to SU", serviceName.c_str(), sid, cookie.toString().c_str());
+		nldebug( "ERLOG: SCS recvd from %s-%hu => sending %s to SU", serviceName.c_str(), sid.get(), cookie.toString().c_str());
 
 		// this response is not waited by LS
 		TPendingFEResponseInfo &pfri = PendingFeResponse.find(cookie)->second;
@@ -475,7 +475,7 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 	}
 	else
 	{
-		nldebug( "ERLOG: SCS recvd from %s-%hu, but pending %s not found", serviceName.c_str(), sid, cookie.toString().c_str());
+		nldebug( "ERLOG: SCS recvd from %s-%hu, but pending %s not found", serviceName.c_str(), sid.get(), cookie.toString().c_str());
 
 		// return the result to the LS
 		if (!DontUseLS)
@@ -487,7 +487,7 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 }
 
 // This function is call when a FES accepted a new client or lost a connection to a client
-void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	//
 	// S15: receive "CC" message from FES and send "CC" message to the "LS"
@@ -512,7 +512,7 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 	uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
-		if ((*it).SId == sid)
+		if (it->SId == sid)
 		{
 			if (con)
 			{
@@ -548,11 +548,11 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 }
 
 // This function is called when a FES rejected a client' cookie
-void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, uint16 sid)
+void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	CLoginCookie	cookie;
 	msgin.serial(cookie);
-	nldebug( "ERLOG: RPC recvd from %s-%hu => %s removed", serviceName.c_str(), sid, cookie.toString().c_str(), cookie.toString().c_str());
+	nldebug( "ERLOG: RPC recvd from %s-%hu => %s removed", serviceName.c_str(), sid.get(), cookie.toString().c_str(), cookie.toString().c_str());
 
 
 	// client' cookie rejected, no longer pending
@@ -573,7 +573,7 @@ void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, 
 }
 
 // This function is called by FES to setup its PatchAddress
-void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 sid)
+void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	std::string	address;
 	msgin.serial(address);
@@ -581,13 +581,13 @@ void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 s
 	bool		acceptClients;
 	msgin.serial(acceptClients);
 
-	nldebug("Received patch server address '%s' from service %s %d", address.c_str(), serviceName.c_str(), sid);
+	nldebug("Received patch server address '%s' from service %s %d", address.c_str(), serviceName.c_str(), sid.get());
 
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
 		if ((*it).SId == sid)
 		{
-			nldebug("Affected patch server address '%s' to frontend %s %d", address.c_str(), serviceName.c_str(), sid);
+			nldebug("Affected patch server address '%s' to frontend %s %d", address.c_str(), serviceName.c_str(), sid.get());
 
 			if (!UsePatchMode.get() && !acceptClients)
 			{
@@ -599,9 +599,9 @@ void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 s
 			(*it).PatchAddress = address;
 			(*it).State = (acceptClients ? AcceptClientOnly : PatchOnly);
 			if (acceptClients)
-				nldebug("Frontend %s %d reported to accept client, patching unavailable for that server", address.c_str(), serviceName.c_str(), sid);
+				nldebug("Frontend %s %d reported to accept client, patching unavailable for that server", address.c_str(), serviceName.c_str(), sid.get());
 			else
-				nldebug("Frontend %s %d reported to be in patching mode", address.c_str(), serviceName.c_str(), sid);
+				nldebug("Frontend %s %d reported to be in patching mode", address.c_str(), serviceName.c_str(), sid.get());
 
 			bool	dummy;
 			(*it).reportStateToLS(dummy);
@@ -611,7 +611,7 @@ void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 s
 }
 
 // This function is called by FES to setup the right number of players (if FES was already present before WS launching)
-void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
+void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	// *********** WARNING *******************
 	// This version of the callback is deprecated, the system
@@ -628,7 +628,7 @@ void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
 	{
 		if ((*it).SId == sid)
 		{
-			nldebug("Frontend '%d' reported %d online users", sid, nbPlayers);
+			nldebug("Frontend '%d' reported %d online users", sid.get(), nbPlayers);
 			(*it).NbUser = nbPlayers;
 			if (nbPlayers != 0 && (*it).State == PatchOnly)
 			{
@@ -645,7 +645,7 @@ void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
 
 
 // This function is called by FES to setup the right number of players (if FES was already present before WS launching)
-void	cbFESNbPlayers2(CMessage &msgin, const std::string &serviceName, uint16 sid)
+void	cbFESNbPlayers2(CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	uint32	nbPlayers;
 	uint32	nbPendingPlayers;
@@ -658,7 +658,7 @@ void	cbFESNbPlayers2(CMessage &msgin, const std::string &serviceName, uint16 sid
 		CFES &fes = *it;
 		if (fes.SId == sid)
 		{
-			nldebug("Frontend '%d' reported %d online users", sid, nbPlayers);
+			nldebug("Frontend '%d' reported %d online users", sid.get(), nbPlayers);
 			fes.NbUser = nbPlayers;
 			fes.NbPendingUsers = nbPendingPlayers;
 			if (nbPlayers != 0 && fes.State == PatchOnly)
@@ -701,7 +701,7 @@ void	setShardOpenState(TShardOpenState state, bool writeInVar = true)
  * Set Shard Open State
  * uint8	Open State (0 closed for all, 1 open for groups in cfg, 2 open for all)
  */
-void cbSetShardOpen(CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbSetShardOpen(CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	uint8 shardOpenState;
 	msgin.serial (shardOpenState);
@@ -720,7 +720,7 @@ void	cbShardOpenStateFile(IVariable &var);
 /*
  * Restore Shard Open state from config file or from file if found
  */
-void cbRestoreShardOpen(CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbRestoreShardOpen(CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	// first restore state from config file
 	CConfigFile::CVar*	var = IService::getInstance()->ConfigFile.getVarPtr("ShardOpen");
@@ -738,10 +738,10 @@ void cbRestoreShardOpen(CMessage &msgin, const std::string &serviceName, uint16 
 
 
 // a new front end connecting to me, add it
-void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
+void cbFESConnection (const std::string &serviceName, TServiceId  sid, void *arg)
 {
 	FESList.push_back (CFES ((TServiceId)sid));
-	nldebug("new FES connection: sid %u", sid);
+	nldebug("new FES connection: sid %u", sid.get());
 	displayFES ();
 
 	bool	dummy;
@@ -761,9 +761,9 @@ void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 
 
 // a front end closes the connection, deconnect him
-void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
+void cbFESDisconnection (const std::string &serviceName, TServiceId  sid, void *arg)
 {
-	nldebug("new FES disconnection: sid %u", sid);
+	nldebug("new FES disconnection: sid %u", sid.get());
 
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
@@ -808,7 +808,7 @@ void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 
 
 //
-void cbServiceUp (const std::string &serviceName, uint16 sid, void *arg)
+void cbServiceUp (const std::string &serviceName, TServiceId  sid, void *arg)
 {
 	OnlineServices.addInstance( serviceName );
 	bool online = OnlineServices.getOnlineStatus();
@@ -843,7 +843,7 @@ void cbServiceUp (const std::string &serviceName, uint16 sid, void *arg)
 
 
 //
-void cbServiceDown (const std::string &serviceName, uint16 sid, void *arg)
+void cbServiceDown (const std::string &serviceName, TServiceId  sid, void *arg)
 {
 	OnlineServices.removeInstance( serviceName );
 	bool online = OnlineServices.getOnlineStatus();
@@ -871,11 +871,11 @@ TUnifiedCallbackItem FESCallbackArray[] =
 //////////////////// CONNECTION TO THE LOGIN SERVICE ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	// the LS warns me that a new client want to come in my shard
 
-	nldebug( "ERLOG: CS recvd from %s-%hu", serviceName.c_str(), sid);
+	nldebug( "ERLOG: CS recvd from %s-%hu", serviceName.c_str(), sid.get());
 
 	//
 	// S07: receive the "CS" message from LS and send the "CS" message to the selected FES
@@ -1024,7 +1024,7 @@ std::string lsChooseShard (const std::string &userName,
 	return "";
 }
 
-void cbFailed (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbFailed (CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	// I can't connect to the Login Service, just nlerror ();
 	string reason;
@@ -1051,7 +1051,7 @@ bool disconnectClient(uint32 userId)
 	}
 }
 
-void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, TServiceId  sid)
 {
 	// the LS tells me that i have to disconnect a client
 
@@ -1063,7 +1063,7 @@ void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 }
 
 // connection to the LS, send the identification message
-void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
+void cbLSConnection (const std::string &serviceName, TServiceId  sid, void *arg)
 {
 	sint32 shardId;
 	
@@ -1091,7 +1091,7 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 	msgout.serial (shardId);
 	CUnifiedNetwork::getInstance()->send (sid, msgout);
 
-	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName.c_str(), sid, shardId);
+	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName.c_str(), sid.get(), shardId);
 
 	// send state to LS
 	setShardOpenState((TShardOpenState)(ShardOpen.get()), false);
@@ -1538,7 +1538,7 @@ NLMISC_COMMAND (frontends, "displays the list of all registered front ends", "")
 	log.displayNL ("Display the %d registered front end :", FESList.size());
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end (); it++)
 	{
-		log.displayNL ("> FE %u: nb estimated users: %u nb users: %u", (*it).SId, (*it).NbEstimatedUser, (*it).NbUser );
+		log.displayNL ("> FE %u: nb estimated users: %u nb users: %u", (*it).SId.get(), (*it).NbEstimatedUser, (*it).NbUser );
 	}
 	log.displayNL ("End ot the list");
 
@@ -1552,7 +1552,7 @@ NLMISC_COMMAND (users, "displays the list of all registered users", "")
 	log.displayNL ("Display the %d registered users :", UserIdSockAssociations.size());
 	for (map<uint32, TServiceId>::iterator it = UserIdSockAssociations.begin(); it != UserIdSockAssociations.end (); it++)
 	{
-		log.displayNL ("> %u SId=%u", (*it).first, (*it).second);
+		log.displayNL ("> %u SId=%u", (*it).first, (*it).second.get());
 	}
 	log.displayNL ("End ot the list");
 

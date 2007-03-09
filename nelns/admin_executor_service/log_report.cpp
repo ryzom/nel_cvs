@@ -1,7 +1,7 @@
 /** \file log_report.cpp
  * <File description>
  *
- * $Id: log_report.cpp,v 1.7 2006/12/13 15:15:47 cado Exp $
+ * $Id: log_report.cpp,v 1.8 2007/03/09 09:50:54 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "log_report.h"
+#include <functional>
 #include "nel/misc/common.h"
 #include "nel/misc/displayer.h"
 #include "nel/misc/file.h"
@@ -295,8 +296,8 @@ void	CMakeLogTask::run()
 			path += "/";
 		filenamesOfPath.clear();
 		CPath::getPathContent( path, false, false, true, filenamesOfPath, NULL, true );
-		vector<string>::iterator ilf = partition( filenamesOfPath.begin(), filenamesOfPath.end(), isLogFile );
-		filenamesOfPath.erase( ilf, filenamesOfPath.end() );
+		vector<string>::iterator ilf2 = partition( filenamesOfPath.begin(), filenamesOfPath.end(), isLogFile );
+		filenamesOfPath.erase( ilf2, filenamesOfPath.end() );
 		sortLogFiles( filenamesOfPath );
 		filenames.insert( filenames.end(), filenamesOfPath.begin(), filenamesOfPath.end() );
 	}
@@ -461,7 +462,7 @@ void	CLogReport::reportByService( const std::string& service, NLMISC::CLog *targ
 void	CLogReportLeaf::report( NLMISC::CLog *targetLog, bool )
 {
 	// Sort it
-	typedef multimap< uint, pair< string, const CLogLineInfo * >, greater<uint> > CSortedByOccurenceLogLineInfoMap;
+	typedef multimap< uint, pair< string, const CLogLineInfo * >, std::greater<uint> > CSortedByOccurenceLogLineInfoMap;
 	CSortedByOccurenceLogLineInfoMap sortedByOccurence;
 	for ( CLogLineInfoMap::const_iterator it=_LogLineInfo.begin(); it!=_LogLineInfo.end(); ++it )
 	{

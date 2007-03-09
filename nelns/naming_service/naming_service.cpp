@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.34 2006/10/31 16:10:51 blanchard Exp $
+ * $Id: naming_service.cpp,v 1.35 2007/03/09 09:50:54 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,10 +105,10 @@ struct CServiceEntry
 //void sendToService( uint16 sid, CMessage& msgout );
 
 // Helper that emulate layer5's getServiceName()
-string getServiceName( uint16 sid );
+string getServiceName( TServiceId  sid );
 
 // Helper that returns the first address of a service
-CInetAddress getHostAddress( uint16 sid );
+CInetAddress getHostAddress( TServiceId  sid );
 
 // Asks a service to stop and tell every one
 void doUnregisterService (TServiceId sid);
@@ -139,10 +139,10 @@ public:
 	}
 
 	/// Check if a service is allowed to start (if so, add it)
-	bool		queryStartService( const std::string& serviceName, uint16 serviceId, const std::vector<NLNET::CInetAddress> &addr, string& reason );
+	bool		queryStartService( const std::string& serviceName, TServiceId  serviceId, const std::vector<NLNET::CInetAddress> &addr, string& reason );
 
 	/// Release a service instance
-	void		releaseService( uint16 serviceId );
+	void		releaseService( NLNET::TServiceId serviceId );
 
 	/// Display information
 	void		displayInfo( NLMISC::CLog *log = NLMISC::InfoLog ) const;
@@ -156,7 +156,7 @@ private:
 	std::map< std::string, bool >	_UniqueServices;
 
 	/// List of granted (online) services
-	std::set< uint16 >				_OnlineServices;
+	std::set< TServiceId >				_OnlineServices;
 };
 
 
@@ -178,14 +178,14 @@ CServiceInstanceManager::CServiceInstanceManager()
 /*
  * Check if a service is allowed to start. Answer with a GSTS (Grant Start Service) message
  */
-bool		CServiceInstanceManager::queryStartService( const std::string& serviceName, uint16 serviceId, const vector<CInetAddress> &addr, string& reason )
+bool		CServiceInstanceManager::queryStartService( const std::string& serviceName, TServiceId  serviceId, const vector<CInetAddress> &addr, string& reason )
 {
 	bool grantStarting = true;
 	std::map< std::string, bool >::iterator ius = _UniqueServices.find( serviceName );
 	if ( ius != _UniqueServices.end() )
 	{
 		// Service is restricted
-		set< uint16 >::iterator ios;
+		set< TServiceId >::iterator ios;
 		bool uniqueOnShard = (*ius).second;
 		for ( ios=_OnlineServices.begin(); ios!=_OnlineServices.end(); ++ios )
 		{
@@ -196,7 +196,7 @@ bool		CServiceInstanceManager::queryStartService( const std::string& serviceName
 				{
 					// Only one service by shard is allowed => deny
 					grantStarting = false;
-					reason = toString( "Service %s already found as %hu, must be unique on shard", serviceName.c_str(), *ios );
+					reason = toString( "Service %s already found as %hu, must be unique on shard", serviceName.c_str(), ios->get() );
 					nlinfo( reason.c_str() );
 					break;
 				}
@@ -214,7 +214,7 @@ bool		CServiceInstanceManager::queryStartService( const std::string& serviceName
 					if ( addr[0].internalIPAddress() == getHostAddress( *ios ).internalIPAddress() )
 					{
 						grantStarting = false;
-						reason = toString( "Service %s already found as %hu on same machine", serviceName.c_str(), *ios );
+						reason = toString( "Service %s already found as %hu on same machine", serviceName.c_str(), ios->get() );
 						nlinfo( reason.c_str() );
 						break;
 					}
@@ -234,7 +234,7 @@ bool		CServiceInstanceManager::queryStartService( const std::string& serviceName
 /*
  * Release a service instance
  */
-void		CServiceInstanceManager::releaseService( uint16 serviceId )
+void		CServiceInstanceManager::releaseService( NLNET::TServiceId serviceId )
 {
 	_OnlineServices.erase( serviceId ); // not a problem if not found
 }
@@ -252,7 +252,7 @@ void		CServiceInstanceManager::displayInfo( NLMISC::CLog *log ) const
 		log->displayNL( "%s -> only one per %s", (*ius).first.c_str(), (*ius).second?"shard":"machine" );
 	}
 	log->displayNL( "Online registered services:" );
-	std::set< uint16 >::const_iterator ios;
+	std::set< TServiceId >::const_iterator ios;
 	for ( ios=_OnlineServices.begin(); ios!=_OnlineServices.end(); ++ios )
 	{
 		log->displayNL( "%s", CUnifiedNetwork::getInstance()->getServiceUnifiedName( *ios ).c_str() );
@@ -266,7 +266,7 @@ void		CServiceInstanceManager::displayInfo( NLMISC::CLog *log ) const
 void		CServiceInstanceManager::killAllServices()
 {
 	// Send to all known online services
-	std::set< uint16 >::const_iterator ios;
+	std::set< TServiceId >::const_iterator ios;
 	for ( ios=_OnlineServices.begin(); ios!=_OnlineServices.end(); ++ios )
 	{
 		doUnregisterService( (TServiceId)(*ios) );
@@ -284,7 +284,7 @@ list<CServiceEntry>	RegisteredServices;		/// List of all registred services
 uint16				MinBasePort = 51000;	/// Ports begin at 51000
 uint16				MaxBasePort = 52000;	/// (note: in this implementation there can be no more than 1000 services)
 
-const TServiceId	BaseSId = 128;			/// Allocated SIds begin at 128 (except for Agent Service)
+const TServiceId	BaseSId(128);			/// Allocated SIds begin at 128 (except for Agent Service)
 
 const TTime			UnregisterTimeout = 10000;	/// After 10s we remove an unregister service if every server didn't ACK the message
 
@@ -315,11 +315,11 @@ bool canAccess (const vector<CInetAddress> &addr, const CServiceEntry &entry, ve
 
 	if (accessibleAddr.empty())
 	{
-		nldebug ("service %s-%hu is not accessible by '%s'", entry.Name.c_str(), (uint16)entry.SId, vectorCInetAddressToString (addr).c_str ());
+		nldebug ("service %s-%hu is not accessible by '%s'", entry.Name.c_str(), entry.SId.get(), vectorCInetAddressToString (addr).c_str ());
 	}
 	else
 	{
-		nldebug ("service %s-%hu is accessible by '%s'", entry.Name.c_str(), (uint16)entry.SId, vectorCInetAddressToString (accessibleAddr).c_str ());
+		nldebug ("service %s-%hu is accessible by '%s'", entry.Name.c_str(), entry.SId.get(), vectorCInetAddressToString (accessibleAddr).c_str ());
 	}
 
 	return !accessibleAddr.empty ();
@@ -333,13 +333,13 @@ void displayRegisteredServices (CLog *log = InfoLog)
 		TSockId id = (*it).SockId;
 		if (id == NULL)
 		{
-			log->displayNL ("> %s-%hu %s '%s' %s %d addr", (*it).Name.c_str(), (uint16)(*it).SId, "<NULL>", "<NULL>", (*it).WaitingUnregistration?"WaitUnreg":"", (*it).Addr.size());
+			log->displayNL ("> %s-%hu %s '%s' %s %d addr", (*it).Name.c_str(), it->SId.get(), "<NULL>", "<NULL>", (*it).WaitingUnregistration?"WaitUnreg":"", (*it).Addr.size());
 			for(uint i = 0; i < (*it).Addr.size(); i++)
 				log->displayNL ("              '%s'", (*it).Addr[i].asString().c_str());
 		}
 		else
 		{
-			log->displayNL ("> %s-%hu %s '%s' %s %d addr", (*it).Name.c_str(), (uint16)(*it).SId, (*it).SockId->asString().c_str(), CallbackServer->hostAddress((*it).SockId).asString().c_str(), (*it).WaitingUnregistration?"WaitUnreg":"", (*it).Addr.size());
+			log->displayNL ("> %s-%hu %s '%s' %s %d addr", (*it).Name.c_str(), it->SId.get(), (*it).SockId->asString().c_str(), CallbackServer->hostAddress((*it).SockId).asString().c_str(), (*it).WaitingUnregistration?"WaitUnreg":"", (*it).Addr.size());
 			for(uint i = 0; i < (*it).Addr.size(); i++)
 				log->displayNL ("              '%s'", (*it).Addr[i].asString().c_str());
 		}
@@ -351,7 +351,7 @@ void displayRegisteredServices (CLog *log = InfoLog)
 list<CServiceEntry>::iterator effectivelyRemove (list<CServiceEntry>::iterator &it)
 {
 	// remove the service from the registered service list
-	nlinfo ("Effectively remove the service %s-%hu", (*it).Name.c_str(), (uint16)(*it).SId);
+	nlinfo ("Effectively remove the service %s-%hu", (*it).Name.c_str(), it->SId.get());
 	return RegisteredServices.erase (it);
 }
 
@@ -361,7 +361,7 @@ list<CServiceEntry>::iterator effectivelyRemove (list<CServiceEntry>::iterator &
  */
 list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 {
-	nldebug ("Unregister the service %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr[0].asString().c_str());
+	nldebug ("Unregister the service %s-%hu '%s'", (*it).Name.c_str(), it->SId.get(), (*it).Addr[0].asString().c_str());
 	
 	// tell to everybody that this service is unregistered
 
@@ -370,14 +370,14 @@ list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 	msgout.serial ((*it).SId);
 
 	vector<CInetAddress> accessibleAddress;
-	nlinfo ("Broadcast the Unregistration of %s-%hu to all registered services", (*it).Name.c_str(), (uint16)(*it).SId);
+	nlinfo ("Broadcast the Unregistration of %s-%hu to all registered services", (*it).Name.c_str(), it->SId.get());
 	for (list<CServiceEntry>::iterator it3 = RegisteredServices.begin(); it3 != RegisteredServices.end (); it3++)
 	{
 		if (canAccess((*it).Addr, (*it3), accessibleAddress))
 		{
 			CallbackServer->send (msgout, (*it3).SockId);
 			//CNetManager::send ("NS", msgout, (*it3).SockId);
-			nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
+			nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), it3->SId.get());
 		}
 	}
 
@@ -412,7 +412,7 @@ list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 		if (!(*it2).WaitingUnregistration)
 		{
 			(*it).WaitingUnregistrationServices.push_back ((*it2).SId);
-			res += toString((*it2).SId) + " ";
+			res += toString((*it2).SId.get()) + " ";
 		}
 	}
 
@@ -443,7 +443,7 @@ void doUnregisterService (TServiceId sid)
 			return;
 		}
 	}
-	nlwarning ("Service %hu not found", (uint16)sid);
+	nlwarning ("Service %hu not found", sid.get());
 }
 
 void doUnregisterService (TSockId from)
@@ -515,7 +515,7 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 
 	if (needRegister)
 	{
-		if (sid == 0)
+		if (sid.get() == 0)
 		{
 			// we have to find a sid
 			sid = BaseSId;
@@ -537,8 +537,8 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 				}
 				else
 				{
-					sid++;
-					if (sid == 0) // round the clock
+					sid.set(sid.get()+1);
+					if (sid.get() == 0) // round the clock
 					{
 						nlwarning ("Service identifier allocation overflow");
 						ok = false;
@@ -556,7 +556,7 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 			{
 				if ((*it).SId == sid)
 				{
-					nlwarning ("Sid %d already used by another service", sid);
+					nlwarning ("Sid %d already used by another service", sid.get());
 					ok = false;
 					break;
 				}
@@ -587,7 +587,7 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 					// we need to send all addr to all services even if the service can't access because we use the address index
 					// to know which connection comes.
 					msgout.serialCont (const_cast<vector<CInetAddress> &>(addr));
-					nlinfo ("The service is %s-%d, broadcast the Registration to everybody", name.c_str(), sid);
+					nlinfo ("The service is %s-%d, broadcast the Registration to everybody", name.c_str(), sid.get());
 
 					vector<CInetAddress> accessibleAddress;
 					for (list<CServiceEntry>::iterator it3 = RegisteredServices.begin(); it3 != RegisteredServices.end (); it3++)
@@ -597,13 +597,13 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 						{
 							CallbackServer->send (msgout, (*it3).SockId);
 							//CNetManager::send ("NS", msgout, (*it3).SockId);
-							nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
+							nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), it3->SId.get());
 						}
 					}
 				}
 
 				// set the sid only if it s ok
-				from->setAppId (sid);
+				from->setAppId (sid.get());
 			}
 			else
 			{
@@ -676,7 +676,7 @@ void checkWaitingUnregistrationServices ()
 				string res;
 				for (list<TServiceId>::iterator it2 = (*it).WaitingUnregistrationServices.begin(); it2 != (*it).WaitingUnregistrationServices.end (); it2++)
 				{
-					res += toString(*it2) + " ";
+					res += toString(it2->get()) + " ";
 				}
 				nlwarning ("Remove the service because time out occurs (service numbers %s didn't ACK)", res.c_str());
 			}
@@ -704,7 +704,7 @@ static void cbACKUnregistration (CMessage& msgin, TSockId from, CCallbackNetBase
 		{
 			for (list<TServiceId>::iterator it2 = (*it).WaitingUnregistrationServices.begin(); it2 != (*it).WaitingUnregistrationServices.end (); it2++)
 			{
-				if (*it2 == (TServiceId) from->appId())
+				if (*it2 == TServiceId(uint16(from->appId())))
 				{
 					// remove the acked service
 					(*it).WaitingUnregistrationServices.erase (it2);
@@ -916,7 +916,7 @@ static void cbRegisteredServices(CMessage& msgin, TSockId from, CCallbackNetBase
 /*
  * Helper that emulate layer5's getServiceName()
  */
-string getServiceName( uint16 sid )
+string getServiceName( TServiceId  sid )
 {
 	list<CServiceEntry>::iterator it;
 	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
@@ -933,7 +933,7 @@ string getServiceName( uint16 sid )
 /*
  * Helper that returns the first address of a service
  */
-CInetAddress getHostAddress( uint16 sid )
+CInetAddress getHostAddress( TServiceId  sid )
 {
 	list<CServiceEntry>::iterator it;
 	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
@@ -1124,9 +1124,9 @@ NLMISC_COMMAND (kill, "kill a service and send an unregister broadcast to other 
 
 	// try with number
 
-	TServiceId sid = atoi(args[0].c_str());
+	TServiceId sid(atoi(args[0].c_str()));
 
-	if(sid == 0)
+	if(sid.get() == 0)
 	{
 		// not a number, try a name
 		list<CServiceEntry>::iterator it;

@@ -93,7 +93,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD LIB32 /nologo /out:"../lib/nl3d_df.lib"
+# ADD LIB32 d3dx9.lib d3d9.lib /nologo /out:"../lib/nl3d_df.lib"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
 
@@ -645,6 +645,22 @@ SOURCE=.\3d\dru.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\effect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\effect.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\effect_context.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\effect_context.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\index_buffer.cpp
 # End Source File
 # Begin Source File
@@ -670,6 +686,22 @@ SOURCE=.\3d\material.h
 # Begin Source File
 
 SOURCE=.\3d\occlusion_query.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\pixel_program.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\pixel_program.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\program.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\program.h
 # End Source File
 # Begin Source File
 

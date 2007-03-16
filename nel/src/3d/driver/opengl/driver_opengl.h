@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.190 2006/12/06 17:21:23 boucher Exp $
+ * $Id: driver_opengl.h,v 1.190.2.1 2007/03/16 11:09:26 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,6 +303,7 @@ public:
 	virtual bool			init (uint windowIcon = 0);
 
 	virtual void			disableHardwareVertexProgram();
+	virtual void			disableHardwarePixelProgram();
 	virtual void			disableHardwareVertexArrayAGP();
 	virtual void			disableHardwareTextureShader();
 
@@ -654,6 +655,7 @@ private:
 	virtual class IVertexBufferHardGL	*createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb);
 	friend class					CTextureDrvInfosGL;
 	friend class					CVertexProgamDrvInfosGL;
+	friend class					CPixelProgamDrvInfosGL;
 
 
 private:
@@ -1125,8 +1127,10 @@ private:
 	// @{
 
 	bool			isVertexProgramSupported () const;
+	bool			isPixelProgramSupported () const;
 	bool			isVertexProgramEmulated () const;
 	bool			activeVertexProgram (CVertexProgram *program);
+	bool			activePixelProgram (CPixelProgram *program);
 	void			setConstant (uint index, float, float, float, float);
 	void			setConstant (uint index, double, double, double, double);
 	void			setConstant (uint indexStart, const NLMISC::CVector& value);
@@ -1134,9 +1138,23 @@ private:
 	void			setConstant (uint index, uint num, const float *src);	
 	void			setConstant (uint index, uint num, const double *src);
 	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);	
+	void			setConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize);
+	void			setConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize);
 	void			setConstantFog (uint index);
 	void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	bool		    supportVertexProgramDoubleSidedColor() const;
+
+	// Pixel program
+	virtual void			setPixelProgramConstant (uint index, float, float, float, float);
+	virtual void			setPixelProgramConstant (uint index, double, double, double, double);
+	virtual void			setPixelProgramConstant (uint index, const NLMISC::CVector& value);
+	virtual void			setPixelProgramConstant (uint index, const NLMISC::CVectorD& value);
+	virtual void			setPixelProgramConstant (uint index, uint num, const float *src);
+	virtual void			setPixelProgramConstant (uint index, uint num, const double *src);
+	virtual void			setPixelProgramConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);
+	virtual void			setPixelProgramConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize);
+	virtual void			setPixelProgramConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize);
+
 
 	virtual	bool			supportMADOperator() const ;
 	
@@ -1150,6 +1168,13 @@ private:
 		bool activeEXTVertexShader (CVertexProgram *program);
 	//@}
 
+	// @}
+
+	/// \name Pixel program implementation
+	// @{
+		bool activeARBPixelProgram (CPixelProgram *program);
+		bool setupARBPixelProgram (const std::string & code, GLuint id);
+	//@}
 
 
 	/// \fallback for material shaders
@@ -1164,13 +1189,25 @@ private:
 		return _VertexProgramEnabled;
 	}
 
+	bool			isPixelProgramEnabled () const
+	{
+		// Don't use glIsEnabled, too slow.
+		return _PixelProgramEnabled;
+	}
+
 	// Track state of activeVertexProgram()
 	bool							_VertexProgramEnabled;
+	// Track state of activePixelProgram()
+	bool							_PixelProgramEnabled;
+
 	// Say if last setupGlArrays() was a VertexProgram setup.
 	bool							_LastSetupGLArrayVertexProgram;
 
 	// The last vertex program that was setupped
 	NLMISC::CRefPtr<CVertexProgram> _LastSetuppedVP;
+
+	// The last pixel program that was setupped
+	NLMISC::CRefPtr<CPixelProgram> _LastSetuppedPP;
 
 	bool							_ForceDXTCCompression;
 	/// Divisor for textureResize (power).
@@ -1225,6 +1262,7 @@ private:
 			// 
 			bool   setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters);
 			bool   setupARBVertexProgram (const CVPParser::TProgram &parsedProgram, GLuint id, bool &specularWritten);
+			bool   setupARBVertexProgram (const std::string & code, GLuint id);
 			//			
 	// @}
 
@@ -1314,9 +1352,20 @@ private:
 
 };
 
+// ***************************************************************************
+class IProgramDrvInfosGL
+{
+
+public:
+	IProgramDrvInfosGL();
+	// The virtual dtor is important.
+	virtual ~IProgramDrvInfosGL(void);
+
+	bool convertInASMGL(std::string & code, bool isVertexProgram, TEffectParametersMap & params);
+};
 
 // ***************************************************************************
-class CVertexProgamDrvInfosGL : public IVertexProgramDrvInfos
+class CVertexProgamDrvInfosGL : public IVertexProgramDrvInfos, public IProgramDrvInfosGL
 {
 public:
 	// The GL Id.
@@ -1338,8 +1387,22 @@ public:
 
 	// The gl id is auto created here.
 	CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInfoPtrList it);
+
+	bool convertInASM(CVertexProgram * program, TEffectParametersMap & params);
 };
 
+// ***************************************************************************
+class CPixelProgamDrvInfosGL : public IPixelProgramDrvInfos, public IProgramDrvInfosGL
+{
+public:
+	// The GL Id.
+	GLuint					ID;
+
+	// The gl id is auto created here.
+	CPixelProgamDrvInfosGL (CDriverGL *drv, ItPixelPrgDrvInfoPtrList it);
+
+	bool convertInASM(CPixelProgram * program, TEffectParametersMap & params);
+};
 
 } // NL3D
 

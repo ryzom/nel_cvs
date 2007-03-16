@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.84 2006/12/06 17:21:15 boucher Exp $
+ * $Id: driver.h,v 1.84.2.1 2007/03/16 11:09:25 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,10 +36,12 @@
 #include "nel/misc/uv.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "texture.h"
+#include "effect.h"
 #include "shader.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
 #include "vertex_program.h"
+#include "pixel_program.h"
 #include "material.h"
 #include "nel/misc/mutex.h"
 #include "nel/3d/primitive_profile.h"
@@ -154,6 +156,7 @@ public:
 protected:
 
 	CSynchronized<TTexDrvInfoPtrMap> _SyncTexDrvInfos;
+	CSynchronized<TEffectDrvInfoPtrMap> _SyncEffectDrvInfos;
 
 	TTexDrvSharePtrList		_TexDrvShares;
 	TMatDrvInfoPtrList		_MatDrvInfos;
@@ -161,6 +164,7 @@ protected:
 	TIBDrvInfoPtrList		_IBDrvInfos;
 	TPolygonMode			_PolygonMode;
 	TVtxPrgDrvInfoPtrList	_VtxPrgDrvInfos;
+	TPixelPrgDrvInfoPtrList	_PixelPrgDrvInfos;
 	TShaderDrvInfoPtrList	_ShaderDrvInfos;
 
 	uint					_ResetCounter;
@@ -181,6 +185,7 @@ public:
 	 */
 	// @{
 	virtual void			disableHardwareVertexProgram()=0;
+	virtual void			disableHardwarePixelProgram()=0;
 	virtual void			disableHardwareVertexArrayAGP()=0;
 	virtual void			disableHardwareTextureShader()=0;
 	// @}
@@ -299,7 +304,16 @@ public:
 
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
-	
+
+	/** setup an effect, generate and upload if needed. 
+	 */
+	virtual bool			setupEffect(CEffect & effect);
+
+	/**
+	  * Activate an effect, NULL to disable the current effect.
+	  */
+	virtual bool			activeEffect(CEffect & effect);
+
 	/**
 	  * Activate a shader, NULL to disable the current shader.
 	  */
@@ -975,6 +989,12 @@ public:
 	virtual bool			isVertexProgramEmulated () const =0;
 
 
+	/**
+	  * Does the driver supports pixel programs ?
+	  */
+	virtual bool			isPixelProgramSupported () const =0;
+
+
 
 	/**
 	  * Activate / disactivate a vertex program
@@ -986,7 +1006,16 @@ public:
 	virtual bool			activeVertexProgram (CVertexProgram *program) =0;
 
 	/**
-	  * Setup constant values.
+	  * Activate / disactivate a pixel program
+	  *
+	  * \param program is a pointer on a pixel program. Can be NULL to disable the current pixel program.
+	  *
+	  * \return true if setup/unsetup successed, false else.
+	  */
+	virtual bool			activePixelProgram (CPixelProgram *program) =0;
+
+	/**
+	  * Setup vertex program constant values.
 	  */
 	virtual void			setConstant (uint index, float, float, float, float) =0;
 	virtual void			setConstant (uint index, double, double, double, double) =0;
@@ -1009,6 +1038,35 @@ public:
 	  *
 	  */
 	virtual void			setConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
+	virtual void			setConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize) =0;
+	virtual void			setConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize) =0;
+
+	/**
+	  * Setup pixel program constant values.
+	  */
+	virtual void			setPixelProgramConstant (uint index, float, float, float, float) =0;
+	virtual void			setPixelProgramConstant (uint index, double, double, double, double) =0;
+	virtual void			setPixelProgramConstant (uint index, const NLMISC::CVector& value) =0;
+	virtual void			setPixelProgramConstant (uint index, const NLMISC::CVectorD& value) =0;
+	/// setup several 4 float csts taken from the given tab
+	virtual void			setPixelProgramConstant (uint index, uint num, const float *src) =0;
+	/// setup several 4 double csts taken from the given tab
+	virtual void			setPixelProgramConstant (uint index, uint num, const double *src) =0;
+
+	/**
+	  * Setup constants with a current matrix.
+	  *
+	  *	This call must be done after setFrustum(), setupViewMatrix() or setupModelMatrix() to get correct
+	  *	results.
+	  *
+	  * \param index is the base constant index where to store the matrix. This index must be a multiple of 4.
+	  * \param matrix is the matrix id to store in the constants
+	  * \param transform is the transformation to apply to the matrix before store it in the constants.
+	  *
+	  */
+	virtual void			setPixelProgramConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
+	virtual void			setPixelProgramConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize) =0;
+	virtual void			setPixelProgramConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize) =0;
 
 	/**
 	  * Setup the constant with the fog vector. This vector must be used to get the final fog value in a vertex shader.
@@ -1223,7 +1281,9 @@ protected:
 	friend	class	ITextureDrvInfos;
 	friend	class	IMaterialDrvInfos;
 	friend	class	IVertexProgramDrvInfos;
+	friend	class	IPixelProgramDrvInfos;
 	friend	class	IShaderDrvInfos;
+	friend	class	CEffectDrvInfos;
 
 	/// remove ptr from the lists in the driver.
 	void			removeVBDrvInfoPtr(ItVBDrvInfoPtrList  vbDrvInfoIt);
@@ -1233,6 +1293,8 @@ protected:
 	void			removeMatDrvInfoPtr(ItMatDrvInfoPtrList shaderIt);
 	void			removeShaderDrvInfoPtr(ItShaderDrvInfoPtrList shaderIt);
 	void			removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt);
+	void			removePixelPrgDrvInfoPtr(ItPixelPrgDrvInfoPtrList pixelPrgDrvInfoIt);
+	void			removeEffectDrvInfoPtr(ItEffectDrvInfoPtrMap effectDrvInfoIt);
 
 private:
 	bool			_StaticMemoryToVRAM;

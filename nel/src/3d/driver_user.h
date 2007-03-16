@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * TODO: File description
  *
- * $Id: driver_user.h,v 1.54 2006/12/06 17:21:15 boucher Exp $
+ * $Id: driver_user.h,v 1.54.2.1 2007/03/16 11:09:25 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,7 @@ public:
 	// @{
 
 	virtual void			disableHardwareVertexProgram();
+	virtual void			disableHardwarePixelProgram();
 	virtual void			disableHardwareVertexArrayAGP();
 	virtual void			disableHardwareTextureShader();
 

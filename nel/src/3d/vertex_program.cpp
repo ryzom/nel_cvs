@@ -1,7 +1,7 @@
 /** \file vertex_program.cpp
  * Vertex program definition
  *
- * $Id: vertex_program.cpp,v 1.4 2005/02/22 10:19:13 besson Exp $
+ * $Id: vertex_program.cpp,v 1.4.44.1 2007/03/16 11:09:25 legallo Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,10 +29,8 @@
 
 #include "driver.h"
 
-
 namespace NL3D 
 {
-
 
 // ***************************************************************************
 IVertexProgramDrvInfos::IVertexProgramDrvInfos (IDriver *drv, ItVtxPrgDrvInfoPtrList it) 
@@ -50,9 +48,9 @@ IVertexProgramDrvInfos::~IVertexProgramDrvInfos ()
 
 
 // ***************************************************************************
-CVertexProgram::CVertexProgram (const char* program)
+CVertexProgram::CVertexProgram (const char* program/*, bool isEffectPrg*/)
+: IProgram(program/*, isEffectPrg*/)
 {
-	_Program=program;
 }
 
 
@@ -61,6 +59,18 @@ CVertexProgram::~CVertexProgram ()
 {
 	// Must kill the drv mirror of this VB.
 	_DrvInfo.kill();
+}
+
+// ***************************************************************************
+bool CVertexProgram::convertInASM(TEffectParametersMap & params)
+{
+	if(isEffectProgram())
+	{
+		return _DrvInfo->convertInASM(this, params);
+	}
+
+	nlwarning("This vertex program isn't an effect");
+	return false;
 }
 
 } // NL3D

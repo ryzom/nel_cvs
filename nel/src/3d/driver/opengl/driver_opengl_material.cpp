@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.98 2005/09/22 14:27:11 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.98.32.1 2007/03/16 11:09:26 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,8 @@
 #include "../../texture_bump.h"
 #include "../../material.h"
 
-
+using	namespace NLMISC;
+using	namespace std;
 
 namespace NL3D {
 
@@ -387,7 +388,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	// Must setup textures each frame. (need to test if touched).
 	// Must separate texture setup and texture activation in 2 "for"...
 	// because setupTexture() may disable all stage.
-	if (matShader != CMaterial::Water)
+	if (matShader != CMaterial::Water && matShader != CMaterial::Effect)
 	{	
 		for(stage=0 ; stage<inlGetNumTextStages() ; stage++)
 		{
@@ -424,6 +425,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		&& matShader != CMaterial::Cloud
 		&& matShader != CMaterial::Water
 		&& matShader != CMaterial::Specular
+		&& matShader != CMaterial::Effect
 	   )
 	{
 		for(stage=0 ; stage<inlGetNumTextStages() ; stage++)
@@ -569,9 +571,36 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		disableUserTextureMatrix();
 	}
 
+	// effect
+	if(matShader == CMaterial::Effect)
+	{
+		CEffect * effect = mat.getEffect();
+		if(effect && setupEffect(*effect))
+		{
+			uint stage;
+			for(stage=0 ;stage<(uint)inlGetNumTextStages(); stage++)
+			{
+				ITexture * text = effect->getTexture(stage);
+				if (text != NULL && !setupTexture(*text))
+					return(false);
+			}
+
+			for(stage=0; stage<inlGetNumTextStages(); stage++)
+			{
+				ITexture * text= effect->getTexture(stage);
+
+				// activate the texture, or disable texturing if NULL.
+				activateTexture(stage, text);
+
+				// If texture not NULL, Change texture env fonction.
+				//==================================================
+				setTextureEnvFunction(stage, mat);
+			}	
+		}
+	}
+
 	return true;
 }
-
 
 // ***************************************************************************
 sint			CDriverGL::beginMultiPass()

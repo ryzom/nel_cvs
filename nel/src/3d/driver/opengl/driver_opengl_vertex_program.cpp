@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.24 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.24.44.1 2007/03/16 11:09:26 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -54,7 +54,9 @@ CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInf
 			  || drv->_Extensions.ARBVertexProgram
 		     );
 
-	if (drv->_Extensions.NVVertexProgram) // NVIDIA implemntation
+	bool isProgEffect = (drv->_LastSetuppedVP && drv->_LastSetuppedVP->isEffectProgram());
+
+	if (drv->_Extensions.NVVertexProgram && !isProgEffect) // NVIDIA implemntation
 	{	
 		// Generate a program
 		nglGenProgramsNV (1, &ID);
@@ -63,10 +65,18 @@ CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInf
 	{
 		nglGenProgramsARB(1, &ID);
 	}
-	else
+	else if(!isProgEffect)
 	{
 		ID = nglGenVertexShadersEXT(1); // ATI implementation
 	}
+}
+
+// ***************************************************************************
+bool CVertexProgamDrvInfosGL::convertInASM(CVertexProgram * program, TEffectParametersMap & params)
+{
+	H_AUTO_OGL(CVertexProgamDrvInfosGL_convertInASM)
+
+	return IProgramDrvInfosGL::convertInASMGL(program->getProgram(), true, params);
 }
 
 
@@ -1401,6 +1411,14 @@ bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgra
 	output.serial(code);
 	*/
 	//
+	return setupARBVertexProgram(code, id);
+}
+
+// ***************************************************************************
+bool CDriverGL::setupARBVertexProgram (const std::string & code, GLuint id)
+{
+	H_AUTO_OGL(CDriverGL_setupARBVertexProgram)
+	
 	nglBindProgramARB( GL_VERTEX_PROGRAM_ARB, id);
 	glGetError();
 	nglProgramStringARB( GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, code.size(), code.c_str() );
@@ -1447,7 +1465,6 @@ bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgra
 }
 
 
-
 // ***************************************************************************
 bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 {
@@ -1458,22 +1475,11 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 		// Driver info
 		CVertexProgamDrvInfosGL *drvInfo;
 
+		_LastSetuppedVP = program;
+
 		// Program setuped ?
 		if (program->_DrvInfo==NULL)
 		{
-			// try to parse the program
-			CVPParser parser;
-			CVPParser::TProgram parsedProgram;
-			std::string errorOutput;
-			bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
-			if (!result)
-			{
-				nlwarning("Unable to parse a vertex program.");
-				#ifdef NL_DEBUG
-					nlerror(errorOutput.c_str());
-				#endif
-				return false;
-			}			
 			// Insert into driver list. (so it is deleted when driver is deleted).
 			ItVtxPrgDrvInfoPtrList	it= _VtxPrgDrvInfos.insert(_VtxPrgDrvInfos.end());
 
@@ -1482,13 +1488,52 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 			// Set the pointer
 			program->_DrvInfo=drvInfo;
 
-			if (!setupARBVertexProgram(parsedProgram, drvInfo->ID, drvInfo->SpecularWritten))
+			bool result;
+			if(!program->isEffectProgram())
+			{
+				CVPParser parser;
+				CVPParser::TProgram parsedProgram;
+
+				// try to parse the program
+				std::string errorOutput;
+				bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
+				if (!result)
+				{
+					nlwarning("Unable to parse a vertex program.");
+					#ifdef NL_DEBUG
+						nlerror(errorOutput.c_str());
+					#endif
+					return false;
+				}
+
+				result = setupARBVertexProgram(parsedProgram, drvInfo->ID, drvInfo->SpecularWritten);
+			}
+			else
+			{
+				std::string asmProgram;
+
+				string errorOutput;
+				if(!program->getEffect()->parseProgramParameters(CProgramTypeParameter::VertexProgram, errorOutput))
+				{
+					nlwarning("Unable to parse the effect file");
+					#ifdef NL_DEBUG
+						nlerror(errorOutput.c_str());
+					#endif
+
+					return false;
+				}
+				asmProgram = program->getProgram();
+
+				result = setupARBVertexProgram(asmProgram, drvInfo->ID);
+			}
+
+			if(!result)
 			{
 				delete drvInfo;
 				program->_DrvInfo = NULL;
 				_VtxPrgDrvInfos.erase(it);
 				return false;
-			}			
+			}
 		}
 		else
 		{
@@ -1506,7 +1551,7 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 		{
 			glDisable( GL_COLOR_SUM_ARB ); // no specular written
 		}		
-		_LastSetuppedVP = program;
+		//_LastSetuppedVP = program;
 	}
 	else
 	{		
@@ -1595,45 +1640,72 @@ bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
 bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 {
 	H_AUTO_OGL(CDriverGL_activeVertexProgram)
-	// Extension here ?
-	if (_Extensions.NVVertexProgram)
+
+	if(program)
 	{
-		return activeNVVertexProgram(program);
+		bool isProgEffect = program->isEffectProgram();
+
+		// Extension here ?
+		if (_Extensions.NVVertexProgram && !isProgEffect)
+		{
+			return activeNVVertexProgram(program);
+		}
+		else if (_Extensions.ARBVertexProgram)
+		{
+			return activeARBVertexProgram(program);
+		}
+		else if (_Extensions.EXTVertexShader && !isProgEffect)
+		{
+			return activeEXTVertexShader(program);		
+		}
 	}
-	else if (_Extensions.ARBVertexProgram)
+	else
 	{
-		return activeARBVertexProgram(program);
-	}
-	else if (_Extensions.EXTVertexShader)
-	{
-		return activeEXTVertexShader(program);		
+		if(_Extensions.NVVertexProgram)
+			activeNVVertexProgram(NULL);
+		if(_Extensions.ARBVertexProgram)
+			activeARBVertexProgram(NULL);
+		if (_Extensions.EXTVertexShader)
+			activeEXTVertexShader(NULL);		
+
+		return true;
 	}
 
 	// Can't do anything
 	return false;
 }
 
-
 // ***************************************************************************
 
 void CDriverGL::setConstant (uint index, float f0, float f1, float f2, float f3)
 {
 	H_AUTO_OGL(CDriverGL_setConstant)
-	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
+	if(isProgEffect)
 	{
-		// Setup constant
-		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, f0, f1, f2, f3);
+		if (_Extensions.ARBVertexProgram)
+			nglProgramLocalParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, f0, f1, f2, f3);
 	}
-	else if (_Extensions.ARBVertexProgram)
+	else
 	{
-		nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, f0, f1, f2, f3);
+		// Vertex program exist ?
+		if (_Extensions.NVVertexProgram)
+		{
+			// Setup constant
+			nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, f0, f1, f2, f3);
+		}
+		else if (_Extensions.ARBVertexProgram)
+		{
+			nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, f0, f1, f2, f3);
+		}
+		else if (_Extensions.EXTVertexShader)
+		{
+			float datas[] = { f0, f1, f2, f3 };
+			nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
+		}
 	}
-	else if (_Extensions.EXTVertexShader)
-	{
-		float datas[] = { f0, f1, f2, f3 };
-		nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
-	}		 
 }
 
 
@@ -1642,20 +1714,31 @@ void CDriverGL::setConstant (uint index, float f0, float f1, float f2, float f3)
 void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double d3)
 {
 	H_AUTO_OGL(CDriverGL_setConstant)
-	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
+	if(isProgEffect)
 	{
-		// Setup constant
-		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, d0, d1, d2, d3);
+		if (_Extensions.ARBVertexProgram)
+			nglProgramLocalParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, d0, d1, d2, d3);
 	}
-	else if (_Extensions.ARBVertexProgram)
+	else
 	{
-		nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, d0, d1, d2, d3);
-	}
-	else if (_Extensions.EXTVertexShader)
-	{
-		double datas[] = { d0, d1, d2, d3 };
-		nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
+		// Vertex program exist ?
+		if (_Extensions.NVVertexProgram)
+		{
+			// Setup constant
+			nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, d0, d1, d2, d3);
+		}
+		else if (_Extensions.ARBVertexProgram)
+		{
+			nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, d0, d1, d2, d3);
+		}
+		else if (_Extensions.EXTVertexShader)
+		{
+			double datas[] = { d0, d1, d2, d3 };
+			nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
+		}
 	}
 }
 
@@ -1665,20 +1748,31 @@ void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double
 void CDriverGL::setConstant (uint index, const NLMISC::CVector& value)
 {
 	H_AUTO_OGL(CDriverGL_setConstant)
-	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
+	if(isProgEffect)
 	{
-		// Setup constant
-		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);	
+		if (_Extensions.ARBVertexProgram)
+			nglProgramLocalParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
 	}
-	else if (_Extensions.ARBVertexProgram)
+	else
 	{
-		nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
-	}
-	else if (_Extensions.EXTVertexShader)
-	{
-		float datas[] = { value.x, value.y, value.z, 0 };
-		nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
+		// Vertex program exist ?
+		if (_Extensions.NVVertexProgram)
+		{
+			// Setup constant
+			nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);	
+		}
+		else if (_Extensions.ARBVertexProgram)
+		{
+			nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
+		}
+		else if (_Extensions.EXTVertexShader)
+		{
+			float datas[] = { value.x, value.y, value.z, 0 };
+			nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
+		}
 	}
 }
 
@@ -1688,20 +1782,31 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVector& value)
 void CDriverGL::setConstant (uint index, const NLMISC::CVectorD& value)
 {
 	H_AUTO_OGL(CDriverGL_setConstant)
-	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
+	if(isProgEffect)
 	{
-		// Setup constant
-		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);
+		if (_Extensions.ARBVertexProgram)
+			nglProgramLocalParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
 	}
-	else if (_Extensions.ARBVertexProgram)
+	else
 	{
-		nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
-	}
-	else if (_Extensions.EXTVertexShader)
-	{
-		double datas[] = { value.x, value.y, value.z, 0 };
-		nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
+		// Vertex program exist ?
+		if (_Extensions.NVVertexProgram)
+		{
+			// Setup constant
+			nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);
+		}
+		else if (_Extensions.ARBVertexProgram)
+		{
+			nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
+		}
+		else if (_Extensions.EXTVertexShader)
+		{
+			double datas[] = { value.x, value.y, value.z, 0 };
+			nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
+		}
 	}
 }
 
@@ -1710,48 +1815,80 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVectorD& value)
 void	CDriverGL::setConstant (uint index, uint num, const float *src)
 {
 	H_AUTO_OGL(CDriverGL_setConstant)
-	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
+	if(isProgEffect)
 	{
-		nglProgramParameters4fvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
-	}
-	else if (_Extensions.ARBVertexProgram)
-	{
-		for(uint k = 0; k < num; ++k)
-		{					
-			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
+		if (_Extensions.ARBVertexProgram)
+		{
+			for(uint k = 0; k < num; ++k)
+			{					
+				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
+			}
 		}
 	}
-	else if (_Extensions.EXTVertexShader)
+	else
 	{
-		for(uint k = 0; k < num; ++k)
-		{					
-			nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_FLOAT, (void *) (src + 4 * k));
+		// Vertex program exist ?
+		if (_Extensions.NVVertexProgram)
+		{
+			nglProgramParameters4fvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
 		}
-	}	
+		else if (_Extensions.ARBVertexProgram)
+		{
+			for(uint k = 0; k < num; ++k)
+			{					
+				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
+			}
+		}
+		else if (_Extensions.EXTVertexShader)
+		{
+			for(uint k = 0; k < num; ++k)
+			{					
+				nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_FLOAT, (void *) (src + 4 * k));
+			}
+		}
+	}
 }
 
 // ***************************************************************************
 void	CDriverGL::setConstant (uint index, uint num, const double *src)
 {
 	H_AUTO_OGL(CDriverGL_setConstant)
-	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
+	if(isProgEffect)
 	{
-		nglProgramParameters4dvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
-	}
-	else if (_Extensions.ARBVertexProgram)
-	{
-		for(uint k = 0; k < num; ++k)
-		{					
-			nglProgramEnvParameter4dvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
+		if (_Extensions.ARBVertexProgram)
+		{
+			for(uint k = 0; k < num; ++k)
+			{					
+				nglProgramLocalParameter4dvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
+			}
 		}
 	}
-	else if (_Extensions.EXTVertexShader)
+	else
 	{
-		for(uint k = 0; k < num; ++k)
-		{					
-			nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_DOUBLE, (void *) (src + 4 * k));
+		// Vertex program exist ?
+		if (_Extensions.NVVertexProgram)
+		{
+			nglProgramParameters4dvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
+		}
+		else if (_Extensions.ARBVertexProgram)
+		{
+			for(uint k = 0; k < num; ++k)
+			{					
+				nglProgramEnvParameter4dvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
+			}
+		}
+		else if (_Extensions.EXTVertexShader)
+		{
+			for(uint k = 0; k < num; ++k)
+			{					
+				nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_DOUBLE, (void *) (src + 4 * k));
+			}
 		}
 	}
 }
@@ -1782,8 +1919,11 @@ const uint CDriverGL::GLTransform[IDriver::NumTransform]=
 void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform)
 {
 	H_AUTO_OGL(CDriverGL_setConstantMatrix)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
 	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
 		// First, ensure that the render setup is correclty setuped.
 		refreshRenderSetup();
@@ -1836,21 +1976,93 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 		mat.transpose();
 		float matDatas[16];
 		mat.get(matDatas);
-		if (_Extensions.ARBVertexProgram)
-		{		
-			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index, matDatas);
-			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 1, matDatas + 4);
-			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 2, matDatas + 8);
-			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 3, matDatas + 12);
+
+		if(isProgEffect)
+		{
+			if (_Extensions.ARBVertexProgram)
+			{		
+				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index, matDatas);
+				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 1, matDatas + 4);
+				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 2, matDatas + 8);
+				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 3, matDatas + 12);
+			}
 		}
 		else
 		{
-			nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, matDatas);
-			nglSetInvariantEXT(_EVSConstantHandle + index + 1, GL_FLOAT, matDatas + 4);
-			nglSetInvariantEXT(_EVSConstantHandle + index + 2, GL_FLOAT, matDatas + 8);
-			nglSetInvariantEXT(_EVSConstantHandle + index + 3, GL_FLOAT, matDatas + 12);
+			if (_Extensions.ARBVertexProgram)
+			{		
+				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index, matDatas);
+				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 1, matDatas + 4);
+				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 2, matDatas + 8);
+				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 3, matDatas + 12);
+			}
+			else
+			{
+				nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, matDatas);
+				nglSetInvariantEXT(_EVSConstantHandle + index + 1, GL_FLOAT, matDatas + 4);
+				nglSetInvariantEXT(_EVSConstantHandle + index + 2, GL_FLOAT, matDatas + 8);
+				nglSetInvariantEXT(_EVSConstantHandle + index + 3, GL_FLOAT, matDatas + 12);
+			}
 		}
 	}			 
+}
+
+// ***************************************************************************
+void CDriverGL::setConstantMatrix(uint index, const float *src, uint rowSize, uint columnSize)
+{
+	H_AUTO_OGL(CDriverGL_setConstantMatrix)
+
+	uint quadruplesNb = (int)(rowSize/4) + (fmod(rowSize, 4)!=0);
+	uint eltId;
+	float values[4];
+
+	for(uint c=0; c<columnSize; c++)
+	{
+		eltId = c*rowSize;
+		for(uint q=0; q<quadruplesNb; q++)
+		{
+			for(uint i=0; i<4; i++)
+			{
+				if(eltId < (c+1)*rowSize)
+					values[i] = src[eltId];
+				else
+					values[i] = 0.0f;
+
+				eltId++;
+			}
+
+			setConstant(index+quadruplesNb*c+q, 1, values);
+		}
+	}
+}
+
+// ***************************************************************************
+void CDriverGL::setConstantMatrix(uint index, const double *src, uint rowSize, uint columnSize)
+{
+	H_AUTO_OGL(CDriverGL_setConstantMatrix)
+
+	uint quadruplesNb = (int)(rowSize/4) + (fmod(rowSize, 4)!=0);
+	uint eltId;
+	double values[4];
+
+	for(uint c=0; c<columnSize; c++)
+	{
+		eltId = c*rowSize;
+		for(uint q=0; q<quadruplesNb; q++)
+		{
+			for(uint i=0; i<4; i++)
+			{
+				if(eltId < (c+1)*rowSize)
+					values[i] = src[eltId];
+				else
+					values[i] = 0.0f;
+
+				eltId++;
+			}
+
+			setConstant(index+quadruplesNb*c+q, 1, values);
+		}
+	}
 }
 
 // ***************************************************************************
@@ -1867,8 +2079,11 @@ void CDriverGL::setConstantFog (uint index)
 void CDriverGL::enableVertexProgramDoubleSidedColor(bool doubleSided)
 {
 	H_AUTO_OGL(CDriverGL_enableVertexProgramDoubleSidedColor)
+
+	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
+
 	// Vertex program exist ?
-	if (_Extensions.NVVertexProgram)
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
 		// change mode (not cached because supposed to be rare)
 		if(doubleSided)

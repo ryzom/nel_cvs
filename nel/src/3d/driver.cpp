@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.97 2005/07/22 12:20:51 legallo Exp $
+ * $Id: driver.cpp,v 1.97.34.1 2007/03/16 11:09:25 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NL3D
 const uint32 IDriver::InterfaceVersion = 0x59; // hulud
 
 // ***************************************************************************
-IDriver::IDriver() : _SyncTexDrvInfos( "IDriver::_SyncTexDrvInfos" )
+IDriver::IDriver() : _SyncTexDrvInfos( "IDriver::_SyncTexDrvInfos" ),  _SyncEffectDrvInfos( "IDriver::_SyncEffectDrvInfos" )
 {
 	_PolygonMode= Filled;
 	_StaticMemoryToVRAM=false;
@@ -96,6 +96,20 @@ bool		IDriver::release(void)
 
 		// must be empty, because precedent pass should have deleted all.
 		nlassert(rTexDrvInfos.empty());
+	}
+
+	// Release refptr of EffectDrvInfos. 
+	{
+		CSynchronized<TEffectDrvInfoPtrMap>::CAccessor access(&_SyncEffectDrvInfos);
+		TEffectDrvInfoPtrMap &rEffectDrvInfos = access.value();
+
+		ItEffectDrvInfoPtrMap itEffect;
+		while((itEffect=rEffectDrvInfos.begin()) !=rEffectDrvInfos.end())
+		{
+			delete itEffect->second;
+		}
+
+		rEffectDrvInfos.clear();
 	}
 
 	// Release material drv.
@@ -267,6 +281,22 @@ void			IDriver::removeShaderDrvInfoPtr(ItShaderDrvInfoPtrList shaderIt)
 void			IDriver::removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt)
 {
 	_VtxPrgDrvInfos.erase(vtxPrgDrvInfoIt);
+}
+// ***************************************************************************
+void			IDriver::removePixelPrgDrvInfoPtr(ItPixelPrgDrvInfoPtrList pixelPrgDrvInfoIt)
+{
+	_PixelPrgDrvInfos.erase(pixelPrgDrvInfoIt);
+}
+
+// ***************************************************************************
+void			IDriver::removeEffectDrvInfoPtr(ItEffectDrvInfoPtrMap effectDrvInfoIt)
+{
+	/*
+	CSynchronized<TEffectDrvInfoPtrMap>::CAccessor access(&_SyncEffectDrvInfos);
+	TEffectDrvInfoPtrMap &rEffectDrvInfos = access.value();
+
+	rEffectDrvInfos.erase(effectDrvInfoIt);
+	*/
 }
 
 // ***************************************************************************
@@ -469,6 +499,58 @@ void IDriver::profileTextureUsage(std::vector<std::string> &result)
 	// append the total
 	result.push_back(toString("**** Total ****"));
 	result.push_back(toString("Total: %d Ko", totalSize/1024));
+}
+
+// ***************************************************************************
+
+bool IDriver::setupEffect(CEffect & effect)
+{	
+	// get the shared Name
+	std::string	name = effect.getName();
+	
+	// insert or get the CEffectDrvInfo.
+	{
+		CSynchronized<TEffectDrvInfoPtrMap>::CAccessor access(&_SyncEffectDrvInfos);
+		TEffectDrvInfoPtrMap & rEffectDrvInfos = access.value();
+
+		ItEffectDrvInfoPtrMap itEffect = rEffectDrvInfos.find(name);
+
+		// effect not found?
+		if(itEffect==rEffectDrvInfos.end())
+		{
+			// insert into driver map. (so it is deleted when driver is deleted).
+			itEffect = (rEffectDrvInfos.insert(make_pair(name, (CEffectDrvInfos*)NULL))).first;
+			// create and set iterator, for future deletion.
+			CEffectDrvInfos * effectDrvInfos = new CEffectDrvInfos(this, itEffect);
+			effect.setEffectDriverInfos(effectDrvInfos);
+			itEffect->second = effectDrvInfos;
+		}
+		else
+		{
+			effect.setEffectDriverInfos(itEffect->second);
+		}
+	}
+
+	return activeEffect(effect);
+}
+
+// ***************************************************************************
+
+
+bool IDriver::activeEffect(CEffect & effect)
+{		
+	if(!activeVertexProgram(effect.getEffectDrvInfos()->getVertexProgram()))
+	{
+		nlwarning("Impossible to activate the effect vertex program");
+		return false;
+	}
+	if(!activePixelProgram(effect.getEffectDrvInfos()->getPixelProgram()))
+	{
+		nlwarning("Impossible to activate the effect pixel program");
+		return false;
+	}
+
+	return effect.setup();
 }
 
 // ***************************************************************************

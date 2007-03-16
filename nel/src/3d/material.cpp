@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.53 2005/02/22 10:19:10 besson Exp $
+ * $Id: material.cpp,v 1.53.44.1 2007/03/16 11:09:25 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ CMaterial::CMaterial()
 	_AlphaTestThreshold= 0.5f;	
 	_TexCoordGenMode= 0;
 	_LightMapsMulx2= false;
+	_Effect = NULL;
 }
 
 // ***************************************************************************
@@ -630,6 +631,22 @@ bool CMaterial::isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const
 			return false;
 	}
 	return false;
+}
+
+// ***************************************************************************
+void CMaterial::setEffect(CEffect * effect)
+{
+	if (_ShaderType==CMaterial::Effect)
+	{
+		_Effect = effect;
+		//_Touched|=IDRV_TOUCHED_LIGHTMAP; ????
+	}
+}
+
+// ***************************************************************************
+CEffect * CMaterial::getEffect()
+{
+	return _Effect;
 }
 
 }

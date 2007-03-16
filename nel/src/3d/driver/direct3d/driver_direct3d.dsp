@@ -297,6 +297,10 @@ SOURCE=.\driver_direct3d_matrix.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\driver_direct3d_pixel_program.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\driver_direct3d_profile.cpp
 # End Source File
 # Begin Source File

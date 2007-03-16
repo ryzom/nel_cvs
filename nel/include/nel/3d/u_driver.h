@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * TODO: File description
  *
- * $Id: u_driver.h,v 1.58 2006/12/06 17:21:01 boucher Exp $
+ * $Id: u_driver.h,v 1.58.2.1 2007/03/16 11:09:26 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,7 @@ public:
 	 */
 	// @{
 	virtual void			disableHardwareVertexProgram()=0;
+	virtual void			disableHardwarePixelProgram()=0;
 	virtual void			disableHardwareVertexArrayAGP()=0;
 	virtual void			disableHardwareTextureShader()=0;
 	// @}

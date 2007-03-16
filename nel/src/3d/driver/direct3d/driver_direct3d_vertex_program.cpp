@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex_program.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex_program.cpp,v 1.6 2004/10/19 12:46:08 vizerie Exp $
+ * $Id: driver_direct3d_vertex_program.cpp,v 1.6.60.1 2007/03/16 11:09:25 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -37,19 +37,27 @@ namespace NL3D
 
 // ***************************************************************************
 
-CVertexProgamDrvInfosD3D::CVertexProgamDrvInfosD3D(IDriver *drv, ItVtxPrgDrvInfoPtrList it) : IVertexProgramDrvInfos (drv, it)
+CVertexProgramDrvInfosD3D::CVertexProgramDrvInfosD3D(IDriver *drv, ItVtxPrgDrvInfoPtrList it) : IVertexProgramDrvInfos (drv, it)
 {
-	H_AUTO_D3D(CVertexProgamDrvInfosD3D_CVertexProgamDrvInfosD3D)
+	H_AUTO_D3D(CVertexProgramDrvInfosD3D_CVertexProgamDrvInfosD3D)
 	Shader = NULL;
 }
 
 // ***************************************************************************
 
-CVertexProgamDrvInfosD3D::~CVertexProgamDrvInfosD3D()
+CVertexProgramDrvInfosD3D::~CVertexProgramDrvInfosD3D()
 {
-	H_AUTO_D3D(CVertexProgamDrvInfosD3D_CVertexProgamDrvInfosD3DDtor)
+	H_AUTO_D3D(CVertexProgramDrvInfosD3D_CVertexProgramDrvInfosD3DDtor)
 	if (Shader)
 		Shader->Release();
+}
+
+// ***************************************************************************
+bool CVertexProgramDrvInfosD3D::convertInASM(CVertexProgram * program, TEffectParametersMap & params)
+{
+	H_AUTO_D3D(CVertexProgramDrvInfosD3D_convertInASM)
+
+	return IProgramDrvInfosD3D::convertInASMD3D(program->getProgram(), "vs_1_1", params);
 }
 
 // ***************************************************************************
@@ -286,62 +294,78 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 		if (program->_DrvInfo==NULL)
 		{
 			_VtxPrgDrvInfos.push_front (NULL);
-			ItVtxPrgDrvInfoPtrList itTex = _VtxPrgDrvInfos.begin();
-			*itTex = new CVertexProgamDrvInfosD3D(this, itTex);
+			ItVtxPrgDrvInfoPtrList itVtx = _VtxPrgDrvInfos.begin();
+			*itVtx = new CVertexProgramDrvInfosD3D(this, itVtx);
 
 			// Create a driver info structure
-			program->_DrvInfo = *itTex;
+			program->_DrvInfo = *itVtx;
 
 			/** Check with our parser if the program will works with other implemented extensions, too. (EXT_vertex_shader ..).
 			  * There are some incompatibilities.
 			  */
-			CVPParser parser;
-			CVPParser::TProgram parsedProgram;
-			std::string errorOutput;
-			bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
-			if (!result)
-			{
-				nlwarning("Unable to parse a vertex program :");
-				nlwarning(errorOutput.c_str());
-				#ifdef NL_DEBUG_D3D
-					nlassert(0);
-				#endif // NL_DEBUG_D3D
-				return false;
-			}
-
-			// tmp fix for Radeon 8500/9000/9200
-			// Currently they hang when PaletteSkin / SkinWeight are present in the vertex declaration, but not used
-			// so disable them in the vertex declaration
-			// We don't use these component in vertex programs currently..
-			#ifdef NL_DEBUG
-				for(uint k = 0; k < parsedProgram.size(); ++k)
-				{
-					for(uint l = 0; l < parsedProgram[k].getNumUsedSrc(); ++l)
-					{
-						const CVPOperand &op = parsedProgram[k].getSrc(l);
-						if (op.Type == CVPOperand::InputRegister)
-						{
-							nlassert(op.Value.InputRegisterValue != CVPOperand::IWeight);
-							nlassert(op.Value.InputRegisterValue != CVPOperand::IPaletteSkin);
-						}				
-					}
-				}
-			#endif
-
-			// Dump the vertex program
 			std::string dest;
-			dump(parsedProgram, dest);
-#ifdef NL_DEBUG_D3D
-			nlinfo("Assemble Vertex Shader : ");
-			int lineBegin = 0;
-			int lineEnd;
-			while ((lineEnd = dest.find('\n', lineBegin)) != string::npos)
+			if(!program->isEffectProgram())
 			{
+				CVPParser parser;
+				CVPParser::TProgram parsedProgram;
+				std::string errorOutput;
+				bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
+				if (!result)
+				{
+					nlwarning("Unable to parse a vertex program :");
+					nlwarning(errorOutput.c_str());
+					#ifdef NL_DEBUG_D3D
+						nlassert(0);
+					#endif // NL_DEBUG_D3D
+					return false;
+				}
+
+				// tmp fix for Radeon 8500/9000/9200
+				// Currently they hang when PaletteSkin / SkinWeight are present in the vertex declaration, but not used
+				// so disable them in the vertex declaration
+				// We don't use these component in vertex programs currently..
+				#ifdef NL_DEBUG
+					for(uint k = 0; k < parsedProgram.size(); ++k)
+					{
+						for(uint l = 0; l < parsedProgram[k].getNumUsedSrc(); ++l)
+						{
+							const CVPOperand &op = parsedProgram[k].getSrc(l);
+							if (op.Type == CVPOperand::InputRegister)
+							{
+								nlassert(op.Value.InputRegisterValue != CVPOperand::IWeight);
+								nlassert(op.Value.InputRegisterValue != CVPOperand::IPaletteSkin);
+							}				
+						}
+					}
+				#endif
+
+				// Dump the vertex program
+				dump(parsedProgram, dest);
+#ifdef NL_DEBUG_D3D
+				nlinfo("Assemble Vertex Shader : ");
+				int lineBegin = 0;
+				int lineEnd;
+				while ((lineEnd = dest.find('\n', lineBegin)) != string::npos)
+				{
+					nlinfo(dest.substr (lineBegin, lineEnd-lineBegin).c_str());
+					lineBegin = lineEnd+1;
+				}
 				nlinfo(dest.substr (lineBegin, lineEnd-lineBegin).c_str());
-				lineBegin = lineEnd+1;
-			}
-			nlinfo(dest.substr (lineBegin, lineEnd-lineBegin).c_str());
 #endif // NL_DEBUG_D3D
+			}
+			else
+			{
+				string errorOutput;
+				if(!program->getEffect()->parseProgramParameters(CProgramTypeParameter::VertexProgram, errorOutput))
+				{
+					nlwarning("Unable to parse the effect file");
+					#ifdef NL_DEBUG
+						nlerror(errorOutput.c_str());
+					#endif
+					return false;
+				}
+				dest = 	program->getProgram();
+			}
 
 			LPD3DXBUFFER pShader;
 			LPD3DXBUFFER pErrorMsgs;
@@ -362,7 +386,7 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 	// Set the vertex program
 	if (program)
 	{
-		CVertexProgamDrvInfosD3D *info = static_cast<CVertexProgamDrvInfosD3D *>((IVertexProgramDrvInfos*)program->_DrvInfo);
+		CVertexProgramDrvInfosD3D *info = static_cast<CVertexProgramDrvInfosD3D *>((IVertexProgramDrvInfos*)program->_DrvInfo);
 		setVertexProgram (info->Shader, program);
 
 		/* D3DRS_FOGSTART and D3DRS_FOGEND must be set with [1, 0] else the fog doesn't work properly on VertexShader and non-VertexShader objects 
@@ -515,6 +539,8 @@ void CDriverD3D::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver
 		break;
 	}
 
+	D3DXMatrixTranspose(matPtr, matPtr);//TEMP
+
 	if (transform != IDriver::Identity)
 	{
 		mat = *matPtr;
@@ -541,7 +567,64 @@ void CDriverD3D::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver
 }
 
 // ***************************************************************************
+void CDriverD3D::setConstantMatrix(uint index, const float *src, uint rowSize, uint columnSize)
+{
+	H_AUTO_D3D(CDriverD3D_setConstantMatrix)
 
+	uint quadruplesNb = (int)(columnSize/4) + (fmod(columnSize, 4)!=0);
+	uint eltId;
+	float values[4];
+
+	for(uint r=0; r<rowSize; r++)
+	{
+		eltId = r;
+		for(uint q=0; q<quadruplesNb; q++)
+		{
+			for(uint i=0; i<4; i++)
+			{
+				if(eltId < rowSize*columnSize)
+					values[i] = src[eltId];
+				else
+					values[i] = 0.0f;
+
+				eltId += rowSize;
+			}
+
+			setConstant(index+quadruplesNb*r+q, 1, values);
+		}
+	}
+}
+
+// ***************************************************************************
+void CDriverD3D::setConstantMatrix(uint index, const double *src, uint rowSize, uint columnSize)
+{
+	H_AUTO_D3D(CDriverD3D_setConstantMatrix)
+
+	uint quadruplesNb = (int)(columnSize/4) + (fmod(columnSize, 4)!=0);
+	uint eltId;
+	double values[4];
+
+	for(uint r=0; r<rowSize; r++)
+	{
+		eltId = r;
+		for(uint q=0; q<quadruplesNb; q++)
+		{
+			for(uint i=0; i<4; i++)
+			{
+				if(eltId < rowSize*columnSize)
+					values[i] = src[eltId];
+				else
+					values[i] = 0.0;
+
+				eltId += rowSize;
+			}
+
+			setConstant(index+quadruplesNb*r+q, 1, values);
+		}
+	}
+}
+
+// ***************************************************************************
 void CDriverD3D::setConstantFog (uint index)
 {
 	H_AUTO_D3D(CDriverD3D_setConstantFog )
@@ -571,7 +654,7 @@ bool CDriverD3D::supportVertexProgramDoubleSidedColor() const
 
 void CDriverD3D::disableHardwareVertexProgram()
 {
-	H_AUTO_D3D(CDriverD3D_disableHardwareVertexProgram)
+	H_AUTO_D3D(CDriverD3D_disableHardwarePixelProgram)
 	_DisableHardwareVertexProgram = true;
 	_VertexProgram = false;
 }

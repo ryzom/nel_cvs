@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * TODO: File description
  *
- * $Id: material.h,v 1.32 2005/02/22 10:19:10 besson Exp $
+ * $Id: material.h,v 1.32.44.1 2007/03/16 11:09:25 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/matrix.h"
 #include "texture.h"
 #include "shader.h"
+#include "effect.h"
 
 #include <memory>
 
@@ -192,7 +193,9 @@ public:
 							  PerPixelLightingNoSpec,
 							  Cloud,
 							  Water,
-							  shaderCount};
+							  shaderCount,
+							  Effect,
+							};
 
 	/// \name Texture Env Modes.
 	// @{
@@ -538,6 +541,17 @@ public:
 	  */
 	bool			isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const;
 
+
+	/**
+	 * set an effect:
+	 */ 
+	void 			setEffect(CEffect * effect);
+
+	/**
+	* set current effect
+	*/ 
+	CEffect * 		getEffect();
+
 // **********************************
 // Private part.
 public:
@@ -739,7 +753,7 @@ public:
 	void					clearTouched(uint32 flag) { _Touched&=~flag; }
 
 
-
+	CSmartPtr<CEffect>		_Effect;
 };
 
 } // NL3D

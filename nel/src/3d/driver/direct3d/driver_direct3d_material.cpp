@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.25 2006/05/31 12:03:14 boucher Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.25.10.1 2007/03/16 11:09:25 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -314,6 +314,7 @@ static inline void setShaderParam(CMaterialDrvInfosD3D *pShader, uint index, flo
 bool CDriverD3D::setupMaterial(CMaterial &mat)
 {				
 	H_AUTO_D3D(CDriverD3D_setupMaterial)
+	
 	CMaterialDrvInfosD3D*	pShader;
 		
 	// Stats
@@ -413,10 +414,10 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					pShader->FXCache = new CFXCache;
 				}		
 			}
-			/* Exception: if only Textures are modified in the material, no need to "Bind OpenGL States", or even to test
-				for change, because textures are activated alone, see below.
-				No problem with delete/new problem (see below), because in this case, IDRV_TOUCHED_ALL is set (see above).
-			*/
+			// Exception: if only Textures are modified in the material, no need to "Bind OpenGL States", or even to test
+			//	for change, because textures are activated alone, see below.
+			//	No problem with delete/new problem (see below), because in this case, IDRV_TOUCHED_ALL is set (see above).
+			
 			// If any flag is set (but a flag of texture).
 			if(touched & (~_MaterialAllTextureTouchedFlag))
 			{
@@ -637,10 +638,9 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				}
 
 				// Since modified, must rebind all D3D states. And do this also for the delete/new problem.
-				/* If an old material is deleted, _CurrentMaterial is invalid. But this is grave only if a new 
-					material is created, with the same pointer (bad luck). Since an newly allocated material always 
-					pass here before use, we are sure to avoid any problems.
-				*/
+				// If an old material is deleted, _CurrentMaterial is invalid. But this is grave only if a new 
+				//	material is created, with the same pointer (bad luck). Since an newly allocated material always 
+				//	pass here before use, we are sure to avoid any problems.
 				_CurrentMaterial= NULL;
 			}
 	
@@ -943,7 +943,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				// No shader
 				activeShader (NULL);
 
-				/* If unlighted trick is needed, set the shader later */
+				// If unlighted trick is needed, set the shader later 
 				if (!pShader->NeedsConstantForDiffuse && _PixelShader)
 					setPixelShader (pShader->PixelShader);				
 			}
@@ -1299,6 +1299,29 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				}
 			}
 			// CMaterial::Water
+			case CMaterial::Effect:
+			{
+				CEffect * effect = mat.getEffect();
+				if(effect && setupEffect(*effect))
+				{
+					uint stage;
+					for(stage=0 ;stage<(uint)maxTexture; stage++)
+					{
+						ITexture * text = effect->getTexture(stage);
+
+						// activate the texture, or disable texturing if NULL.
+						if(text && setupTexture(*text))
+						{
+							setTexture(stage, text);
+						}
+						else
+						{
+							setTexture(stage, (LPDIRECT3DBASETEXTURE9)NULL);
+						}
+					}
+				}
+			}
+			// CMaterial::Effect
 		}
 
 		// New material setuped

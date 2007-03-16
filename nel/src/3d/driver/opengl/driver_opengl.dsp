@@ -106,7 +106,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_opengl_win_df.dll" /pdbtype:sept /libpath:"../../../../lib" /libpath:"../../../../nel/lib"
+# ADD LINK32 cg.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_opengl_win_df.dll" /pdbtype:sept /libpath:"../../../../lib" /libpath:"../../../../nel/lib"
 
 !ELSEIF  "$(CFG)" == "driver_opengl - Win32 DebugInstrument"
 
@@ -197,6 +197,10 @@ SOURCE=.\driver_opengl_material.cpp
 # Begin Source File
 
 SOURCE=.\driver_opengl_matrix.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\driver_opengl_pixel_program.cpp
 # End Source File
 # Begin Source File
 

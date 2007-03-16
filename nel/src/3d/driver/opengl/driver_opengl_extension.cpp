@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.53 2006/12/06 17:21:23 boucher Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.53.2.1 2007/03/16 11:09:26 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1285,6 +1285,17 @@ void	registerGlExtensions(CGlExtensions &ext)
 		ext.NVVertexProgram = false;
 		ext.EXTVertexShader = false;
 		ext.ARBVertexProgram = false;
+	}
+
+	// Check pixel program
+	// Disable feature ???
+	if(!ext.DisableHardwarePixelProgram)
+	{		
+		ext.ARBFragmentProgram= setupARBFragmentProgram(glext);				
+	}
+	else
+	{
+		ext.ARBFragmentProgram = false;
 	}
 			
 	// Check texture shaders

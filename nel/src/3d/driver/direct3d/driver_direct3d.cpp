@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.38 2006/12/06 17:21:23 boucher Exp $
+ * $Id: driver_direct3d.cpp,v 1.38.2.1 2007/03/16 11:09:25 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -38,6 +38,9 @@
 #include "nel/3d/u_driver.h"
 
 #include "driver_direct3d.h"
+
+// for conversion HLSL/ASM
+#include <d3dx9shader.h>
 
 using namespace std;
 using namespace NLMISC;
@@ -165,6 +168,11 @@ CDriverD3D::CDriverD3D()
 #else // NL_DISABLE_HARDWARE_VERTEX_PROGAM
 	_DisableHardwareVertexProgram = false;
 #endif // NL_DISABLE_HARDWARE_VERTEX_PROGAM
+#ifdef NL_DISABLE_HARDWARE_PIXEL_PROGAM
+	_DisableHardwarePixelProgram = true;
+#else // NL_DISABLE_HARDWARE_PIXEL_PROGAM
+	_DisableHardwarePixelProgram = false;
+#endif // NL_DISABLE_HARDWARE_PIXEL_PROGAM
 #ifdef NL_DISABLE_HARDWARE_VERTEX_ARRAY_AGP
 	_DisableHardwareVertexArrayAGP = true;
 #else // NL_DISABLE_HARDWARE_VERTEX_ARRAY_AGP
@@ -542,7 +550,7 @@ void CDriverD3D::initRenderVariables()
 	_CurrentShader = NULL;
 
 	// Shaders
-	initInternalShaders();
+	//initInternalShaders(); //TEMP
 
 	// Fog default values
 	_FogStart = 0;
@@ -857,7 +865,7 @@ void CDriverD3D::setupConstantDiffuseColorFromLightedMaterial(D3DCOLOR color)
 
 
 // ***************************************************************************
-void CDriverD3D::updateRenderVariablesInternal()
+void CDriverD3D::updateRenderVariablesInternal() 
 {
 	H_AUTO_D3D(CDriver3D_updateRenderVariablesInternal);
 	nlassert (_DeviceInterface);
@@ -1413,6 +1421,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 #endif // NL_FORCE_TEXTURE_STAGE_COUNT
 
 	_VertexProgram = !_DisableHardwareVertexProgram && ((caps.VertexShaderVersion&0xffff) >= 0x0100);
+	_PixelProgram = !_DisableHardwarePixelProgram && (caps.PixelShaderVersion&0xffff) >= 0x0101;
 	_PixelShader = !_DisableHardwarePixelShader && (caps.PixelShaderVersion&0xffff) >= 0x0101;
 	_MaxVerticesByVertexBufferHard = caps.MaxVertexIndex;
 	_MaxLight = caps.MaxActiveLights;
@@ -3513,6 +3522,107 @@ void CDriverD3D::endDialogMode()
 {	
 	if (_FullScreen && _HWnd)
 		ShowWindow(_HWnd, SW_MAXIMIZE);
+}
+
+// ***************************************************************************
+IProgramDrvInfosD3D::IProgramDrvInfosD3D()
+{
+}
+
+// ***************************************************************************	
+IProgramDrvInfosD3D::~IProgramDrvInfosD3D()
+{
+}
+
+// ***************************************************************************
+bool IProgramDrvInfosD3D::convertInASMD3D(std::string & code, const std::string & asmProfile, TEffectParametersMap & params)
+{
+	HRESULT hr;
+	LPD3DXCONSTANTTABLE pConstantTable;
+	LPD3DXBUFFER pErrorMsgs;
+	LPD3DXBUFFER pShader;
+	hr = D3DXCompileShader(code.c_str(), code.length(),
+			NULL, 0, "main", asmProfile.c_str(), 0, &pShader, &pErrorMsgs, &pConstantTable);
+	if(hr==D3D_OK)
+	{
+		LPD3DXBUFFER pDisassembly;
+		hr = D3DXDisassembleShader((DWORD*)pShader->GetBufferPointer(), FALSE, NULL, &pDisassembly);
+		if(hr==D3D_OK)
+		{
+			code = (char*)pDisassembly->GetBufferPointer();
+			
+			printf("\nPROGRAM DIRECT3D : %s\n", code.c_str());//TEMP
+		}
+		else
+		{
+			nlwarning("Disassemble Shader return the error : %s", (char*)pErrorMsgs->GetBufferPointer());
+			return false;
+		}
+
+		// constants table
+		D3DXCONSTANTTABLE_DESC desc;
+		pConstantTable->GetDesc(&desc);
+		if(desc.Constants)
+		{
+			// Get the constants, one by one
+			D3DXHANDLE hConstant = NULL;
+			UINT uConstDescCount = 0;
+			for(uint i=0; i<desc.Constants; i++)
+			{
+				hConstant = pConstantTable->GetConstant(NULL, i);
+				if(!hConstant)
+					continue;
+				pConstantTable->GetConstantDesc(hConstant, NULL, &uConstDescCount);
+				if(!uConstDescCount)
+					continue;
+				// aDescs is an array of enough size to accommodate 'uConstDescCount'
+				D3DXCONSTANT_DESC * aDescs = new D3DXCONSTANT_DESC[uConstDescCount];
+				pConstantTable->GetConstantDesc(hConstant, aDescs, &uConstDescCount);
+
+				D3DXCONSTANT_DESC& descConst = aDescs[0];
+				
+				// recover parameters
+				CEffectParameter param(std::string((char*)descConst.Name));
+				param.setRegisterNb(descConst.RegisterIndex);
+				param.setRegisterCount(descConst.RegisterCount);
+				param.setLineSize(descConst.Columns);
+				param.setColumnSize(descConst.Rows);
+				switch(descConst.Type)
+				{
+				case D3DXPT_FLOAT:
+					param.setType(CTypeParameter::Float);
+					break;
+				case D3DXPT_INT:
+					param.setType(CTypeParameter::Int);
+					break;
+				case D3DXPT_BOOL:
+					param.setType(CTypeParameter::Bool);
+					break;
+				case D3DXPT_SAMPLER:
+					param.setType(CTypeParameter::Sampler);
+					break;
+				case D3DXPT_SAMPLER2D:
+					param.setType(CTypeParameter::Sampler);
+					break;
+				default:
+					continue;
+				}
+				param.setTexture(param.getType()==CTypeParameter::Sampler);
+				params[param.getName()] = param;
+
+				delete aDescs;
+			}
+		}
+		
+		
+	}
+	else
+	{
+		nlwarning("Compile Shader return the error: %s", (char*)pErrorMsgs->GetBufferPointer());
+		return false;
+	}
+
+	return true;
 }
 
 

@@ -85,8 +85,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/sound"
 # PROP Intermediate_Dir "../obj/DebugFast/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /I "../include" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_LIB" /D "_MBCS" /D "LIBXML_STATIC" /D "WIN32" /Yu"stdsound.h" /FD /GZ /c
-# SUBTRACT CPP /Gf /Gy /Fr
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /I "../include" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_LIB" /D "_MBCS" /D "LIBXML_STATIC" /D "WIN32" /Yu"stdsound.h" /FD /GZ /Zm"200" /c
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe

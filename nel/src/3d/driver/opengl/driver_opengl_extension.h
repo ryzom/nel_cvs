@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.41 2006/12/06 17:21:23 boucher Exp $
+ * $Id: driver_opengl_extension.h,v 1.41.2.1 2007/03/16 11:09:26 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,6 +125,7 @@ public:
 	/// \name Disable Hardware feature. False by default. setuped by IDriver
 	// @{
 	bool				DisableHardwareVertexProgram;
+	bool				DisableHardwarePixelProgram;
 	bool				DisableHardwareVertexArrayAGP;
 	bool				DisableHardwareTextureShader;
 	// @}
@@ -169,6 +170,7 @@ public:
 
 		/// \name Disable Hardware feature. False by default. setuped by IDriver
 		DisableHardwareVertexProgram= false;
+		DisableHardwarePixelProgram= false;
 		DisableHardwareVertexArrayAGP= false;
 		DisableHardwareTextureShader= false;
 

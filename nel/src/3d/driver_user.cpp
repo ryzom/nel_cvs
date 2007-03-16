@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * TODO: File description
  *
- * $Id: driver_user.cpp,v 1.58 2006/12/06 17:21:15 boucher Exp $
+ * $Id: driver_user.cpp,v 1.58.2.1 2007/03/16 11:09:25 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,6 +224,13 @@ void			CDriverUser::disableHardwareVertexProgram()
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->disableHardwareVertexProgram();
+}
+void			CDriverUser::disableHardwarePixelProgram()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+
+	_Driver->disableHardwarePixelProgram();
 }
 void			CDriverUser::disableHardwareVertexArrayAGP()
 {

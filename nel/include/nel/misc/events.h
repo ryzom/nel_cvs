@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.19 2005/02/22 10:14:12 besson Exp $
+ * $Id: events.h,v 1.19.16.1 2007/03/19 16:19:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,9 @@ const CClassId EventMouseDownId (0x35b7878, 0x5d4a0f86);
 const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
 const CClassId EventMouseDblClkId (0x55a94cb3, 0x3e641517);
 const CClassId EventMouseWheelId (0x73ac4321, 0x4c273150);
+
+// Misc events
+const CClassId EventDisplayChangeId(0x1751559, 0x25b52b3c);
 
 
 enum TKey 
@@ -477,6 +480,31 @@ public:
 	}
 
 	virtual	CEvent			*clone() const {return new CEventDestroyWindow(*this);}
+};
+
+
+/**
+ * CEventDisplayChange : Called user has changed the desktop resolution
+ */
+class CEventDisplayChange : public CEvent
+{
+public:	
+	uint Width;
+	uint Height;
+	uint BitDepth;
+
+	/**
+	  * Create focus event. Notify get and lost of the keyboard focus of a window.
+	  * \param activate is True if window get the focus, false if it lost it.
+	  */
+	CEventDisplayChange(uint width, uint height, uint bitDepth, IEventEmitter* emitter) : CEvent (emitter, EventDisplayChangeId)
+	{
+		Width    = width;
+		Height   = height;
+		BitDepth = bitDepth;
+	}
+
+	virtual	CEvent			*clone() const {return new CEventDisplayChange(*this);}
 };
 
 

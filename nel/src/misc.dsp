@@ -1315,6 +1315,26 @@ SOURCE=..\include\nel\misc\timeout_assertion_thread.h
 SOURCE=..\include\nel\misc\traits_nl.h
 # End Source File
 # End Group
+# Begin Group "win32 util"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\dummy_window.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\dummy_window.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\win32_util.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\win32_util.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=..\include\nel\misc\types_nl.h

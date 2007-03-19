@@ -1,7 +1,7 @@
 
 /** \file ps_initial_pos.cpp
  *
- * $Id: ps_initial_pos.cpp,v 1.3 2004/07/21 11:14:20 vizerie Exp $
+ * $Id: ps_initial_pos.cpp,v 1.4 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -27,10 +27,10 @@
 #include "std_afx.h"
 #include "ps_initial_pos.h"
 //
-#include "3d/particle_system.h"
-#include "3d/ps_located.h"
-#include "3d/ps_edit.h"
-#include "3d/ps_emitter.h"
+#include "nel/../../src/3d/particle_system.h"
+#include "nel/../../src/3d/ps_located.h"
+#include "nel/../../src/3d/ps_edit.h"
+#include "nel/../../src/3d/ps_emitter.h"
 
 
 // CPSInitialPos  implementation //

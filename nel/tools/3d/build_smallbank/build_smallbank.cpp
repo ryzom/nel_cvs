@@ -3,7 +3,7 @@
 
 // NeL include
 #include "nel/misc/file.h"
-#include "3d/tile_bank.h"
+#include "nel/../../src/3d/tile_bank.h"
 
 using namespace NL3D;
 using namespace NLMISC;

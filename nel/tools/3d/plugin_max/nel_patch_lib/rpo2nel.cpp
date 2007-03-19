@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * TODO: File description
  *
- * $Id: rpo2nel.cpp,v 1.27 2005/01/31 13:53:37 lecroart Exp $
+ * $Id: rpo2nel.cpp,v 1.28 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,15 +25,15 @@
 
 #include "stdafx.h"
 #include "rpo.h"
-#include "3d/zone.h"
-#include "3d/zone_symmetrisation.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/zone_symmetrisation.h"
 
 // For MAX_RELEASE
 #include <plugapi.h>
 // For mprintf
 #ifdef NL_NEW
 	#undef new 
-	#include <maxscrpt.h>
+	#include <MaxScrpt/maxscrpt.h>
 	#define new NL_NEW
 #else
 	//#include <maxscrpt.h>

@@ -20,12 +20,12 @@
 #include "skeleton_scale_dlg.h"
 #include "light_group_factor.h"
 #include "tune_mrm_dlg.h"
-#include <nel/misc/file.h>
-#include <3d/nelu.h>
-#include <3d/mesh.h>
-#include <3d/transform_shape.h>
-#include <3d/mesh_instance.h>
-#include <3d/skeleton_model.h>
+#include "nel/misc/file.h"
+#include "nel/../../src/3d/nelu.h"
+#include "nel/../../src/3d/mesh.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/mesh_instance.h"
+#include "nel/../../src/3d/skeleton_model.h"
 
 
 using namespace NLMISC;

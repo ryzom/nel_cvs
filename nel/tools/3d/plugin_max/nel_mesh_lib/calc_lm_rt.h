@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.h
  * Raytrace module
  *
- * $Id: calc_lm_rt.h,v 1.7 2005/08/19 15:34:08 cado Exp $
+ * $Id: calc_lm_rt.h,v 1.8 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,8 +30,8 @@
 
 #include "calc_lm.h"
 
-#include "3d/mesh.h"
-#include "3d/quad_grid.h"
+#include "nel/../../src/3d/mesh.h"
+#include "nel/../../src/3d/quad_grid.h"
 
 #include "nel/misc/vector.h"
 #include "nel/misc/triangle.h"

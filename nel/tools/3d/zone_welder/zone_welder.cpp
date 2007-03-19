@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.21 2004/01/15 15:05:23 corvazier Exp $
+ * $Id: zone_welder.cpp,v 1.22 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,11 +30,11 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/file.h"
 #include "nel/3d/quad_tree.h"
-#include "3d/zone.h"
-#include "3d/landscape.h"
-#include "3d/zone_smoother.h"
-#include "3d/zone_tgt_smoother.h"
-#include "3d/zone_corner_smoother.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/landscape.h"
+#include "nel/../../src/3d/zone_smoother.h"
+#include "nel/../../src/3d/zone_tgt_smoother.h"
+#include "nel/../../src/3d/zone_corner_smoother.h"
 #include <vector>
 #include <set>
 

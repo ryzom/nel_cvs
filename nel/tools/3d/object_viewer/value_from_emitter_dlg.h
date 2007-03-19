@@ -1,7 +1,7 @@
 /** \file value_from_emitter_dlg.h
  * Dialog used to tune particle attributes that are computed from their emitter
  *
- * $Id: value_from_emitter_dlg.h,v 1.6 2004/06/17 07:59:42 vizerie Exp $
+ * $Id: value_from_emitter_dlg.h,v 1.7 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NL3D
 
 #include "attrib_dlg.h"
 #include "ps_wrapper.h"
-#include "3d/ps_attrib_maker.h"
+#include "nel/../../src/3d/ps_attrib_maker.h"
 
 
 struct IPopupNotify;

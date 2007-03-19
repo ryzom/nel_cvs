@@ -1,6 +1,6 @@
 /** \file particle_workspace.cpp
  *
- * $Id: particle_workspace.cpp,v 1.2 2004/06/17 17:02:14 vizerie Exp $
+ * $Id: particle_workspace.cpp,v 1.3 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -28,10 +28,10 @@
 #include "particle_workspace.h"
 #include "object_viewer.h"
 //
-#include "3d/shape_bank.h"
-#include "3d/particle_system_model.h"
-#include "3d/particle_system_shape.h"
-#include "3d/skeleton_model.h"
+#include "nel/../../src/3d/shape_bank.h"
+#include "nel/../../src/3d/particle_system_model.h"
+#include "nel/../../src/3d/particle_system_shape.h"
+#include "nel/../../src/3d/skeleton_model.h"
 //
 #include "nel/misc/o_xml.h"
 #include "nel/misc/i_xml.h"

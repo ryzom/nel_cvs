@@ -1,7 +1,7 @@
 /** \file export_lod_character.cpp
  * Export from 3dsmax a NeL lod character
  *
- * $Id: export_lod_character.cpp,v 1.5 2005/02/15 18:21:06 berenguier Exp $
+ * $Id: export_lod_character.cpp,v 1.6 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -30,9 +30,9 @@
 #include "../nel_export/std_afx.h"
 #include "../nel_export/nel_export.h"
 
-#include <3d/lod_character_shape.h>
-#include <3d/mrm_parameters.h>
-#include <3d/mesh_mrm.h>
+#include "nel/../../src/3d/lod_character_shape.h"
+#include "nel/../../src/3d/mrm_parameters.h"
+#include "nel/../../src/3d/mesh_mrm.h"
 
 using namespace NLMISC;
 using namespace NL3D;

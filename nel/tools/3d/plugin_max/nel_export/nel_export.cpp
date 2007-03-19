@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.38 2004/05/14 15:01:32 berenguier Exp $
+ * $Id: nel_export.cpp,v 1.39 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std_afx.h"
 #include "nel_export.h"
-#include "3d/register_3d.h"
-#include "3d/skeleton_shape.h"
+#include "nel/../../src/3d/register_3d.h"
+#include "nel/../../src/3d/skeleton_shape.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
 #include "../nel_mesh_lib/export_nel.h"

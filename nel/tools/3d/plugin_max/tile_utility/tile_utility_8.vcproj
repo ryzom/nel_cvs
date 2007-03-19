@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="tile_utility"
 	ProjectGUID="{7CD7BD0D-3CF0-4698-8F3A-B770B073713B}"
+	RootNamespace="tile_utility"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,7 @@
 			OutputDirectory=".\Hybrid"
 			IntermediateDirectory=".\Hybrid"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -46,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -73,11 +74,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\Plugins\tileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype231.lib"
+				OutputFile=".\Hybrid\tileutility.dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\tile_utility.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Hybrid/tileutility.pdb"
@@ -116,7 +117,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -145,7 +146,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -175,11 +176,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\Plugins\neltileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype231.lib"
+				OutputFile=".\Release\neltileutility.dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\tile_utility.def"
 				ProgramDatabaseFile=".\Release/neltileutility.pdb"
 				SubSystem="2"
@@ -218,7 +219,7 @@
 			OutputDirectory=".\DebugFast"
 			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -247,7 +248,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;NL_DEBUG_FAST"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -276,11 +277,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1 debug\exe\Plugins\neltileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype231.lib"
+				OutputFile=".\DebugFast\neltileutility.dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\tile_utility.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\DebugFast/neltileutility.pdb"
@@ -319,7 +320,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -347,7 +348,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_WINDOWS"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -380,11 +381,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax_debug\plugins\neltileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype231.lib"
+				OutputFile=".\Debug\neltileutility.dlu"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\tile_utility.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/neltileutility.pdb"
@@ -423,7 +424,7 @@
 			OutputDirectory=".\ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -452,7 +453,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -481,8 +482,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax\plugins\neltileutility.dlu"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib version.lib freetype219.lib"
+				OutputFile=".\ReleaseDebug\neltileutility.dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""

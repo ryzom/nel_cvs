@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.10 2005/01/05 14:57:02 berenguier Exp $
+ * $Id: export_mesh_interface.cpp,v 1.11 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,8 +33,8 @@
 #include "nel/misc/line.h"
 #include "nel/misc/polygon.h"
 #include "nel/misc/path.h"
-#include "3d/quad_grid.h"
-#include "3d/mesh_mrm_skinned.h"
+#include "nel/../../src/3d/quad_grid.h"
+#include "nel/../../src/3d/mesh_mrm_skinned.h"
 #include "export_appdata.h"
 
 

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="object_viewer"
 	ProjectGUID="{A10DFC7C-B9E1-47D3-B3D8-3EE15AEBDAEC}"
+	RootNamespace="object_viewer"
 	Keyword="MFCProj"
 	>
 	<Platforms>
@@ -19,7 +20,7 @@
 			OutputDirectory=".\ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="C:\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -50,6 +51,7 @@
 				AdditionalOptions="/Zm400 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -78,7 +80,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="nlligo_rd.lib nlgeorges_rd.lib libxml2.lib freetype.lib shlwapi.lib version.lib libjpeg.lib"
+				AdditionalDependencies="libxml2.lib freetype231.lib shlwapi.lib version.lib jpeg.lib"
 				OutputFile="../../../lib/object_viewer_rd.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -118,7 +120,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="C:\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -149,6 +151,7 @@
 				AdditionalOptions="/Zm400 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -178,7 +181,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="nlligo_r.lib nlgeorges_r.lib mfcs42.lib msvcrt.lib libc.lib libxml2.lib freetype.lib shlwapi.lib version.lib libjpeg.lib"
+				AdditionalDependencies="mfcs42.lib msvcrt.lib libc.lib libxml2.lib freetype231.lib shlwapi.lib version.lib jpeg.lib"
 				OutputFile="../../../lib/object_viewer.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -217,7 +220,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="C:\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -247,6 +250,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/D /Zm500 "
 				Optimization="0"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -280,7 +284,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="nlligo_d.lib nlgeorges_d.lib libxml2_a.lib freetype.lib shlwapi.lib version.lib libjpeg.lib"
+				AdditionalDependencies="libxml2_a.lib freetype231_D.lib shlwapi.lib version.lib jpeg.lib"
 				OutputFile="../../../lib/object_viewer_debug.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -320,7 +324,7 @@
 			OutputDirectory=".\DebugFast"
 			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="C:\Program Files\Microsoft Visual Studio 8\VC\VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -351,6 +355,7 @@
 				AdditionalOptions="/D /Zm500 "
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_STLP_USE_DEBUG_LIB;WIN32;_WINDOWS;_USRDLL;NL_NO_DEFINE_NEW"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -378,7 +383,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="shlwapi.lib nlligo_df.lib nlgeorges_df.lib freetype_debug.lib libxml2_debug.lib version.lib libjpeg.lib"
+				AdditionalDependencies="shlwapi.lib freetype231_D.lib libxml2_debug.lib version.lib jpeg.lib"
 				OutputFile="../../../lib/object_viewer_debug_fast.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

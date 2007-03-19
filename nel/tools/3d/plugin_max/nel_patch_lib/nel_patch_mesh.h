@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * TODO: File description
  *
- * $Id: nel_patch_mesh.h,v 1.13 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: nel_patch_mesh.h,v 1.14 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,10 +30,10 @@
 #include <vector>
 #include <set>
 #include <string>
-#include <nel/misc/debug.h>
-#include <3d/tile_bank.h>
-#include <nel/misc/file.h>
-#include <nel/misc/rgba.h>
+#include "nel/misc/debug.h"
+#include "nel/../../src/3d/tile_bank.h"
+#include "nel/misc/file.h"
+#include "nel/misc/rgba.h"
 #include "path_mesh_alloc.h"
 
 //#define USE_CACHE

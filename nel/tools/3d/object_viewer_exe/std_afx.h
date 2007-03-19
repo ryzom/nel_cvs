@@ -39,8 +39,8 @@
 #undef max
 #endif
 
-#include <3d/register_3d.h>
-#include <3d/scene.h>
+#include "nel/../../src/3d/register_3d.h"
+#include "nel/../../src/3d/scene.h"
 #include "../object_viewer/object_viewer_interface.h"
 
 

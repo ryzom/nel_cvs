@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.35 2003/05/26 14:18:13 vizerie Exp $
+ * $Id: export_misc.cpp,v 1.36 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "export_appdata.h"
 #include "calc_lm.h"
 #include "nel/misc/path.h"
-#include <3d/texture_file.h>
+#include "nel/../../src/3d/texture_file.h"
 #include <modstack.h> // class IDerivedObject
 #include <decomp.h> // class IDerivedObject
 #include <locale.h>

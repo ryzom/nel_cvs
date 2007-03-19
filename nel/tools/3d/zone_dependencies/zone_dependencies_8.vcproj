@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="zone_dependencies"
 	ProjectGUID="{E5B0E053-4E3B-4342-8850-CEE9C34DA067}"
+	RootNamespace="zone_dependencies"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -43,6 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;_CONSOLE;WIN32;_DEBUG"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -76,7 +78,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2_a.lib odbc32.lib odbccp32.lib freetype219MT_D.lib ws2_32.lib"
+				AdditionalDependencies="freetype231_D.lib libxml2_debug.lib"
 				OutputFile=".\Debug/zone_dependencies.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -115,7 +117,7 @@
 			OutputDirectory=".\ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="1"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -141,6 +143,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="_CONSOLE;WIN32;NDEBUG;NL_RELEASE_DEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -169,7 +172,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2.lib freetype.lib ws2_32.lib"
+				AdditionalDependencies="freetype231.lib  libxml2.lib"
 				OutputFile=".\ReleaseDebug/zone_dependencies.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -208,7 +211,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -234,6 +237,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -261,7 +265,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2_a.lib odbc32.lib odbccp32.lib freetype219MT.lib ws2_32.lib"
+				AdditionalDependencies="freetype231.lib libxml2.lib"
 				OutputFile=".\Release/zone_dependencies.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -296,10 +300,10 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\zone_dependencies___Win32_DebugFast0"
-			IntermediateDirectory=".\zone_dependencies___Win32_DebugFast0"
+			OutputDirectory=".\DebugFast"
+			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="1"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -318,22 +322,23 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\zone_dependencies___Win32_DebugFast0/zone_dependencies.tlb"
+				TypeLibraryName=".\DebugFast/zone_dependencies.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG"
+				AdditionalIncludeDirectories="../../../include"
+				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG;NL_DEBUG_FAST"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\zone_dependencies___Win32_DebugFast0/zone_dependencies.pch"
-				AssemblerListingLocation=".\zone_dependencies___Win32_DebugFast0/"
-				ObjectFile=".\zone_dependencies___Win32_DebugFast0/"
-				ProgramDataBaseFileName=".\zone_dependencies___Win32_DebugFast0/"
+				PrecompiledHeaderFile=".\DebugFast/zone_dependencies.pch"
+				AssemblerListingLocation=".\DebugFast/"
+				ObjectFile=".\DebugFast/"
+				ProgramDataBaseFileName=".\DebugFast/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -351,12 +356,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2_a.lib odbc32.lib odbccp32.lib freetype219MT_D.lib ws2_32.lib"
-				OutputFile=".\zone_dependencies___Win32_DebugFast0/zone_dependencies.exe"
+				AdditionalDependencies="freetype231_D.lib libxml2_debug.lib"
+				OutputFile=".\DebugFast/zone_dependencies.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\zone_dependencies___Win32_DebugFast0/zone_dependencies.pdb"
+				ProgramDatabaseFile=".\DebugFast/zone_dependencies.pdb"
 				SubSystem="1"
 				TargetMachine="1"
 			/>

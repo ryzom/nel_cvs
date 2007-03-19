@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Enumeration of all objects in an instance group
  *
- * $Id: main.cpp,v 1.2 2002/07/09 08:13:28 corvazier Exp $
+ * $Id: main.cpp,v 1.3 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/file.h"
 
-#include "3d/scene_group.h"
+#include "nel/../../src/3d/scene_group.h"
 
 using namespace NLMISC;
 using namespace NL3D;

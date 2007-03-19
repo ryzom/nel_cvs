@@ -1,7 +1,7 @@
 /** \file texture_anim_dlg.cpp
  * Dialog used to tune animation of texture on particles
  *
- * $Id: texture_anim_dlg.cpp,v 1.8 2004/06/17 08:00:45 vizerie Exp $
+ * $Id: texture_anim_dlg.cpp,v 1.9 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,10 +29,10 @@
 #include "texture_anim_dlg.h"
 #include "attrib_dlg.h"
 #include "texture_chooser.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_particle_basic.h"
-#include "3d/texture_grouped.h"
-#include "3d/texture_file.h"
+#include "nel/../../src/3d/ps_particle.h"
+#include "nel/../../src/3d/ps_particle_basic.h"
+#include "nel/../../src/3d/texture_grouped.h"
+#include "nel/../../src/3d/texture_file.h"
 
 
 #include "nel/misc/smart_ptr.h"

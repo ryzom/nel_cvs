@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * TODO: File description
  *
- * $Id: lod_texture_builder.h,v 1.5 2004/11/15 10:25:08 lecroart Exp $
+ * $Id: lod_texture_builder.h,v 1.6 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #define NL_LOD_TEXTURE_BUILDER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/lod_character_texture.h"
-#include "3d/lod_character_shape.h"
-#include "3d/mesh.h"
-#include "3d/mesh_mrm.h"
-#include "3d/mesh_mrm_skinned.h"
+#include "nel/../../src/3d/lod_character_texture.h"
+#include "nel/../../src/3d/lod_character_shape.h"
+#include "nel/../../src/3d/mesh.h"
+#include "nel/../../src/3d/mesh_mrm.h"
+#include "nel/../../src/3d/mesh_mrm_skinned.h"
 #include <set>
 
 

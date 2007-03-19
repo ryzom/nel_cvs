@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.10 2003/10/23 18:20:44 distrib Exp $
+ * $Id: main.cpp,v 1.11 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,11 +30,11 @@
 #include "nel/misc/time_nl.h"
 #include "nel/misc/file.h"
 
-#include "pacs/collision_mesh_build.h"
-#include "pacs/local_retriever.h"
-#include "pacs/retriever_instance.h"
-#include "pacs/global_retriever.h"
-#include "pacs/retriever_bank.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
+#include "nel/../../src/pacs/local_retriever.h"
+#include "nel/../../src/pacs/retriever_instance.h"
+#include "nel/../../src/pacs/global_retriever.h"
+#include "nel/../../src/pacs/retriever_bank.h"
 
 #include "nel/pacs/u_global_position.h"
 

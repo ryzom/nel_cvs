@@ -1,6 +1,6 @@
 /** \file particle_workspace.h
  *
- * $Id: particle_workspace.h,v 1.2 2004/06/17 17:02:14 vizerie Exp $
+ * $Id: particle_workspace.h,v 1.3 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/stream.h"
-#include "3d/skeleton_model.h"
+#include "nel/../../src/3d/skeleton_model.h"
 //
 #include "ps_initial_pos.h"
 

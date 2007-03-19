@@ -9,10 +9,10 @@
 #include "custom.h"
 #include "getval.h"
 
-#include <3d/tile_bank.h>
+#include "nel/../../src/3d/tile_bank.h"
 
-#include <nel/misc/bitmap.h>
-#include <nel/misc/file.h>
+#include "nel/misc/bitmap.h"
+#include "nel/misc/file.h"
 
 using namespace NL3D;
 using namespace NLMISC;

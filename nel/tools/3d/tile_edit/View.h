@@ -8,8 +8,8 @@
 //
 #include <vector>
 #include <string>
-#include <3d/tile_bank.h>
-#include <nel/misc/rgba.h>
+#include "nel/../../src/3d/tile_bank.h"
+#include "nel/misc/rgba.h"
 #include <list>
 #define TILE_BPP 24
 #define NB_MAX_TILE 1500

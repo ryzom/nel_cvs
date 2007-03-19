@@ -1,7 +1,7 @@
 /** \file curve_edit.h
  * A dialog for editing a curve
  *
- * $Id: curve_edit.h,v 1.5 2004/06/17 08:14:41 vizerie Exp $
+ * $Id: curve_edit.h,v 1.6 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #endif
 
 
-#include <3d/ps_float.h>
+#include "nel/../../src/3d/ps_float.h"
 #include "ps_wrapper.h"
 #include "popup_notify.h"
 #include "editable_range.h"

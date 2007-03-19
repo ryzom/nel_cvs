@@ -1,7 +1,7 @@
 /** \file scheme_manager.cpp
  * a collection of scheme (to set particle atributes)
  *
- * $Id: scheme_manager.cpp,v 1.4 2003/07/01 15:34:44 distrib Exp $
+ * $Id: scheme_manager.cpp,v 1.5 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std_afx.h"
 #include "scheme_manager.h"
-#include "3d/ps_attrib_maker.h"
+#include "nel/../../src/3d/ps_attrib_maker.h"
 
 CSchemeManager SchemeManager;
 

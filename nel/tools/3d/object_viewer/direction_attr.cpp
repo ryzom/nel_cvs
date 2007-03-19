@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.cpp,v 1.7 2004/06/17 08:14:41 vizerie Exp $
+ * $Id: direction_attr.cpp,v 1.8 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,8 @@
 #include "direction_attr.h"
 #include "direction_edit.h"
 #include "choose_name.h"
-#include "3d/ps_direction.h"
-#include "3d/particle_system.h"
+#include "nel/../../src/3d/ps_direction.h"
+#include "nel/../../src/3d/particle_system.h"
 
 
 

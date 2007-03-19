@@ -5,7 +5,7 @@
 #include "paint_undo.h"
 #include "paint_vcolor.h"
 #include "paint_to_nel.h"
-#include <3d/landscape.h>
+#include "nel/../../src/3d/landscape.h"
 
 /*-------------------------------------------------------------------*/
 

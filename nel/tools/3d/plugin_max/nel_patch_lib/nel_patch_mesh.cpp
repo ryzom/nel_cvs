@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * TODO: File description
  *
- * $Id: nel_patch_mesh.cpp,v 1.13 2005/02/08 15:03:23 lecroart Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.14 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/misc/time_nl.h"
 #include "vertex_neighborhood.h"
 #include "../nel_3dsmax_shared/nel_3dsmax_shared.h"
-#include "3d/zone_symmetrisation.h"
+#include "nel/../../src/3d/zone_symmetrisation.h"
 
 // For MAX_RELEASE
 #include <plugapi.h>

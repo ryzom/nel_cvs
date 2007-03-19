@@ -1,7 +1,7 @@
 /** \file build_coarse_mesh.cpp
  * Precalc coarse mesh objets to build a single texture
  *
- * $Id: build_coarse_mesh.cpp,v 1.7 2003/01/31 16:14:10 corvazier Exp $
+ * $Id: build_coarse_mesh.cpp,v 1.8 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/coarse_mesh_build.h"
-#include "3d/mesh_multi_lod.h"
-#include "3d/register_3d.h"
+#include "nel/../../src/3d/coarse_mesh_build.h"
+#include "nel/../../src/3d/mesh_multi_lod.h"
+#include "nel/../../src/3d/register_3d.h"
 
 #include "nel/misc/time_nl.h"
 #include "nel/misc/config_file.h"

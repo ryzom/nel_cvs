@@ -12,8 +12,8 @@
 #include "vegetable_copy_dlg.h"
 #include "vegetable_edit_tools.h"
 #include "vegetable_wind_dlg.h"
-#include "3d/vegetable.h"
-#include "3d/tile_vegetable_desc.h"
+#include "nel/../../src/3d/vegetable.h"
+#include "nel/../../src/3d/tile_vegetable_desc.h"
 
 
 

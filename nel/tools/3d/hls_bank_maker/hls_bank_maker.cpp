@@ -1,7 +1,7 @@
 /** \file hls_bank_maker.cpp
  * TODO: File description
  *
- * $Id: hls_bank_maker.cpp,v 1.2 2004/11/15 10:25:08 lecroart Exp $
+ * $Id: hls_bank_maker.cpp,v 1.3 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "hls_bank_maker.h"
-#include "3d/hls_texture_bank.h"
+#include "nel/../../src/3d/hls_texture_bank.h"
 #include "../panoply_maker/hls_bank_texture_info.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"

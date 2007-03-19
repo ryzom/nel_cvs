@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.6 2003/11/18 15:17:29 legros Exp $
+ * $Id: main.cpp,v 1.7 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,11 +35,11 @@
 
 #include "nel/misc/aabbox.h"
 
-#include "3d/register_3d.h"
-#include "3d/scene_group.h"
-#include "3d/transform_shape.h"
-#include "3d/water_model.h"
-#include "3d/water_shape.h"
+#include "nel/../../src/3d/register_3d.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/water_model.h"
+#include "nel/../../src/3d/water_shape.h"
 
 #include <string>
 #include <map>
@@ -91,7 +91,7 @@ void	init()
 	try
 	{
 		CConfigFile cf;
-		int			i;
+		uint			i;
 	
 		cf.load("build_ig_boxes.cfg");
 	

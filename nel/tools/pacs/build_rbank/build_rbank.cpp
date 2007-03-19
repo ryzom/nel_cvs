@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.20 2006/01/10 17:38:48 boucher Exp $
+ * $Id: build_rbank.cpp,v 1.21 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,24 +33,24 @@
 #include "nel/misc/polygon.h"
 #include "nel/misc/smart_ptr.h"
 
-#include "3d/scene_group.h"
-#include "3d/transform_shape.h"
-#include "3d/water_model.h"
-#include "3d/water_shape.h"
-#include "3d/quad_grid.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/water_model.h"
+#include "nel/../../src/3d/water_shape.h"
+#include "nel/../../src/3d/quad_grid.h"
 
 #include "build_rbank.h"
 #include "build_surf.h"
 
 #include "surface_splitter.h"
 
-#include "pacs/global_retriever.h"
-#include "pacs/retriever_bank.h"
-#include "pacs/surface_quad.h"
-#include "pacs/local_retriever.h"
-#include "pacs/retriever_instance.h"
-#include "pacs/chain.h"
-#include "pacs/collision_mesh_build.h"
+#include "nel/../../src/pacs/global_retriever.h"
+#include "nel/../../src/pacs/retriever_bank.h"
+#include "nel/../../src/pacs/surface_quad.h"
+#include "nel/../../src/pacs/local_retriever.h"
+#include "nel/../../src/pacs/retriever_instance.h"
+#include "nel/../../src/pacs/chain.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
 
 #include <string>
 #include <deque>

@@ -5,8 +5,8 @@
 
 #include "object_viewer.h"
 #include "day_night_dlg.h"
-#include "3d/water_pool_manager.h"
-#include "3d/nelu.h"
+#include "nel/../../src/3d/water_pool_manager.h"
+#include "nel/../../src/3d/nelu.h"
 
 
 

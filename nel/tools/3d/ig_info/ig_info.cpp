@@ -1,6 +1,6 @@
 /** \file ig_info.cpp
  * A simple tool to view the content of an ig
- * $Id: ig_info.cpp,v 1.1 2003/05/19 12:34:47 berenguier Exp $
+ * $Id: ig_info.cpp,v 1.2 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -23,7 +23,7 @@
  */
 
 
-#include "3d/scene_group.h"
+#include "nel/../../src/3d/scene_group.h"
 #include "nel/misc/file.h"
 #include "nel/misc/common.h"
 #include <string>

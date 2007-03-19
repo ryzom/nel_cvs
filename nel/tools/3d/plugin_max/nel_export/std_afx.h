@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * TODO: File description
  *
- * $Id: std_afx.h,v 1.5 2004/11/15 10:25:09 lecroart Exp $
+ * $Id: std_afx.h,v 1.6 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,16 +34,16 @@
 #include <utilapi.h>
 #include <shlobj.h>
 #undef STRICT
-#include <maxscrpt.h>
-#include <3dmath.h>
-#include <numbers.h>
-#include <maxclses.h>
-#include <streams.h>
-#include <mstime.h>
-#include <maxobj.h>
-#include <parser.h>
+#include <MaxScrpt/maxscrpt.h>
+#include <MaxScrpt/3dmath.h>
+#include <MaxScrpt/numbers.h>
+#include <MaxScrpt/maxclses.h>
+#include <MaxScrpt/streams.h>
+#include <MaxScrpt/mstime.h>
+#include <MaxScrpt/maxobj.h>
+#include <MaxScrpt/parser.h>
 #include <stdmat.h>
-#include <definsfn.h>
+#include <MaxScrpt/definsfn.h>
 #include <animtbl.h>
 #ifdef min
 #undef min

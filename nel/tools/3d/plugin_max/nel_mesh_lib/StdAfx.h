@@ -1,7 +1,7 @@
 /** \file stdafx.h
  * TODO: File description
  *
- * $Id: StdAfx.h,v 1.5 2004/11/15 10:25:10 lecroart Exp $
+ * $Id: StdAfx.h,v 1.6 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 #include <stdmat.h>
 #include <shaders.h>
 #include <iparamb2.h>
-#include <maxscrpt.h>
+#include <Maxscrpt/maxscrpt.h>
 #include <parser.h>
 
 // Character Studio SDK include
@@ -59,10 +59,10 @@
 #include "nel/misc/triangle.h"
 #include "nel/misc/bsphere.h"
 #include "nel/3d/quad_tree.h"
-#include "3d/scene_group.h"
-#include "3d/skeleton_shape.h"
-#include "3d/texture_file.h"
-#include "3d/light.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/skeleton_shape.h"
+#include "nel/../../src/3d/texture_file.h"
+#include "nel/../../src/3d/light.h"
 
 
 // TODO: reference additional headers your program requires here

@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.21 2004/07/16 07:31:12 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.22 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "particle_tree_ctrl.h"
 #include "particle_dlg.h"
 
-#include "3d/particle_system.h"
+#include "nel/../../src/3d/particle_system.h"
 
 
 

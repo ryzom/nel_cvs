@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * TODO: File description
  *
- * $Id: main_dlg.h,v 1.7 2004/11/15 10:25:08 lecroart Exp $
+ * $Id: main_dlg.h,v 1.8 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,8 +33,8 @@
 //
 
 #include "slot_dlg.h"
-#include <3d/channel_mixer.h>
-#include <3d/animation_playlist.h>
+#include <nel/../../src/3d/channel_mixer.h>
+#include <nel/../../src/3d/animation_playlist.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainDlg dialog

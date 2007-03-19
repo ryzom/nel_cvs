@@ -1,7 +1,7 @@
 /** \file constraint_mesh_global_tex_anim_dlg.cpp
  * A dialog for editing constraint meshs texture global animation
  *
- * $Id: constraint_mesh_global_tex_anim_dlg.cpp,v 1.3 2003/07/03 16:17:31 vizerie Exp $
+ * $Id: constraint_mesh_global_tex_anim_dlg.cpp,v 1.4 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "constraint_mesh_global_tex_anim_dlg.h"
-#include "3d/ps_mesh.h"
+#include "nel/../../src/3d/ps_mesh.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CConstraintMeshGlobalTexAnimDlg dialog

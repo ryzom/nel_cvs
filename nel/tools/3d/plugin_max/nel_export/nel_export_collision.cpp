@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.8 2002/08/27 14:36:24 corvazier Exp $
+ * $Id: nel_export_collision.cpp,v 1.9 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 #include "nel/misc/file.h"
 #include "nel/misc/o_xml.h"
 
-#include "pacs/collision_mesh_build.h"
-#include "pacs/primitive_block.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
+#include "nel/../../src/pacs/primitive_block.h"
 
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_mesh_lib/export_appdata.h"

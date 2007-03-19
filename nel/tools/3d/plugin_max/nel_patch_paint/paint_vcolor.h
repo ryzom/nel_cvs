@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "3d/texture_file.h"
+#include "nel/../../src/3d/texture_file.h"
 
 using namespace NL3D;
 using namespace NLMISC;

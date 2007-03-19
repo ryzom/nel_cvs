@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * TODO: File description
  *
- * $Id: nel_export_export.cpp,v 1.24 2004/11/15 10:25:09 lecroart Exp $
+ * $Id: nel_export_export.cpp,v 1.25 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "nel/misc/file.h"
-#include "3d/shape.h"
-#include "3d/animation.h"
-#include "3d/skeleton_shape.h"
-#include "3d/vegetable_shape.h"
-#include "3d/lod_character_shape.h"
+#include "nel/../../src/3d/shape.h"
+#include "nel/../../src/3d/animation.h"
+#include "nel/../../src/3d/skeleton_shape.h"
+#include "nel/../../src/3d/vegetable_shape.h"
+#include "nel/../../src/3d/lod_character_shape.h"
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_mesh_lib/export_appdata.h"
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.60 2005/01/05 10:35:06 berenguier Exp $
+ * $Id: object_viewer.h,v 1.61 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,18 +58,18 @@
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
 
-#include <3d/animation_set.h>
-#include <3d/channel_mixer.h>
-#include <3d/shape.h>
-#include <3d/event_mouse_listener.h>
-#include <3d/light.h>
-#include <3d/font_manager.h>
-#include <3d/cloud_scape.h>
-#include <nel/misc/event_listener.h>
-#include <nel/misc/stream.h>
+#include "nel/../../src/3d/animation_set.h"
+#include "nel/../../src/3d/channel_mixer.h"
+#include "nel/../../src/3d/shape.h"
+#include "nel/../../src/3d/event_mouse_listener.h"
+#include "nel/../../src/3d/light.h"
+#include "nel/../../src/3d/font_manager.h"
+#include "nel/../../src/3d/cloud_scape.h"
+#include "nel/misc/event_listener.h"
+#include "nel/misc/stream.h"
 
-#include <nel/3d/logic_info.h>
-#include <nel/pacs/u_global_position.h>
+#include "nel/3d/logic_info.h"
+#include "nel/pacs/u_global_position.h"
 
 namespace NL3D
 {

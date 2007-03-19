@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.71 2005/01/05 14:57:02 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.72 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,14 +33,14 @@
 #include "../nel_export/nel_export_scene.h"
 
 
-#include <3d/texture_file.h>
-#include <3d/texture_blend.h>
-#include <3d/mesh_mrm.h>
-#include <3d/mesh_mrm_skinned.h>
-#include <3d/mesh_multi_lod.h>
-#include <3d/coarse_mesh_manager.h>
-#include <3d/water_shape.h>
-#include <3d/meshvp_wind_tree.h>
+#include "nel/../../src/3d/texture_file.h"
+#include "nel/../../src/3d/texture_blend.h"
+#include "nel/../../src/3d/mesh_mrm.h"
+#include "nel/../../src/3d/mesh_mrm_skinned.h"
+#include "nel/../../src/3d/mesh_multi_lod.h"
+#include "nel/../../src/3d/coarse_mesh_manager.h"
+#include "nel/../../src/3d/water_shape.h"
+#include "nel/../../src/3d/meshvp_wind_tree.h"
 
 
 #include <nel/misc/polygon.h>

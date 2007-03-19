@@ -1,7 +1,7 @@
 /** \file view_cs.cpp
  * viewer of cluster system
  *
- * $Id: view_cs.cpp,v 1.6 2004/10/26 13:49:35 lecroart Exp $
+ * $Id: view_cs.cpp,v 1.7 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,17 +33,17 @@
 #include "nel/misc/file.h"
 #include "nel/misc/bitmap.h"
 
-#include "3d/driver.h"
-#include "3d/nelu.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
 #include "nel/misc/events.h"
 #include "nel/misc/path.h"
 #include "nel/misc/time_nl.h"
-#include "3d/scene_group.h"
-#include "3d/transform_shape.h"
-#include "3d/event_mouse_listener.h"
-#include "3d/text_context.h"
+#include "nel/../../src/3d/driver.h"
+#include "nel/../../src/3d/nelu.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/event_mouse_listener.h"
+#include "nel/../../src/3d/text_context.h"
 
 #include <windows.h>
 

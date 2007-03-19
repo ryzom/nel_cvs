@@ -2,11 +2,11 @@
  *  Build a bank tile far
  */
 
-#include <nel/misc/file.h>
-#include <3d/tile_bank.h>
-#include <3d/tile_far_bank.h>
-#include <nel/misc/bitmap.h>
-#include <nel/misc/path.h>
+#include "nel/misc/file.h"
+#include "nel/../../src/3d/tile_bank.h"
+#include "nel/../../src/3d/tile_far_bank.h"
+#include "nel/misc/bitmap.h"
+#include "nel/misc/path.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.23 2004/06/17 08:08:41 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.24 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "particle_system_edit.h"
-#include "3d/particle_system.h"
-#include "3d/particle_system_model.h"
-#include "3d/ps_color.h"
+#include "nel/../../src/3d/particle_system.h"
+#include "nel/../../src/3d/particle_system_model.h"
+#include "nel/../../src/3d/ps_color.h"
 #include "editable_range.h"
 #include "auto_lod_dlg.h"
 #include "ps_global_color_dlg.h"

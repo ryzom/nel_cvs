@@ -1,6 +1,6 @@
 /** \file dup_ps.cpp
  *
- * $Id: dup_ps.cpp,v 1.6 2006/02/06 13:54:09 vizerie Exp $
+ * $Id: dup_ps.cpp,v 1.7 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std_afx.h"
 
-#include "3d/ps_located.h"
-#include "3d/particle_system.h"
+#include "nel/../../src/3d/ps_located.h"
+#include "nel/../../src/3d/particle_system.h"
 
 
 #include "nel/misc/stream.h"

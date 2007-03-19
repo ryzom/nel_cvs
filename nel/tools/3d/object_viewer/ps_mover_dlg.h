@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.10 2004/06/17 08:03:14 vizerie Exp $
+ * $Id: ps_mover_dlg.h,v 1.11 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLMISC
 	class CVector ;
 }
 
-#include "3d/ps_edit.h"
+#include "nel/../../src/3d/ps_edit.h"
 #include "ps_wrapper.h"
 #include "editable_range.h"
 #include "particle_workspace.h"

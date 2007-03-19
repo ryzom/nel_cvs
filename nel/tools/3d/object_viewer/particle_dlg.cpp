@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.29 2004/07/21 13:30:46 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.30 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,23 +38,23 @@
 #include "main_frame.h"
 //
 // TODO : remove these include when the test system will be removed
-#include "3d/particle_system.h"
-#include "3d/ps_force.h"
-#include "3d/ps_emitter.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_util.h"
-#include "3d/ps_zone.h"
-#include "3d/ps_color.h"
-#include "3d/ps_float.h"
-#include "3d/ps_int.h"
-#include "3d/ps_plane_basis_maker.h"
-#include "3d/particle_system_model.h"
-#include "3d/particle_system_shape.h"
-#include "3d/texture_file.h"
-#include "3d/texture_grouped.h"
-#include "3d/nelu.h"
-#include "3d/font_manager.h"
-#include "3d/font_generator.h"
+#include "nel/../../src/3d/particle_system.h"
+#include "nel/../../src/3d/ps_force.h"
+#include "nel/../../src/3d/ps_emitter.h"
+#include "nel/../../src/3d/ps_particle.h"
+#include "nel/../../src/3d/ps_util.h"
+#include "nel/../../src/3d/ps_zone.h"
+#include "nel/../../src/3d/ps_color.h"
+#include "nel/../../src/3d/ps_float.h"
+#include "nel/../../src/3d/ps_int.h"
+#include "nel/../../src/3d/ps_plane_basis_maker.h"
+#include "nel/../../src/3d/particle_system_model.h"
+#include "nel/../../src/3d/particle_system_shape.h"
+#include "nel/../../src/3d/texture_file.h"
+#include "nel/../../src/3d/texture_grouped.h"
+#include "nel/../../src/3d/nelu.h"
+#include "nel/../../src/3d/font_manager.h"
+#include "nel/../../src/3d/font_generator.h"
 //
 #include "nel/misc/file.h"
 #include "start_stop_particle_system.h"

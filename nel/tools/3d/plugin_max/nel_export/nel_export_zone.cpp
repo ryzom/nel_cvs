@@ -1,7 +1,7 @@
 /** \file nel_export_zone.cpp
  * TODO: File description
  *
- * $Id: nel_export_zone.cpp,v 1.6 2004/11/15 10:25:09 lecroart Exp $
+ * $Id: nel_export_zone.cpp,v 1.7 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std_afx.h"
 #include "nel_export.h"
-#include "3d/zone.h"
-#include "3d/zone_symmetrisation.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/zone_symmetrisation.h"
 #include "../nel_patch_lib/rpo.h"
 
 using namespace NL3D;

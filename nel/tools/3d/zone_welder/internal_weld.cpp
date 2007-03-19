@@ -1,7 +1,7 @@
 /** \file internal_weld.cpp
  * Welding internal patches
  *
- * $Id: internal_weld.cpp,v 1.1 2002/08/30 14:03:58 corvazier Exp $
+ * $Id: internal_weld.cpp,v 1.2 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,9 +30,9 @@
 #include "nel/misc/file.h"
 #include "nel/misc/aabbox.h"
 //
-#include "3d/quad_grid.h"
-#include "3d/bezier_patch.h"
-#include "3d/zone.h"
+#include "nel/../../src/3d/quad_grid.h"
+#include "nel/../../src/3d/bezier_patch.h"
+#include "nel/../../src/3d/zone.h"
 
 //
 #include <vector>

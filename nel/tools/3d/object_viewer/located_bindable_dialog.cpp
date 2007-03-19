@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.36 2005/03/23 17:00:29 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.37 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,13 +29,13 @@
 
 
 
-#include "3d/ps_located.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_mesh.h"
-#include "3d/ps_force.h"
-#include "3d/ps_emitter.h"
-#include "3d/ps_zone.h"
-#include "3d/particle_system_model.h"
+#include "nel/../../src/3d/ps_located.h"
+#include "nel/../../src/3d/ps_particle.h"
+#include "nel/../../src/3d/ps_mesh.h"
+#include "nel/../../src/3d/ps_force.h"
+#include "nel/../../src/3d/ps_emitter.h"
+#include "nel/../../src/3d/ps_zone.h"
+#include "nel/../../src/3d/particle_system_model.h"
 
 
 

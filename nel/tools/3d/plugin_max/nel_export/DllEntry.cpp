@@ -1,7 +1,7 @@
 /** \file dllentry.cpp
  * TODO: File description
  *
- * $Id: DllEntry.cpp,v 1.4 2005/06/23 18:18:10 boucher Exp $
+ * $Id: DllEntry.cpp,v 1.5 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std_afx.h"
 #include "nel_export.h"
-#include "3d/register_3d.h"
+#include "nel/../../src/3d/register_3d.h"
 #include "nel/misc/app_context.h"
 
 

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.16 2004/06/17 17:02:14 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.17 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,9 +34,9 @@
 
 #include "nel/misc/matrix.h"
 //
-#include "3d/ps_particle.h"
-#include "3d/ps_edit.h"
-#include "3d/ps_located.h"
+#include "nel/../../src/3d/ps_particle.h"
+#include "nel/../../src/3d/ps_edit.h"
+#include "nel/../../src/3d/ps_located.h"
 //
 #include "particle_workspace.h"
 //

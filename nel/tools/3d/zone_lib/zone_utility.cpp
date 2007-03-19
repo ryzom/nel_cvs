@@ -1,7 +1,7 @@
 /** \file zone_utility.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_utility.cpp,v 1.2 2003/02/17 16:27:12 corvazier Exp $
+ * $Id: zone_utility.cpp,v 1.3 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/file.h"
 #include "nel/3d/quad_tree.h"
-#include "3d/zone.h"
+#include "nel/../../src/3d/zone.h"
 #include <vector>
 #include <set>
 

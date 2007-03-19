@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.28 2005/01/31 15:44:47 lecroart Exp $
+ * $Id: script.cpp,v 1.29 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,17 +26,17 @@
 #define EXPORT_GET_ALLOCATOR
 
 // Various MAX and MXS includes
-#include "MAXScrpt.h"
-#include "3dmath.h"
-#include "Numbers.h"
-#include "MAXclses.h"
-#include "Streams.h"
-#include "MSTime.h"
-#include "MAXObj.h"
-#include "Parser.h"
-#include "max.h"
-#include "stdmat.h"
-#include "definsfn.h"
+#include <MaxScrpt/MAXScrpt.h>
+#include <MaxScrpt/3dmath.h>
+#include <MaxScrpt/Numbers.h>
+#include <MaxScrpt/MAXclses.h>
+#include <MaxScrpt/Streams.h>
+#include <MaxScrpt/MSTime.h>
+#include <MaxScrpt/MAXObj.h>
+#include <MaxScrpt/Parser.h>
+#include <max.h>
+#include <stdmat.h>
+#include <MaxScrpt/definsfn.h>
 
 // Visual
 #include <direct.h>
@@ -54,24 +54,24 @@
 
 
 // From nel 3d
-#include <3d/zone.h>
-#include <3d/zone_symmetrisation.h>
-#include <3d/nelu.h>
-#include <3d/landscape_model.h>
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/zone_symmetrisation.h"
+#include "nel/../../src/3d/nelu.h"
+#include "nel/../../src/3d/landscape_model.h"
 
 // From nel misc
-#include <nel/misc/file.h>
-#include <nel/misc/o_xml.h>
-#include <nel/misc/i_xml.h>
-#include <nel/misc/config_file.h>
+#include "nel/misc/file.h"
+#include "nel/misc/o_xml.h"
+#include "nel/misc/i_xml.h"
+#include "nel/misc/config_file.h"
 
 // From ligo library
-#include "ligo/zone_template.h"
+#include "nel/../../src/ligo/zone_template.h"
 #include "nel/ligo/ligo_config.h"
-#include "ligo/ligo_error.h"
-#include "ligo/ligo_material.h"
-#include "ligo/transition.h"
-#include "ligo/zone_bank.h"
+#include "nel/../../src/ligo/ligo_error.h"
+#include "nel/../../src/ligo/ligo_material.h"
+#include "nel/../../src/ligo/transition.h"
+#include "nel/../../src/ligo/zone_bank.h"
 
 #include "max_to_ligo.h"
 
@@ -1740,8 +1740,8 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 
 			// Build the scene
 			CExportNelOptions options;
-			CExportNel export (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone", &options);
-			export.buildScene (*CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, &theLand->Landscape, NULL, false, false, false);
+			CExportNel export_ (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone", &options);
+			export_.buildScene (*CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, &theLand->Landscape, NULL, false, false, false);
 
 			theLand->Landscape.setTileNear (50.f);
 			theLand->Landscape.TileBank=tileBank;

@@ -1,7 +1,7 @@
 /** \file anim_builder.cpp
  * Parse a directory and build optimized animations to an other directory
  *
- * $Id: anim_builder.cpp,v 1.1 2002/05/30 16:26:37 berenguier Exp $
+ * $Id: anim_builder.cpp,v 1.2 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
 
-#include "3d/animation.h"
-#include "3d/animation_optimizer.h"
-#include "3d/register_3d.h"
+#include "nel/../../src/3d/animation.h"
+#include "nel/../../src/3d/animation_optimizer.h"
+#include "nel/../../src/3d/register_3d.h"
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.17 2006/04/25 16:52:06 berenguier Exp $
+ * $Id: build_surf.h,v 1.18 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,21 +31,21 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
 
-#include "3d/zone.h"
-#include "3d/patch.h"
-#include "3d/mesh.h"
-#include "3d/landscape.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/patch.h"
+#include "nel/../../src/3d/mesh.h"
+#include "nel/../../src/3d/landscape.h"
 
 #include "nel/3d/quad_tree.h"
-#include "3d/quad_grid.h"
+#include "nel/../../src/3d/quad_grid.h"
 
 #include "nel/misc/vector.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/polygon.h"
 
-#include "pacs/surface_quad.h"
-#include "pacs/retrievable_surface.h"
+#include "nel/../../src/pacs/surface_quad.h"
+#include "nel/../../src/pacs/retrievable_surface.h"
 
 #include "prim_checker.h"
 

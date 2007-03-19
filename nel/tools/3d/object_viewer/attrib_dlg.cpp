@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant/non-constant value
  *
- * $Id: attrib_dlg.cpp,v 1.28 2004/06/17 08:18:01 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.29 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,12 +47,12 @@
 #include "curve_edit.h"
 
 
-#include "3d/ps_attrib_maker.h"
-#include "3d/ps_float.h"
-#include "3d/ps_int.h"
-#include "3d/ps_color.h"
-#include "3d/ps_plane_basis.h"
-#include "3d/ps_plane_basis_maker.h"
+#include "nel/../../src/3d/ps_attrib_maker.h"
+#include "nel/../../src/3d/ps_float.h"
+#include "nel/../../src/3d/ps_int.h"
+#include "nel/../../src/3d/ps_color.h"
+#include "nel/../../src/3d/ps_plane_basis.h"
+#include "nel/../../src/3d/ps_plane_basis_maker.h"
 
 
 

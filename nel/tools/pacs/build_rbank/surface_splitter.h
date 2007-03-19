@@ -1,7 +1,7 @@
 /** \file surface_splitter.h
  * TODO: File description
  *
- * $Id: surface_splitter.h,v 1.3 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: surface_splitter.h,v 1.4 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "pacs/local_retriever.h"
-#include "pacs/quad_grid.h"
+#include "nel/../../src/pacs/local_retriever.h"
+#include "nel/../../src/pacs/quad_grid.h"
 
 #include <map>
 

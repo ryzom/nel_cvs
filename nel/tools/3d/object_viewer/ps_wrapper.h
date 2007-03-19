@@ -3,7 +3,7 @@
  *	 a dialog.
  *
  *
- * $Id: ps_wrapper.h,v 1.7 2004/06/17 08:02:54 vizerie Exp $
+ * $Id: ps_wrapper.h,v 1.8 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,8 +36,8 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/vector.h"
 //
-#include "3d/ps_attrib_maker.h"
-#include "3d/texture.h"
+#include "nel/../../src/3d/ps_attrib_maker.h"
+#include "nel/../../src/3d/texture.h"
 //
 #include "particle_workspace.h"
 

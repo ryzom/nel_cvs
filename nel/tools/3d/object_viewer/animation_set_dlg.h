@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * TODO: File description
  *
- * $Id: animation_set_dlg.h,v 1.9 2004/11/15 10:25:08 lecroart Exp $
+ * $Id: animation_set_dlg.h,v 1.10 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 // animation_set_dlg.h : header file
 //
 
-#include <3d/animation_set.h>
+#include <nel/../../src/3d/animation_set.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CAnimationSetDlg dialog

@@ -1,7 +1,7 @@
 /** \file tile_utility.cpp
  * TODO: File description
  *
- * $Id: tile_utility.cpp,v 1.8 2005/01/31 13:53:37 lecroart Exp $
+ * $Id: tile_utility.cpp,v 1.9 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,9 +33,9 @@
 #undef max
 #endif
 
-#include <nel/misc/types_nl.h>
-#include <3d/tile_bank.h>
-#include <nel/misc/file.h>
+#include "nel/misc/types_nl.h"
+#include "nel/../../src/3d/tile_bank.h"
+#include "nel/misc/file.h"
 #include "../nel_patch_lib/rpo.h"
 
 #include "tile_utility.h"

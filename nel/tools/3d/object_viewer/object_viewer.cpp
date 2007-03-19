@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.132 2005/06/23 18:18:10 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.133 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,37 +39,37 @@
 
 #include "object_viewer.h"
 
-#include <3d/nelu.h>
-#include <3d/mesh.h>
-#include <3d/mesh_mrm.h>
-#include <3d/mesh_mrm_skinned.h>
-#include <3d/transform_shape.h>
-#include <3d/mesh_instance.h>
-#include <3d/text_context.h>
-#include <3d/skeleton_model.h>
-#include <3d/init_3d.h>
-#include <3d/scene_group.h>
-#include <3d/animation_playlist.h>
-#include <3d/track_keyframer.h>
-#include <3d/font_generator.h>
-#include <3d/register_3d.h>
-#include <3d/seg_remanence.h>
+#include "nel/../../src/3d/nelu.h"
+#include "nel/../../src/3d/mesh.h"
+#include "nel/../../src/3d/mesh_mrm.h"
+#include "nel/../../src/3d/mesh_mrm_skinned.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/mesh_instance.h"
+#include "nel/../../src/3d/text_context.h"
+#include "nel/../../src/3d/skeleton_model.h"
+#include "nel/../../src/3d/init_3d.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/animation_playlist.h"
+#include "nel/../../src/3d/track_keyframer.h"
+#include "nel/../../src/3d/font_generator.h"
+#include "nel/../../src/3d/register_3d.h"
+#include "nel/../../src/3d/seg_remanence.h"
 
-#include <nel/misc/common.h>
-#include <nel/misc/file.h>
-#include <nel/misc/path.h>
-#include <nel/misc/time_nl.h>
-#include <nel/misc/config_file.h>
+#include "nel/misc/common.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
+#include "nel/misc/time_nl.h"
+#include "nel/misc/config_file.h"
 
-#include <nel/sound/u_audio_mixer.h>
-#include <3d/water_pool_manager.h>
-#include <3d/landscape_model.h>
-#include <3d/visual_collision_manager.h>
-#include <3d/visual_collision_entity.h>
-#include <3d/ps_util.h>
+#include "nel/sound/u_audio_mixer.h"
+#include "nel/../../src/3d/water_pool_manager.h"
+#include "nel/../../src/3d/landscape_model.h"
+#include "nel/../../src/3d/visual_collision_manager.h"
+#include "nel/../../src/3d/visual_collision_entity.h"
+#include "nel/../../src/3d/ps_util.h"
 
 
-#include <pacs/global_retriever.h>
+#include "nel/../../src/pacs/global_retriever.h"
 
 
 

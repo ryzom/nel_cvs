@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * TODO: File description
  *
- * $Id: nel_export_view.cpp,v 1.46 2004/11/15 10:25:09 lecroart Exp $
+ * $Id: nel_export_view.cpp,v 1.47 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,17 +25,17 @@
 
 #include "std_afx.h"
 
-#include "3d/scene.h"
-#include "3d/register_3d.h"
-#include "3d/skeleton_shape.h"
-#include "3d/skeleton_model.h"
-#include "3d/mesh_instance.h"
-#include "3d/light.h"
-#include "3d/water_pool_manager.h"
-#include "3d/instance_lighter.h"
+#include "nel/../../src/3d/scene.h"
+#include "nel/../../src/3d/register_3d.h"
+#include "nel/../../src/3d/skeleton_shape.h"
+#include "nel/../../src/3d/skeleton_model.h"
+#include "nel/../../src/3d/mesh_instance.h"
+#include "nel/../../src/3d/light.h"
+#include "nel/../../src/3d/water_pool_manager.h"
+#include "nel/../../src/3d/instance_lighter.h"
 
-#include "pacs/retriever_bank.h"
-#include "pacs/global_retriever.h"
+#include "nel/../../src/pacs/retriever_bank.h"
+#include "nel/../../src/pacs/global_retriever.h"
 
 #include "../../object_viewer/object_viewer_interface.h"
 

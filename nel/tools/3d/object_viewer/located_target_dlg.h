@@ -1,7 +1,7 @@
 /** \file located_target_dlg.h
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.h,v 1.8 2004/06/17 08:11:47 vizerie Exp $
+ * $Id: located_target_dlg.h,v 1.9 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,8 +32,8 @@
 
 
 
-#include "3d/ps_located.h"
-#include "3d/ps_force.h"
+#include "nel/../../src/3d/ps_located.h"
+#include "nel/../../src/3d/ps_force.h"
 #include "dialog_stack.h"
 #include "ps_wrapper.h"
 #include "particle_workspace.h"

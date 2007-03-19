@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.41 2004/09/27 13:33:46 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.42 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,12 +33,12 @@
 #include "../nel_patch_lib/rpo.h"
 #include "../../ig_lighter_lib/ig_lighter_lib.h"
 
-#include "3d/scene_group.h"
-#include "3d/scene.h"
-#include "3d/shape_bank.h"
-#include "3d/zone_symmetrisation.h"
-#include "3d/particle_system_shape.h"
-#include "3d/particle_system.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/scene.h"
+#include "nel/../../src/3d/shape_bank.h"
+#include "nel/../../src/3d/zone_symmetrisation.h"
+#include "nel/../../src/3d/particle_system_shape.h"
+#include "nel/../../src/3d/particle_system.h"
 
 
 #include <vector>

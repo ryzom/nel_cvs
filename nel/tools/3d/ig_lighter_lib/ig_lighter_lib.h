@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.h
  * TODO: File description
  *
- * $Id: ig_lighter_lib.h,v 1.4 2004/11/15 10:25:08 lecroart Exp $
+ * $Id: ig_lighter_lib.h,v 1.5 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_IG_LIGHTER_LIB_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/instance_lighter.h"
+#include "nel/../../src/3d/instance_lighter.h"
 
 namespace NLPACS
 {

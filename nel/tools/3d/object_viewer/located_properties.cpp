@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.21 2004/06/17 08:12:16 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.22 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,8 +40,8 @@
 #include "lb_extern_id_dlg.h"
 #include "object_viewer.h"
 //
-#include "3d/ps_located.h"
-#include "3d/particle_system.h"
+#include "nel/../../src/3d/ps_located.h"
+#include "nel/../../src/3d/particle_system.h"
 
 using NL3D::CPSLocated;
 

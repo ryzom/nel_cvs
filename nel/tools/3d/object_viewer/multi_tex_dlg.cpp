@@ -1,7 +1,7 @@
 /** \file multi_tex_dlg.cpp
  * A dialog to tune multexturing for particles that support it
  *
- * $Id: multi_tex_dlg.cpp,v 1.5 2004/06/17 08:11:13 vizerie Exp $
+ * $Id: multi_tex_dlg.cpp,v 1.6 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,8 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "multi_tex_dlg.h"
-#include "3d/ps_particle_basic.h"
-#include "3d/texture_bump.h"
+#include "nel/../../src/3d/ps_particle_basic.h"
+#include "nel/../../src/3d/texture_bump.h"
 #include "popup_notify.h"
 
 #include "texture_chooser.h"

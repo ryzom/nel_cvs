@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.20 2006/01/10 17:39:05 boucher Exp $
+ * $Id: zviewer.cpp,v 1.21 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -932,14 +932,13 @@ void initViewerConfig(const char * configFileName)
 
 
 		CConfigFile::CVar &cvZones = cf.getVar("Zones");
-		int i;
-		for(i=0; i<cvZones.size(); i++)
+		for(uint i=0; i<cvZones.size(); i++)
 		{
 			ViewerCfg.Zones.push_back(cvZones.asString(i));
 		}
 
 		CConfigFile::CVar &cvIgs = cf.getVar("Ig");
-		for(i=0; i<cvIgs.size(); i++)
+		for(uint i=0; i<cvIgs.size(); i++)
 		{
 			ViewerCfg.Igs.push_back(cvIgs.asString(i));
 		}

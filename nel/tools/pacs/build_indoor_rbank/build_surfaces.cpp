@@ -1,7 +1,7 @@
 /** \file build_surfaces.cpp
  * 
  *
- * $Id: build_surfaces.cpp,v 1.3 2004/01/29 17:35:21 legros Exp $
+ * $Id: build_surfaces.cpp,v 1.4 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include <map>
 #include <vector>
 
-#include "pacs/collision_mesh_build.h"
-#include "pacs/local_retriever.h"
-#include "pacs/exterior_mesh.h"
-#include "pacs/surface_quad.h"
-#include "pacs/chain.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
+#include "nel/../../src/pacs/local_retriever.h"
+#include "nel/../../src/pacs/exterior_mesh.h"
+#include "nel/../../src/pacs/surface_quad.h"
+#include "nel/../../src/pacs/chain.h"
 
 #include "build_surfaces.h"
 

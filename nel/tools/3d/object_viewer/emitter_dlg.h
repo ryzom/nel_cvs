@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.13 2004/06/17 08:12:38 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.14 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,8 +30,8 @@
 #pragma once
 #endif 
 
-#include "3d/ps_particle.h"
-#include "3d/ps_emitter.h"
+#include "nel/../../src/3d/ps_particle.h"
+#include "nel/../../src/3d/ps_emitter.h"
 #include "start_stop_particle_system.h"
 
 namespace NL3D

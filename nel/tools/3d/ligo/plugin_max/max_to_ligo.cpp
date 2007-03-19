@@ -1,7 +1,7 @@
 /** \file max_to_ligo.cpp
  * Convert a 3dsmax nel patch mesh in ligo data
  *
- * $Id: max_to_ligo.cpp,v 1.11 2005/02/08 15:02:25 lecroart Exp $
+ * $Id: max_to_ligo.cpp,v 1.12 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 // From MAXSDK
-#include "maxscrpt.h"
+#include <MaxScrpt/maxscrpt.h>
 
 // From nel misc
 #include "nel/misc/stream.h"
@@ -36,9 +36,9 @@
 #include "max_to_ligo.h"
 
 // From ligo library
-#include "ligo/zone_template.h"
+#include "nel/../../src/ligo/zone_template.h"
 #include "nel/ligo/ligo_config.h"
-#include "ligo/ligo_error.h"
+#include "nel/../../src/ligo/ligo_error.h"
 
 using namespace std;
 using namespace NLMISC;

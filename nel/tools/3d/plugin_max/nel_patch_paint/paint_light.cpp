@@ -2,9 +2,9 @@
 #include "paint_light.h"
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_mesh_lib/export_appdata.h"
-#include <3d/scene.h>
-#include <3d/landscape.h>
-#include <3d/point_light_model.h>
+#include "nel/../../src/3d/scene.h"
+#include "nel/../../src/3d/landscape.h"
+#include "nel/../../src/3d/point_light_model.h"
 
 using namespace NL3D;
 using namespace NLMISC;

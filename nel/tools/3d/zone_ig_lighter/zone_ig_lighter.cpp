@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.14 2004/02/17 17:05:13 corvazier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.15 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,14 +31,14 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
 
-#include "3d/zone.h"
-#include "3d/instance_lighter.h"
-#include "3d/quad_grid.h"
-#include "3d/landscape.h"
-#include "3d/scene_group.h"
-#include "3d/shape.h"
-#include "3d/transform_shape.h"
-#include "3d/register_3d.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/instance_lighter.h"
+#include "nel/../../src/3d/quad_grid.h"
+#include "nel/../../src/3d/landscape.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/shape.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/register_3d.h"
 
 #include "../zone_lib/zone_utility.h"
 

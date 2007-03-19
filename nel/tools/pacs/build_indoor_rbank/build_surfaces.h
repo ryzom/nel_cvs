@@ -1,7 +1,7 @@
 /** \file build_surfaces.h
  * 
  *
- * $Id: build_surfaces.h,v 1.1 2002/01/07 11:17:03 lecroart Exp $
+ * $Id: build_surfaces.h,v 1.2 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
 
-#include "pacs/collision_mesh_build.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
 
 // External class declaration
 namespace NLPACS

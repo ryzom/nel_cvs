@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="nel_patch_converter"
 	ProjectGUID="{96D44787-9D7B-4998-A24F-79FDBF548F21}"
+	RootNamespace="nel_patch_converter"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,7 @@
 			OutputDirectory=".\ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -48,7 +49,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -78,11 +79,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="maxscrpt.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax\plugins\nelconvertpatch.dlm"
+				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib version.lib freetype219.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\ReleaseDebug/nelconvertpatch.pdb"
@@ -122,7 +123,7 @@
 			OutputDirectory=".\DebugFast"
 			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -152,7 +153,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -180,11 +181,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1 debug\exe\plugins\nelconvertpatch.dlm"
+				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib version.lib freetype231.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\DebugFast/nelconvertpatch.pdb"
@@ -223,7 +224,7 @@
 			OutputDirectory=".\Hybrid"
 			IntermediateDirectory=".\Hybrid"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -251,7 +252,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -279,11 +280,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="delayimp.lib edmodel.lib mnmath.lib acap.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelconvertpatch.dlm"
+				AdditionalDependencies="delayimp.lib edmodel.lib mnmath.lib acap.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib freetype231.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				IgnoreDefaultLibraryNames="msvcrtd.lib"
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				GenerateDebugInformation="true"
@@ -323,7 +324,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -352,7 +353,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -384,11 +385,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax_debug\plugins\nelconvertpatch.dlm"
+				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib version.lib freetype231.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlm"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/nelconvertpatch.pdb"
@@ -427,7 +428,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -457,7 +458,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -488,11 +489,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="maxscrpt.lib version.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelconvertpatch.dlm"
+				AdditionalDependencies="maxscrpt.lib version.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib freetype231.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				ProgramDatabaseFile=".\Release/nelconvertpatch.pdb"
 				SubSystem="2"

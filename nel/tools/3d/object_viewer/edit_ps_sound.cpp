@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.cpp
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.cpp,v 1.12 2004/06/17 08:13:27 vizerie Exp $
+ * $Id: edit_ps_sound.cpp,v 1.13 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 //
 
 #include "std_afx.h"
-#include "3d/ps_located.h"
+#include "nel/../../src/3d/ps_located.h"
 #include "nel/3d/u_particle_system_sound.h"
-#include "3d/particle_system.h"
+#include "nel/../../src/3d/particle_system.h"
 #include "object_viewer.h"
 #include "edit_ps_sound.h"
 #include "attrib_dlg.h"

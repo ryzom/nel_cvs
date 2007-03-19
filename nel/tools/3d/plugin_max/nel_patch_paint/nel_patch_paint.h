@@ -3,16 +3,16 @@
 
 #include "resource.h"
 #include <algorithm>
-#include <maxscrpt.h>
+#include <MaxScrpt/maxscrpt.h>
 #include "namesel.h"
 #include "nsclip.h"
 #include "sbmtlapi.h"
-#include "../../../code/nel/tools/3d/plugin_max/nel_patch_lib/rpo.h"
-#include "3d/tile_bank.h"
+#include "../nel_patch_lib/rpo.h"
+#include "nel/../../src/3d/tile_bank.h"
 #include "nel/3d/quad_tree.h"
 #include "nel/misc/rgba.h"
 #include <list>
-#include "../../../code/nel/tools/3d/plugin_max/nel_patch_lib/vertex_neighborhood.h"
+#include "../nel_patch_lib/vertex_neighborhood.h"
 
 // For MAX_RELEASE
 #include <plugapi.h>

@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.17 2004/02/03 17:27:35 legros Exp $
+ * $Id: main.cpp,v 1.18 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,17 +32,17 @@
 #include "nel/misc/displayer.h"
 #include "nel/misc/file.h"
 
-#include "3d/register_3d.h"
+#include "nel/../../src/3d/register_3d.h"
 
 #include "build_surf.h"
 #include "build_rbank.h"
 #include "prim_checker.h"
 
-#include "pacs/global_retriever.h"
-#include "pacs/retriever_bank.h"
-#include "pacs/surface_quad.h"
-#include "pacs/local_retriever.h"
-#include "pacs/retriever_instance.h"
+#include "nel/../../src/pacs/global_retriever.h"
+#include "nel/../../src/pacs/retriever_bank.h"
+#include "nel/../../src/pacs/surface_quad.h"
+#include "nel/../../src/pacs/local_retriever.h"
+#include "nel/../../src/pacs/retriever_instance.h"
 
 #include <string>
 #include <deque>
@@ -157,7 +157,7 @@ void	initMoulinette()
 	try
 	{
 		CConfigFile cf;
-		int			i;
+		uint			i;
 
 		cf.load("build_rbank.cfg");
 

@@ -75,7 +75,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype.lib msvcrtd.lib libc.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="freetype231.lib msvcrtd.lib libc.lib odbc32.lib odbccp32.lib"
 				OutputFile=".\Debug/animation_set_builder.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -165,7 +165,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype.lib"
+				AdditionalDependencies="freetype231.lib"
 				OutputFile=".\Release/animation_set_builder.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

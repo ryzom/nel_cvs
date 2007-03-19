@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.cpp
  * TODO: File description
  *
- * $Id: ig_lighter_lib.cpp,v 1.6 2004/11/15 10:25:08 lecroart Exp $
+ * $Id: ig_lighter_lib.cpp,v 1.7 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -24,10 +24,10 @@
  */
 
 #include "ig_lighter_lib.h"
-#include "3d/scene_group.h"
-#include "pacs/retriever_bank.h"
-#include "pacs/global_retriever.h"
 #include "nel/misc/path.h"
+#include "nel/../../src/pacs/retriever_bank.h"
+#include "nel/../../src/pacs/global_retriever.h"
+#include "nel/../../src/3d/scene_group.h"
 
 
 

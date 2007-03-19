@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.41 2004/07/19 16:38:15 berenguier Exp $
+ * $Id: export_anim.cpp,v 1.42 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,16 +25,17 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include <3d/camera.h>
-#include <3d/transform.h>
-#include <3d/animation.h>
-#include <3d/animated_material.h>
-#include <3d/key.h>
-#include <3d/track.h>
-#include <3d/particle_system_model.h>
-#include <3d/skeleton_model.h>
-#include <nel/misc/algo.h>
+#include "nel/../../src/3d/camera.h"
+#include "nel/../../src/3d/transform.h"
+#include "nel/../../src/3d/animation.h"
+#include "nel/../../src/3d/animated_material.h"
+#include "nel/../../src/3d/key.h"
+#include "nel/../../src/3d/track.h"
+#include "nel/../../src/3d/particle_system_model.h"
+#include "nel/../../src/3d/skeleton_model.h"
+#include "nel/misc/algo.h"
 #include <notetrck.h>
+#include <functional>
 
 #include "calc_lm.h"
 #include "export_appdata.h"

@@ -9,7 +9,7 @@
 #include "GetVal.h"
 #include "Browse.h"
 #include "choose_veget_set.h"
-#include "3d/tile_bank.h"
+#include "nel/../../src/3d/tile_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
 #include <shlobj.h>
@@ -562,7 +562,8 @@ void SelectionTerritoire::OnPath()
 					if (tileSet!=-1)
 					{
 						// 3 types of bitmaps
-						for (int type=CTile::diffuse; type<CTile::bitmapCount; type++)
+						int type;
+						for (type=CTile::diffuse; type<CTile::bitmapCount; type++)
 						{
 							// Bitmap string
 							const std::string& bitmapPath=tileBank.getTile(tiles)->getRelativeFileName ((CTile::TBitmap)type);

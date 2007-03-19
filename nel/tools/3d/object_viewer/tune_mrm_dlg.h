@@ -7,7 +7,7 @@
 // tune_mrm_dlg.h : header file
 //
 
-#include "3d/scene.h"
+#include "nel/../../src/3d/scene.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CTuneMrmDlg dialog

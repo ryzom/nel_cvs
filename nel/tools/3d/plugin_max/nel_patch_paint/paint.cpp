@@ -2,18 +2,18 @@
 #include "nel_patch_paint.h"
 #include "resource.h"
 
-#include "3d/scene.h"
-#include "3d/camera.h"
-#include "3d/nelu.h"
-#include "3d/light.h"
-#include "3d/landscape_model.h"
-#include "3d/landscape.h"
-#include "3d/event_mouse_listener.h"
-#include "3d/dru.h"
-#include "3d/texture_mem.h"
-#include "3d/transform_shape.h"
-#include "3d/zone_corner_smoother.h"
-#include "3d/zone_symmetrisation.h"
+#include "nel/../../src/3d/scene.h"
+#include "nel/../../src/3d/camera.h"
+#include "nel/../../src/3d/nelu.h"
+#include "nel/../../src/3d/light.h"
+#include "nel/../../src/3d/landscape_model.h"
+#include "nel/../../src/3d/landscape.h"
+#include "nel/../../src/3d/event_mouse_listener.h"
+#include "nel/../../src/3d/dru.h"
+#include "nel/../../src/3d/texture_mem.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/zone_corner_smoother.h"
+#include "nel/../../src/3d/zone_symmetrisation.h"
 
 #include "nel/misc/vector.h"
 #include "nel/misc/event_server.h"
@@ -4100,7 +4100,7 @@ DWORD WINAPI myThread (LPVOID vData)
 			TheLand->Landscape.setupStaticLight (LightDiffuse, LightAmbiant, LightMultiply);
 
 			// *******************
-			CExportNel export (true, true, true, pData->eproc->ip, "NeL Patch Painter", NULL);
+			CExportNel export_ (true, true, true, pData->eproc->ip, "NeL Patch Painter", NULL);
 
 			// Add meshes in the scene
 			if (pData->pobj->includeMeshes)
@@ -4126,7 +4126,7 @@ DWORD WINAPI myThread (LPVOID vData)
 						
 						// Export the shape
 						IShape *pShape;
-						pShape=export.buildShape (*pNode, pData->T, NULL, true);
+						pShape=export_.buildShape (*pNode, pData->T, NULL, true);
 
 						// Export successful ?
 						if (pShape)
@@ -4144,11 +4144,11 @@ DWORD WINAPI myThread (LPVOID vData)
 				}
 
 				// Setup ambient light
-				CNELU::Driver->setAmbientColor (export.getAmbientColor (pData->T));
+				CNELU::Driver->setAmbientColor (export_.getAmbientColor (pData->T));
 
 				// Build light vector
 				std::vector<CLight> vectLight;
-				export.getLights (vectLight, pData->T);
+				export_.getLights (vectLight, pData->T);
 
 				// Insert each lights
 				for (uint light=0; light<vectLight.size(); light++)

@@ -1,6 +1,6 @@
 /** \file tail_particle_dlg.cpp
  * A dailog that helps to tune propertie of particle that owns a tail 
- * $Id: tail_particle_dlg.cpp,v 1.6 2004/07/16 08:39:41 vizerie Exp $
+ * $Id: tail_particle_dlg.cpp,v 1.7 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 
 #include "std_afx.h"
 #include "object_viewer.h"
-#include "3d/ps_particle.h"
+#include "nel/../../src/3d/ps_particle.h"
 #include "tail_particle_dlg.h"
 
 

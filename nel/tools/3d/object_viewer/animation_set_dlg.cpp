@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.13 2002/11/04 15:40:44 boucher Exp $
+ * $Id: animation_set_dlg.cpp,v 1.14 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #include "object_viewer.h"
 #include "animation_set_dlg.h"
 
-#include <nel/misc/file.h>
-#include <3d/track_keyframer.h>
+#include "nel/misc/file.h"
+#include "nel/../../src/3d/track_keyframer.h"
 
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.58 2005/08/19 15:34:08 cado Exp $
+ * $Id: calc_lm.cpp,v 1.59 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,12 +34,12 @@
 #include "nel/misc/bsphere.h"
 #include "nel/misc/path.h"
 #include "nel/3d/quad_tree.h"
-#include "3d/scene_group.h"
-#include "3d/skeleton_shape.h"
-#include "3d/texture_file.h"
-#include "3d/light.h"
-#include "3d/bsp_tree.h"
-#include "3d/quad_grid.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/skeleton_shape.h"
+#include "nel/../../src/3d/texture_file.h"
+#include "nel/../../src/3d/light.h"
+#include "nel/../../src/3d/bsp_tree.h"
+#include "nel/../../src/3d/quad_grid.h"
 
 #include <vector>
 

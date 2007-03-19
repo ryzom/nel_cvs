@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * TODO: File description
  *
- * $Id: nel_export_scene.cpp,v 1.11 2004/11/15 10:25:09 lecroart Exp $
+ * $Id: nel_export_scene.cpp,v 1.12 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "nel_export.h"
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_patch_lib/rpo.h"
-#include "3d/scene_group.h"
+#include "nel/../../src/3d/scene_group.h"
 
 #include <vector>
 

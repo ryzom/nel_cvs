@@ -1,6 +1,6 @@
 /** \file export_particle_system.cpp
  *
- * $Id: export_particle_system.cpp,v 1.5 2004/04/07 09:56:26 berenguier Exp $
+ * $Id: export_particle_system.cpp,v 1.6 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -23,8 +23,8 @@
  */
 
 #include "StdAfx.h"
-#include <3d/particle_system_model.h>
-#include <3d/particle_system_shape.h>
+#include "nel/../../src/3d/particle_system_model.h"
+#include "nel/../../src/3d/particle_system_shape.h"
 #include "nel/misc/path.h"
 #include "export_appdata.h"
 #include "export_nel.h"

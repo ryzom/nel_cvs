@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="ligoscape_utility"
 	ProjectGUID="{796E7156-7DE8-4F86-BF33-D7ACF4014204}"
+	RootNamespace="ligoscape_utility"
 	>
 	<Platforms>
 		<Platform
@@ -15,10 +16,10 @@
 	<Configurations>
 		<Configuration
 			Name="Hybrid|Win32"
-			OutputDirectory=".\plugin_max___Win32_Hybrid"
-			IntermediateDirectory=".\plugin_max___Win32_Hybrid"
+			OutputDirectory=".\Hybrid"
+			IntermediateDirectory=".\Hybrid"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -40,21 +41,21 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\plugin_max___Win32_Hybrid/ligoscape_utility.tlb"
+				TypeLibraryName=".\Hybrid/ligoscape_utility.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\plugin_max___Win32_Hybrid/ligoscape_utility.pch"
-				AssemblerListingLocation=".\plugin_max___Win32_Hybrid/"
-				ObjectFile=".\plugin_max___Win32_Hybrid/"
-				ProgramDataBaseFileName=".\plugin_max___Win32_Hybrid/"
+				PrecompiledHeaderFile=".\Hybrid/ligoscape_utility.pch"
+				AssemblerListingLocation=".\Hybrid/"
+				ObjectFile=".\Hybrid/"
+				ProgramDataBaseFileName=".\Hybrid/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -73,16 +74,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelligo.dlx"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype231.lib"
+				OutputFile=".\Hybrid\nelligo.dlx"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\plugin_max___Win32_Hybrid/nelligo.pdb"
+				ProgramDatabaseFile=".\Hybrid/nelligo.pdb"
 				SubSystem="2"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\plugin_max___Win32_Hybrid/nelligo.lib"
+				ImportLibrary=".\Hybrid/nelligo.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -115,7 +116,7 @@
 			OutputDirectory=".\ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -145,7 +146,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="NDEBUG;NL_RELEASE_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -174,8 +175,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype.lib ws2_32.lib"
-				OutputFile="C:\3dsmax\plugins\nelligo.dlx"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2_a.lib freetype219.lib"
+				OutputFile=".\ReleaseDebug\nelligo.dlx"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -216,7 +217,7 @@
 			OutputDirectory=".\DebugFast"
 			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -244,7 +245,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -271,8 +272,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelligo.dlx"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype231.lib"
+				OutputFile=".\DebugFast\nelligo.dlx"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -312,7 +313,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -341,7 +342,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="NDEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -369,8 +370,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelligo.dlx"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2.lib freetype231.lib"
+				OutputFile=".\Release\nelligo.dlx"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
@@ -411,7 +412,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -440,7 +441,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_WINDOWS;WIN32;NL_NO_DEFINE_NEW"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -473,8 +474,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2_a.lib freetype.lib"
-				OutputFile="C:\3dsmax_debug\plugins\nelligo.dlx"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib libxml2_a.lib freetype231.lib"
+				OutputFile=".\Debug\nelligo.dlx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"

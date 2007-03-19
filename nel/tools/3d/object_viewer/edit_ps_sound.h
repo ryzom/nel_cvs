@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.h
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.h,v 1.8 2004/06/17 08:13:27 vizerie Exp $
+ * $Id: edit_ps_sound.h,v 1.9 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #endif
 
 #include "ps_wrapper.h"
-#include "3d/ps_sound.h"
+#include "nel/../../src/3d/ps_sound.h"
 #include "editable_range.h"
 #include "particle_workspace.h"
 

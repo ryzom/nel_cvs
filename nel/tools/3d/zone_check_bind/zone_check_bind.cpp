@@ -1,7 +1,7 @@
 /** \file zone_check_bind.cpp
  * This tool check that each patch of a zone to see wether they are bound correctly.
  *
- * $Id: zone_check_bind.cpp,v 1.7 2005/08/19 15:34:08 cado Exp $
+ * $Id: zone_check_bind.cpp,v 1.8 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -30,9 +30,9 @@
 #include "nel/misc/file.h"
 #include "nel/misc/aabbox.h"
 //
-#include "3d/quad_grid.h"
-#include "3d/bezier_patch.h"
-#include "3d/zone.h"
+#include "nel/../../src/3d/quad_grid.h"
+#include "nel/../../src/3d/bezier_patch.h"
+#include "nel/../../src/3d/zone.h"
 
 //
 #include <vector>

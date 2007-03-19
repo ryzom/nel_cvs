@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-#include "3d/tile_bank.h"
-#include "3d/texture_mem.h"
-#include "3d/texture_file.h"
+#include "nel/../../src/3d/tile_bank.h"
+#include "nel/../../src/3d/texture_mem.h"
+#include "nel/../../src/3d/texture_file.h"
 #include "nel/misc/events.h"
 #include "paint_undo.h"
 

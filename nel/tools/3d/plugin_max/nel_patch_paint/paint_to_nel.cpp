@@ -2,7 +2,7 @@
 #include "nel_patch_paint.h"
 
 #include "paint_to_nel.h"
-#include <3d/landscape.h>
+#include "nel/../../src/3d/landscape.h"
 
 /*-------------------------------------------------------------------*/
 

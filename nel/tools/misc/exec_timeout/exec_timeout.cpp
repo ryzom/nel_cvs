@@ -2,7 +2,7 @@
  * This utility exec a program with its agrument line and a execution timeout.
  * Works only under Windows for the time.
  *
- * $Id: exec_timeout.cpp,v 1.1 2002/03/13 09:59:52 corvazier Exp $
+ * $Id: exec_timeout.cpp,v 1.2 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <nel/misc/debug.h>
+#include "nel/misc/debug.h"
 #include <windows.h>
 #include <string>
 

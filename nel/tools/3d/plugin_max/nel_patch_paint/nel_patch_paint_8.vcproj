@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="nel_patch_paint"
 	ProjectGUID="{118E27D8-E402-486D-B7B6-B9E8827FE716}"
+	RootNamespace="nel_patch_paint"
 	>
 	<Platforms>
 		<Platform
@@ -18,7 +19,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -47,7 +48,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -78,8 +79,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib libxml2.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelpaintpatch.dlm"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib libxml2.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype231.lib"
+				OutputFile=".\Release\nelpaintpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\nel_patch_paint.def"
@@ -120,7 +121,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -149,7 +150,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;_WINDOWS;WIN32;_DEBUG"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -183,8 +184,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib libxml2_a.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax_debug\plugins\nelpaintpatch.dlm"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib libxml2_a.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype231.lib"
+				OutputFile=".\Debug\nelpaintpatch.dlm"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\nel_patch_paint.def"
@@ -225,7 +226,7 @@
 			OutputDirectory=".\ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -255,7 +256,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -285,8 +286,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib libxml2.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib ws2_32.lib"
-				OutputFile="C:\3dsmax\plugins\nelpaintpatch.dlm"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib libxml2_a.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype219.lib"
+				OutputFile=".\ReleaseDebug\nelpaintpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\nel_patch_paint.def"
@@ -328,7 +329,7 @@
 			OutputDirectory=".\Hybrid"
 			IntermediateDirectory=".\Hybrid"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -356,7 +357,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -386,8 +387,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="nl3d_debug.lib nlmisc_debug.lib libxml2.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelpaintpatch.dlm"
+				AdditionalDependencies="nl3d_debug.lib nlmisc_debug.lib libxml2.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype231.lib"
+				OutputFile=".\Hybrid\nelpaintpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreDefaultLibraryNames="msvcrtd.lib"
@@ -429,7 +430,7 @@
 			OutputDirectory=".\DebugFast"
 			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -458,7 +459,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -487,8 +488,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib stlport_vc6.lib libxml2.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib"
-				OutputFile="C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib stlport_vc6.lib libxml2.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype231.lib"
+				OutputFile=".\DebugFast\nelpaintpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\nel_patch_paint.def"

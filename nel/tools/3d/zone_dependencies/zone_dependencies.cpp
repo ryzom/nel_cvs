@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.18 2006/04/19 14:00:20 vizerie Exp $
+ * $Id: zone_dependencies.cpp,v 1.19 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "../zone_lib/zone_utility.h"
 
-#include "3d/zone.h"
-#include "3d/quad_grid.h"
-#include "3d/scene_group.h"
-#include "3d/shape.h"
-#include "3d/water_shape.h"
-#include "3d/register_3d.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/quad_grid.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/shape.h"
+#include "nel/../../src/3d/water_shape.h"
+#include "nel/../../src/3d/register_3d.h"
 
 #include "nel/georges/u_form.h"
 #include "nel/georges/u_form_elm.h"

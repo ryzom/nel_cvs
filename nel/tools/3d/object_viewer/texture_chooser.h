@@ -1,6 +1,6 @@
 /** \file texture_chooser.h
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.h,v 1.8 2004/06/17 08:00:32 vizerie Exp $
+ * $Id: texture_chooser.h,v 1.9 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@
 //
 #include "nel/misc/smart_ptr.h"
 //
-#include "3d/texture.h"
+#include "nel/../../src/3d/texture.h"
 
 using NLMISC::CSmartPtr ;
 

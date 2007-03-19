@@ -1,7 +1,7 @@
 /** \file curve_edit.cpp
  * A dialog for editing a curve
  *
- * $Id: curve_edit.cpp,v 1.8 2005/10/17 13:18:35 vizerie Exp $
+ * $Id: curve_edit.cpp,v 1.9 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "object_viewer.h"
 #include "curve_edit.h"
 #include "editable_range.h"
-#include <3d/ps_float.h>
-#include <nel/misc/common.h>
-#include <nel/misc/fast_floor.h>
+#include "nel/../../src/3d/ps_float.h"
+#include "nel/misc/common.h"
+#include "nel/misc/fast_floor.h"
 
 static const uint CtrlPointSize = 3;
 

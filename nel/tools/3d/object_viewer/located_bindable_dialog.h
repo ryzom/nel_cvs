@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.21 2004/07/20 12:25:05 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.22 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,11 +39,11 @@ namespace NL3D
 
 #include "nel/misc/rgba.h"
 //
-#include "3d/texture.h"
-#include "3d/ps_plane_basis.h"
-#include "3d/particle_system.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_particle2.h"
+#include "nel/../../src/3d/texture.h"
+#include "nel/../../src/3d/ps_plane_basis.h"
+#include "nel/../../src/3d/particle_system.h"
+#include "nel/../../src/3d/ps_particle.h"
+#include "nel/../../src/3d/ps_particle2.h"
 //
 #include "ps_wrapper.h"
 #include "dialog_stack.h"

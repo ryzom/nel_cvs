@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.12 2003/05/26 09:06:10 berenguier Exp $
+ * $Id: ig_lighter.cpp,v 1.13 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,15 +30,15 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
 
-#include "3d/instance_lighter.h"
-#include "3d/quad_grid.h"
-#include "3d/scene_group.h"
-#include "3d/shape.h"
-#include "3d/transform_shape.h"
-#include "3d/register_3d.h"
-#include "pacs/global_retriever.h"
-#include "pacs/local_retriever.h"
-#include "pacs/retriever_bank.h"
+#include "nel/../../src/3d/instance_lighter.h"
+#include "nel/../../src/3d/quad_grid.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/shape.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/register_3d.h"
+#include "nel/../../src/pacs/global_retriever.h"
+#include "nel/../../src/pacs/local_retriever.h"
+#include "nel/../../src/pacs/retriever_bank.h"
 #include "../ig_lighter_lib/ig_lighter_lib.h"
 
 

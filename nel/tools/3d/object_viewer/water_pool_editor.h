@@ -1,7 +1,7 @@
 /** \file water_pool_editor.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: water_pool_editor.h,v 1.2 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: water_pool_editor.h,v 1.3 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 	class CWaterPoolManager;
 }
 
-#include "3d/water_height_map.h"
+#include "nel/../../src/3d/water_height_map.h"
 #include "ps_wrapper.h"
 #include "editable_range.h"
 

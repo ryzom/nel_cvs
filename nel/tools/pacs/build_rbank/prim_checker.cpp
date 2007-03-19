@@ -1,7 +1,7 @@
 /** \file prim_checker.cpp
  * TODO: File description
  *
- * $Id: prim_checker.cpp,v 1.7 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: prim_checker.cpp,v 1.8 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -37,11 +37,11 @@
 #include "nel/ligo/primitive.h"
 
 // NeL 3d
-#include "3d/scene_group.h"
-#include "3d/transform_shape.h"
-#include "3d/water_model.h"
-#include "3d/water_shape.h"
-#include "3d/quad_grid.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/transform_shape.h"
+#include "nel/../../src/3d/water_model.h"
+#include "nel/../../src/3d/water_shape.h"
+#include "nel/../../src/3d/quad_grid.h"
 
 // STL includes
 #include <vector>

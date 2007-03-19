@@ -1,7 +1,7 @@
 /** \file precomputed_rotations_dlg.cpp
  * a dialog to edit precomputed rotations of elements in a particle system
  *
- * $Id: precomputed_rotations_dlg.cpp,v 1.7 2004/06/17 08:06:54 vizerie Exp $
+ * $Id: precomputed_rotations_dlg.cpp,v 1.8 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "precomputed_rotations_dlg.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_mesh.h"
+#include "nel/../../src/3d/ps_particle.h"
+#include "nel/../../src/3d/ps_mesh.h"
 #include "attrib_dlg.h"
 
 

@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.h
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.h,v 1.6 2004/06/17 08:15:37 vizerie Exp $
+ * $Id: collision_zone_dlg.h,v 1.7 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NL3D
 #include "editable_range.h"
 #include "particle_workspace.h"
 //
-#include "3d/ps_zone.h"
+#include "nel/../../src/3d/ps_zone.h"
 
 
 class CParticleDlg;

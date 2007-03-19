@@ -1,7 +1,7 @@
 /** \file script.cpp
  * TODO: File description
  *
- * $Id: script.cpp,v 1.14 2004/11/15 10:25:10 lecroart Exp $
+ * $Id: script.cpp,v 1.15 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,40 +26,40 @@
 #define EXPORT_GET_ALLOCATOR
 
 #include "PO2RPO.h"
+#include "nel/misc/file.h"
+#include "nel/misc/common.h"
+
 #include "..\nel_patch_lib\rpo.h"
 #include "..\nel_mesh_lib\export_nel.h"
 #include "..\nel_mesh_lib\export_appdata.h"
 
-#include "3d/zone.h"
-#include "3d/zone_symmetrisation.h"
-#include "3d/tile_bank.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/zone_symmetrisation.h"
+#include "nel/../../src/3d/tile_bank.h"
 
-#include "nel/misc/file.h"
-
-#include "nel/misc/common.h"
 
 using namespace NLMISC;
 using namespace NL3D;
 using namespace std;
 
-#include "MAXScrpt.h"
-#include "3dmath.h"
+#include <MaxScrpt/maxscrpt.h>
+#include <MaxScrpt/3dmath.h>
 
 // Various MAX and MXS includes
-#include "Numbers.h"
-#include "MAXclses.h"
-#include "Streams.h"
-#include "MSTime.h"
-#include "MAXObj.h"
-#include "Parser.h"
-#include "modstack.h"
-#include "decomp.h"
+#include <MaxScrpt/Numbers.h>
+#include <MaxScrpt/MAXclses.h>
+#include <MaxScrpt/Streams.h>
+#include <MaxScrpt/MSTime.h>
+#include <MaxScrpt/MAXObj.h>
+#include <MaxScrpt/Parser.h>
+#include <modstack.h>
+#include <decomp.h>
 
-#include "max.h"
-#include "stdmat.h"
+#include <max.h>
+#include <stdmat.h>
 
 // define the new primitives using macros from SDK
-#include "definsfn.h"
+#include <MaxScrpt/definsfn.h>
 
 /*===========================================================================*\
  |	Define our new functions

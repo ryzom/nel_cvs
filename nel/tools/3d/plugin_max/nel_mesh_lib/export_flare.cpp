@@ -1,6 +1,6 @@
 /** \file export_flare.cpp
  *
- * $Id: export_flare.cpp,v 1.5 2004/07/05 08:01:22 vizerie Exp $
+ * $Id: export_flare.cpp,v 1.6 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 
 #include "StdAfx.h"
 #include "export_nel.h"
-#include "3d/flare_shape.h"
+#include "nel/../../src/3d/flare_shape.h"
 #include "nel/misc/path.h"
 
 

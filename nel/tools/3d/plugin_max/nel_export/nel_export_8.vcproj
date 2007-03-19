@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="nel_export"
 	ProjectGUID="{F12B8538-1EAB-4BCB-8506-9DB5605F14E5}"
-	SignManifests="true"
+	RootNamespace="nel_export"
 	>
 	<Platforms>
 		<Platform
@@ -19,7 +19,7 @@
 			OutputDirectory=".\ReleaseDebug"
 			IntermediateDirectory=".\ReleaseDebug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -49,6 +49,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -77,8 +78,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Version.lib comctl32.lib freetype.lib paramblk2.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib bmm.lib maxutil.lib libxml2.lib WS2_32.Lib"
-				OutputFile="C:\3dsmax\plugins\nelexport.dlu"
+				AdditionalDependencies="version.lib freetype219.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib libxml2_a.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
@@ -121,7 +122,7 @@
 			OutputDirectory=".\Hybrid"
 			IntermediateDirectory=".\Hybrid"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -149,6 +150,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__STL_DEBUG"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -176,11 +178,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib libxml2.lib"
-				OutputFile="c:\3DSMAX3_1\plugins\Nel_export.dlu"
+				AdditionalDependencies="freetype231.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib libxml2.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="D:\3DSMAX3\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\nel_export.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Hybrid/Nel_export.pdb"
@@ -219,7 +221,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -249,6 +251,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -278,11 +281,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="version.lib freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib libxml2.lib"
-				OutputFile="C:\3dsmax3_1\plugins\nelexport.dlu"
+				AdditionalDependencies="version.lib freetype231.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib libxml2.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="D:\3DSMAX3\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\nel_export.def"
 				ProgramDatabaseFile=".\Release/nelexport.pdb"
 				SubSystem="2"
@@ -321,7 +324,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -350,6 +353,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm400 "
 				Optimization="0"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="__STL_DEBUG;WIN32;_DEBUG;_WINDOWS"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -383,8 +387,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="version.lib libxml2_a.lib freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib"
-				OutputFile="C:\3dsmax_debug\plugins\nelexport.dlu"
+				AdditionalDependencies="version.lib libxml2_a.lib freetype231.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlu"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
@@ -426,7 +430,7 @@
 			OutputDirectory=".\DebugFast"
 			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="2"
-			InheritedPropertySheets="UpgradeFromVC71.vsprops"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -456,6 +460,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;NL_DEBUG_FAST"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -484,11 +489,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="version.lib freetype.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib libxml2.lib"
-				OutputFile="C:\3dsmax3_1 debug\exe\plugins\nelexport.dlu"
+				AdditionalDependencies="version.lib freetype231.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib gup.lib paramblk2.lib winmm.lib odbc32.lib odbccp32.lib libxml2.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dlu"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="D:\3DSMAX3\Maxsdk\lib"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\nel_export.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\DebugFast/nelexport.pdb"

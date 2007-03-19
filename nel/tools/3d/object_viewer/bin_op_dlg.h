@@ -1,7 +1,7 @@
 /** \file bin_op_dlg.h
  * A dialog that helps editing binary opeartors ofr particle systems attributes.
  *
- * $Id: bin_op_dlg.h,v 1.4 2001/12/18 18:33:32 vizerie Exp $
+ * $Id: bin_op_dlg.h,v 1.5 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #endif 
 
 #include "attrib_dlg.h"
-#include "3d/ps_attrib_maker_bin_op.h"
+#include "nel/../../src/3d/ps_attrib_maker_bin_op.h"
 
 class CBinOpDlg : public CDialog
 {

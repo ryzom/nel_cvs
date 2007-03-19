@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.29 2006/04/25 16:52:06 berenguier Exp $
+ * $Id: build_surf.cpp,v 1.30 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,12 +35,12 @@
 #include "nel/misc/triangle.h"
 #include "nel/misc/polygon.h"
 
-#include "3d/landscape.h"
-#include "3d/zone.h"
-#include "3d/mesh.h"
-#include "3d/quad_grid.h"
+#include "nel/../../src/3d/landscape.h"
+#include "nel/../../src/3d/zone.h"
+#include "nel/../../src/3d/mesh.h"
+#include "nel/../../src/3d/quad_grid.h"
 
-#include "pacs/vector_2s.h"
+#include "nel/../../src/pacs/vector_2s.h"
 
 #include "build_surf.h"
 

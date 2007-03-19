@@ -1,7 +1,7 @@
 /** \file build_clod_bank.cpp
  * build a .clodbank with a config file.
  *
- * $Id: build_clod_bank.cpp,v 1.6 2002/09/04 10:32:34 berenguier Exp $
+ * $Id: build_clod_bank.cpp,v 1.7 2007/03/19 09:55:25 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,12 +28,12 @@
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
-#include "3d/lod_character_shape_bank.h"
-#include "3d/lod_character_shape.h"
-#include "3d/lod_character_builder.h"
-#include "3d/animation.h"
-#include "3d/skeleton_shape.h"
-#include "3d/register_3d.h"
+#include "nel/../../src/3d/lod_character_shape_bank.h"
+#include "nel/../../src/3d/lod_character_shape.h"
+#include "nel/../../src/3d/lod_character_builder.h"
+#include "nel/../../src/3d/animation.h"
+#include "nel/../../src/3d/skeleton_shape.h"
+#include "nel/../../src/3d/register_3d.h"
 
 
 using namespace std;

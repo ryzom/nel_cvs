@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.14 2004/06/17 08:18:01 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.15 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,8 +32,8 @@
 
 
 #include "nel/misc/rgba.h"
-#include "3d/ps_plane_basis.h"
-#include "3d/ps_attrib_maker.h"
+#include "nel/../../src/3d/ps_plane_basis.h"
+#include "nel/../../src/3d/ps_attrib_maker.h"
 #include "editable_range.h"
 #include "popup_notify.h"
 #include "particle_workspace.h"

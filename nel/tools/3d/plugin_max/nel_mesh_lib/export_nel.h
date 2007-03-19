@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.73 2005/01/05 14:57:02 berenguier Exp $
+ * $Id: export_nel.h,v 1.74 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,16 +27,16 @@
 #define NL_EXPORT_NEL_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh.h"
-#include "3d/material.h"
-#include "3d/mesh_vertex_program.h"
-#include "3d/camera.h"
-#include <3d/key.h>
-#include <3d/track_keyframer.h>
-#include <3d/bone.h>
-#include <nel/3d/animation_time.h>
-#include <nel/3d/animation_time.h>
-#include <pacs/collision_mesh_build.h>
+#include "nel/../../src/3d/mesh.h"
+#include "nel/../../src/3d/material.h"
+#include "nel/../../src/3d/mesh_vertex_program.h"
+#include "nel/../../src/3d/camera.h"
+#include "nel/../../src/3d/key.h"
+#include "nel/../../src/3d/track_keyframer.h"
+#include "nel/../../src/3d/bone.h"
+#include "nel/3d/animation_time.h"
+#include "nel/3d/animation_time.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
 
 #define UVGEN_MISSING (-1)
 #define UVGEN_REFLEXION (-2)

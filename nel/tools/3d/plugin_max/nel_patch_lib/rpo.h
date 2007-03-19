@@ -1,7 +1,7 @@
 /** \file rpo.h
  * TODO: File description
  *
- * $Id: rpo.h,v 1.7 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: rpo.h,v 1.8 2007/03/19 09:55:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,12 @@
 #define __RYKOL_PATCH_OBJ_H
 
 #pragma warning (disable : 4786)
+#include "nel/misc/debug.h"
 #include <vector>
 #include <set>
 #include <string>
-#include <nel/misc/debug.h>
-#include <3d/tile_bank.h>
-#include <nel/misc/file.h>
+#include "nel/../../src/3d/tile_bank.h"
+#include "nel/misc/file.h"
 #include "nel_patch_mesh.h"
 
 //#define USE_CACHE

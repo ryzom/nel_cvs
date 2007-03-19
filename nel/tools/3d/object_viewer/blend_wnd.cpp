@@ -1,7 +1,7 @@
 /** \file blend_wnd.cpp
  * Window class for the dlg slot blend window
  *
- * $Id: blend_wnd.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: blend_wnd.cpp,v 1.4 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std_afx.h"
 #include "blend_wnd.h"
 #include <nel/misc/common.h>
-#include <3d/animation_playlist.h>
+#include <nel/../../src/3d/animation_playlist.h>
 
 using namespace NL3D;
 using namespace NLMISC;

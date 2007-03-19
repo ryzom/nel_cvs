@@ -3,8 +3,8 @@
 using namespace NL3D;
 using namespace NLMISC;
 
-#include <3d/tile_element.h>
-#include <3d/tile_color.h>
+#include "nel/../../src/3d/tile_element.h"
+#include "nel/../../src/3d/tile_color.h"
 
 typedef std::pair<int, int> CNelPatchKey;
 

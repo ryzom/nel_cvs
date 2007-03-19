@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.43 2006/01/05 11:42:05 berenguier Exp $
+ * $Id: export_material.cpp,v 1.44 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include "stdafx.h"
 #include "export_nel.h"
 #include "../tile_utility/tile_utility.h"
-#include <3d/texture_file.h>
-#include <3d/texture_multi_file.h>
-#include <3d/texture_cube.h>
-#include <3d/tangent_space_build.h>
-#include <3d/meshvp_per_pixel_light.h>
+#include "nel/../../src/3d/texture_file.h"
+#include "nel/../../src/3d/texture_multi_file.h"
+#include "nel/../../src/3d/texture_cube.h"
+#include "nel/../../src/3d/tangent_space_build.h"
+#include "nel/../../src/3d/meshvp_per_pixel_light.h"
 
 #include <vector>
 #include <string>

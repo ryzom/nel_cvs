@@ -1,7 +1,7 @@
 /** \file mouline.cpp
  * 
  *
- * $Id: mouline.cpp,v 1.7 2004/02/13 16:15:42 legros Exp $
+ * $Id: mouline.cpp,v 1.8 2007/03/19 09:55:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #include <map>
 #include <vector>
 
-#include "pacs/collision_mesh_build.h"
-#include "pacs/local_retriever.h"
-#include "pacs/exterior_mesh.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
+#include "nel/../../src/pacs/local_retriever.h"
+#include "nel/../../src/pacs/exterior_mesh.h"
 
 #include "mouline.h"
 #include "build_surfaces.h"

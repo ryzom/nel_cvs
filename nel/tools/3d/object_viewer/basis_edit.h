@@ -1,7 +1,7 @@
 /** \file basis_edit.h
  * a dialog to edit the orientation of a basis
  *
- * $Id: basis_edit.h,v 1.3 2001/09/12 13:23:54 vizerie Exp $
+ * $Id: basis_edit.h,v 1.4 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #pragma once
 #endif 
 
-#include "3d/ps_plane_basis.h"
+#include "nel/../../src/3d/ps_plane_basis.h"
 #include "ps_wrapper.h"
 #include "edit_attrib_dlg.h"
 

@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.18 2005/08/19 15:34:08 cado Exp $
+ * $Id: export_collision.cpp,v 1.19 2007/03/19 09:55:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,13 +34,13 @@
 #include "../nel_export/nel_export.h"
 #include "../nel_export/nel_export_scene.h"
 
-#include "pacs/collision_mesh_build.h"
-#include "pacs/retriever_bank.h"
-#include "pacs/global_retriever.h"
-#include "pacs/build_indoor.h"
-#include "pacs/primitive_block.h"
+#include "nel/../../src/pacs/collision_mesh_build.h"
+#include "nel/../../src/pacs/retriever_bank.h"
+#include "nel/../../src/pacs/global_retriever.h"
+#include "nel/../../src/pacs/build_indoor.h"
+#include "nel/../../src/pacs/primitive_block.h"
 
-#include "3d/quad_grid.h"
+#include "nel/../../src/3d/quad_grid.h"
 
 using namespace std;
 using namespace NLMISC;

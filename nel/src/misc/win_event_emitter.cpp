@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.14 2004/07/20 09:03:31 corvazier Exp $
+ * $Id: win_event_emitter.cpp,v 1.14.40.1 2007/03/19 16:17:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -256,6 +256,9 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 		}
 	case WM_DESTROY:
 		server->postEvent (new CEventDestroyWindow (this));
+		break;
+	case WM_DISPLAYCHANGE:		
+		server->postEvent (new CEventDisplayChange (LOWORD(lParam), HIWORD(lParam), wParam, this));
 		break;
 	case WM_MOUSEWHEEL:
 		if (_MouseEventsEnabled)

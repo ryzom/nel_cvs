@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * TODO: File description
  *
- * $Id: nel_patch_mesh.h,v 1.14 2007/03/19 09:55:27 boucher Exp $
+ * $Id: nel_patch_mesh.h,v 1.15 2007/03/19 16:54:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define __RYKOL_PATCH_MESH_H
 
 #pragma warning (disable : 4786)
+#include "nel/misc/types_nl.h"
+#include <windows.h>
 #include <vector>
 #include <set>
 #include <string>

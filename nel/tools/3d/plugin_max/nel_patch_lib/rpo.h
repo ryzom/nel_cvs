@@ -1,7 +1,7 @@
 /** \file rpo.h
  * TODO: File description
  *
- * $Id: rpo.h,v 1.8 2007/03/19 09:55:27 boucher Exp $
+ * $Id: rpo.h,v 1.9 2007/03/19 16:54:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #pragma warning (disable : 4786)
 #include "nel/misc/debug.h"
+#include <tchar.h>
 #include <vector>
 #include <set>
 #include <string>

@@ -8,6 +8,7 @@
 #include "nel/misc/mutex.h"
 #include "nel/misc/shared_memory.h"
 #include "nel/misc/mem_stream.h"
+#include "nel/misc/dummy_window.h"
 
 #include <windows.h>
 
@@ -108,7 +109,7 @@ private:
 												      // message proc that receive foreign window messages (through WM_COPYDATA)
 													  // belong to the same thread than the reader (that calls 'pumpMessage')
 
-	HWND							_InvisibleWindow;
+	CDummyWindow					_DummyWindow;
 	
 
 	// internal send thread
@@ -210,7 +211,6 @@ private:
 	static  LRESULT			 handleWMCopyData(HWND hwnd, COPYDATASTRUCT *cds);
 	void updateTargetWindow();
 	void clearOutQueue();	
-	HWND createInvisibleWindow(HINSTANCE hInstance);
 };
 
 

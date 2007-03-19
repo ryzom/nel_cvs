@@ -206,35 +206,9 @@ void CInterWindowMsgQueue::CSendTask::stop()
 
 //**************************************************************************************************
 CInterWindowMsgQueue::CInterWindowMsgQueue() : _SendTask(NULL),
-											   _SendThread(NULL),
-											   _InvisibleWindow(NULL),
+											   _SendThread(NULL),											   
 											   _OutMessageQueue("CInterWindowMsgQueue::_OutMessageQueue")
 {	
-}
-
-//**************************************************************************************************
-HWND CInterWindowMsgQueue::createInvisibleWindow(HINSTANCE hInstance)
-{
-	static const char *INVISIBLE_WINDOW_CLASS = "nl_interwnd_invisible_wnd_class";
-	WNDCLASSEX wc;
-	wc.cbSize = sizeof(WNDCLASSEX); 
-	wc.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-	wc.lpfnWndProc		= invisibleWindowListenerProc;
-	wc.cbClsExtra		= 0;
-	wc.cbWndExtra		= 0;
-	wc.hInstance		= hInstance;
-	wc.hIcon			= 0;
-	wc.hCursor			= 0;
-	wc.hbrBackground	= 0;
-	wc.lpszMenuName		= 0;
-	wc.lpszClassName	= INVISIBLE_WINDOW_CLASS;
-	wc.hIconSm			= 0;
-	RegisterClassEx(&wc);	
-    return CreateWindow(INVISIBLE_WINDOW_CLASS, "", WS_POPUP, 
-                        CW_USEDEFAULT,CW_USEDEFAULT, 
-                        CW_USEDEFAULT,CW_USEDEFAULT, 
-                        NULL, 0,
-                        hInstance, 0);    
 }
 
 //**************************************************************************************************
@@ -256,8 +230,9 @@ bool CInterWindowMsgQueue::initInternal(HINSTANCE hInstance, HWND ownerWindow, u
 	{
 		// see if 
 		nlassert(hInstance);
-		_InvisibleWindow = createInvisibleWindow(hInstance);
-		ownerWindow = _InvisibleWindow;
+		bool ok = _DummyWindow.init(hInstance, invisibleWindowListenerProc);
+		if (!ok) return false;		
+		ownerWindow = _DummyWindow.getWnd();
 	}
 	else
 	{
@@ -275,11 +250,11 @@ bool CInterWindowMsgQueue::initInternal(HINSTANCE hInstance, HWND ownerWindow, u
 		CMsgQueueIdent msgQueueIdent(ownerWindow, localId, foreignId);
 		if (messageQueueMap->value().count(msgQueueIdent))
 		{			
-			nlassert(!_InvisibleWindow); // invisible window has just been created, it can't be in the map now!			
+			nlassert(!_DummyWindow.getWnd()); // invisible window has just been created, it can't be in the map now!			
 			// message queue already exists
 			return false;
 		}		
-		if (ownerWindow != _InvisibleWindow)
+		if (ownerWindow != _DummyWindow.getWnd())
 		{
 			// subclass window
 			WNDPROC oldWinProc = (WNDPROC) GetWindowLong(ownerWindow, GWL_WNDPROC);
@@ -323,7 +298,7 @@ void CInterWindowMsgQueue::release()
 											 // this manager
 		{
 			
-			if (_LocalWindow.getWnd() != _InvisibleWindow)
+			if (_LocalWindow.getWnd() != _DummyWindow.getWnd())
 			{
 				WNDPROC currWinProc = (WNDPROC) GetWindowLong(_LocalWindow.getWnd(), GWL_WNDPROC);
 				if (currWinProc != listenerProc)
@@ -338,7 +313,7 @@ void CInterWindowMsgQueue::release()
 				}
 			}
 		}
-		if (_LocalWindow.getWnd() != _InvisibleWindow)
+		if (_LocalWindow.getWnd() != _DummyWindow.getWnd())
 		{
 			TOldWinProcMap::iterator it = _OldWinProcMap.find(_LocalWindow.getWnd());
 			nlassert(it != _OldWinProcMap.end());
@@ -379,11 +354,7 @@ void CInterWindowMsgQueue::release()
 	clearOutQueue();
 	_LocalWindow.release();
 	_ForeignWindow.release();
-	if (_InvisibleWindow)
-	{
-		DestroyWindow(_InvisibleWindow);
-		_InvisibleWindow = NULL;
-	}
+	_DummyWindow.release();	
 }
 
 

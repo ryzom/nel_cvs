@@ -10,6 +10,7 @@ namespace NLMISC
 {
 
 
+//*************************************************************************************
 void CWin32Util::localizeWindow(HWND wnd)
 {
 	if (!wnd) return;	
@@ -36,6 +37,25 @@ void CWin32Util::localizeWindow(HWND wnd)
 		}
 	}
 }
+
+//*************************************************************************************
+void CWin32Util::appendChildWindows(HWND parentWnd, std::vector<HWND> &childWindows)
+{
+	if (!parentWnd) return;		
+	HWND currSon = GetWindow(parentWnd, GW_CHILD);
+	if (currSon)
+	{
+		HWND lastSon = GetWindow(currSon, GW_HWNDLAST);
+		for(;;)
+		{
+			childWindows.push_back(currSon);
+			appendChildWindows(currSon, childWindows);
+			if (currSon == lastSon) break;
+			currSon = GetWindow(currSon, GW_HWNDNEXT);
+		}
+	}
+}
+
 
 
 

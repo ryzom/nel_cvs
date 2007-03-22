@@ -16,6 +16,8 @@ struct CWin32Util
 	  * (from CI18N)
 	  */
 	static void localizeWindow(HWND wnd);	
+	// Append all child windows of a parent window into a vector
+	static void appendChildWindows(HWND parentWnd, std::vector<HWND> &childWindows);
 };
 
 

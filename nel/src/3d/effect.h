@@ -1,7 +1,7 @@
 /** \file effect.h
  * effect
  *
- * $Id: effect.h,v 1.1.2.1 2007/03/16 11:11:11 legallo Exp $
+ * $Id: effect.h,v 1.1.2.2 2007/03/27 14:01:46 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,8 +142,6 @@ public:
 	CVertexProgram * getVertexProgram() { return _VertexProgram; }
 	CPixelProgram * getPixelProgram() { return _PixelProgram; }
 
-	bool parseProgramParameters(CProgramTypeParameter::TProgramType progType, std::string & errorOutput);
-
 private:
 
 	friend	class	CEffect;
@@ -152,6 +150,8 @@ private:
 	bool bind(CEffect * effect);
 
 	bool initPrograms(std::string & errorOutput);
+
+	bool parseProgramParameters(NLMISC::CSString & s, CProgramTypeParameter::TProgramType progType, std::string & errorOutput);
 
 	IDriver *					_Driver;
 	ItEffectDrvInfoPtrMap		_DriverIterator;
@@ -164,10 +164,6 @@ private:
 
 	TEffectContextParametersList _VertexContextParams;
 	TEffectContextParametersList _PixelContextParams;
-
-	bool _InitPrograms;
-	bool _ParsedVertexProgram;
-	bool _ParsedPixelProgram;
 };
 
 
@@ -275,40 +271,32 @@ template<class T> struct IUserParameterValue : public IUserParameter
 {
 public:
 
-	IUserParameterValue() : IUserParameter() {}
+	IUserParameterValue();
 
-	IUserParameterValue(T * values, TProgramType progType, uint cSize, uint lSize) 
-		: IUserParameter(progType, cSize, lSize)
-	{
-		Values = values;
-	}
+	IUserParameterValue(TProgramType progType, uint cSize, uint lSize);
 
-	~IUserParameterValue() {}
+	IUserParameterValue(T * values, TProgramType progType, uint cSize, uint lSize);
 
-	virtual bool setUserParameterValue(CEffectUserParameter* userParam, IDriver * driver)
-	{
-		CEffectParameter::TTypeParameterMap & converter = CEffectUserParameter::getConverterTypeStrToEnum();
-		CEffectParameter::TTypeParameter type = converter[getTypeParameter()];
-		if(type==userParam->getType() && LineSize==userParam->getLineSize() && ColumnSize==userParam->getColumnSize())
-		{
-			setProgramConstant(driver, userParam);
-			return true;
-		}
-		
-		nlwarning("Don't find user parameter value '%s' with correct type and size %i, %i", 
-			userParam->getName().c_str(), userParam->getLineSize(), userParam->getColumnSize());
-		return false;
-	}
+	~IUserParameterValue();
+
+	virtual bool setUserParameterValue(CEffectUserParameter* userParam, IDriver * driver);
 
 	void setValues(T * values) { Values=values; }
 
 protected:
 
-	virtual const char * getTypeParameter() 
-	{ 
-		const type_info &ti = typeid(T);
-		return ti.name();
-	}
+	void setProgramConstant(IDriver * driver, CEffectUserParameter* userParam);
+
+	void reduceValues(CEffectUserParameter* userParam);
+
+	void addNulValues(CEffectUserParameter* userParam);
+
+	void setProgramConstantMatrix(IDriver * driver, CEffectUserParameter* userParam);
+
+	virtual void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+										  uint index, uint num, const T *src) = 0;
+
+	virtual const char * getTypeParameter();
 
 	T *	Values;
 };
@@ -320,9 +308,11 @@ public:
 	CUserParameterDouble() : IUserParameterValue<double>() {}
 	CUserParameterDouble(double * values, TProgramType progType, uint cSize, uint lSize) 
 		: IUserParameterValue<double>(values, progType, cSize, lSize) {}
-	
+
 protected:
-	virtual void setProgramConstant(IDriver * driver, CEffectUserParameter* userParam);
+
+	virtual void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+										  uint index, uint num, const double *src);
 };
 
 //-------------------------------------------------------------
@@ -334,31 +324,47 @@ public:
 		: IUserParameterValue<float>(values, progType, cSize, lSize) {}
 
 protected:
-	virtual void setProgramConstant(IDriver * driver, CEffectUserParameter* userParam);
+
+	virtual void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+										  uint index, uint num, const float *src);
 };
 
 //-------------------------------------------------------------
-class CUserParameterInt : public IUserParameterValue<int>
+class CUserParameterInt : public IUserParameterValue<float>
 {
 public:
-	CUserParameterInt() : IUserParameterValue<int>() {}
+	CUserParameterInt() : IUserParameterValue<float>() {}
 	CUserParameterInt(int * values, TProgramType progType, uint cSize, uint lSize) 
-		: IUserParameterValue<int>(values, progType, cSize, lSize) {}
+		: IUserParameterValue<float>(progType, cSize, lSize)
+	{
+		uint size = LineSize*ColumnSize;
+		float * Values = new float[size];
+		for(uint i=0; i<size; i++) Values[i] = (float) values[i];
+	}
 
 protected:
-	virtual void setProgramConstant(IDriver * driver, CEffectUserParameter* userParam);
+
+	virtual void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+										  uint index, uint num, const float *src);
 };
 
 //-------------------------------------------------------------
-class CUserParameterBool : public IUserParameterValue<bool>
+class CUserParameterBool : public IUserParameterValue<float>
 {
 public:
-	CUserParameterBool() : IUserParameterValue<bool>() {}
+	CUserParameterBool() : IUserParameterValue<float>() {}
 	CUserParameterBool(bool * values, TProgramType progType, uint cSize, uint lSize) 
-		: IUserParameterValue<bool>(values, progType, cSize, lSize) {}
+		: IUserParameterValue<float>(progType, cSize, lSize)
+	{
+		uint size = LineSize*ColumnSize;
+		float * Values = new float[size];
+		for(uint i=0; i<size; i++) Values[i] = (float) values[i];
+	}
 
 protected:
-	virtual void setProgramConstant(IDriver * driver, CEffectUserParameter* userParam);
+
+	virtual void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+										  uint index, uint num, const float *src);
 };
 
 //-------------------------------------------------------------------------------
@@ -388,6 +394,161 @@ private:
 
 	std::string _ErrorStr;
 };
+
+
+
+//-------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
+//---------------- Template IUserParameterValue implementation ------------------
+//-------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
+template<class T>
+IUserParameterValue<T>::IUserParameterValue() 
+: IUserParameter() 
+{
+	Values = NULL;
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+IUserParameterValue<T>::IUserParameterValue(TProgramType progType, uint cSize, uint lSize) 
+: IUserParameter(progType, cSize, lSize)
+{
+	Values = NULL;
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+IUserParameterValue<T>::IUserParameterValue(T * values, TProgramType progType, uint cSize, uint lSize) 
+: IUserParameter(progType, cSize, lSize)
+{
+	uint size = cSize*lSize;
+	Values = new T[size];
+	memcpy(Values, values, size*sizeof(T));
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+IUserParameterValue<T>::~IUserParameterValue() 
+{
+	if(Values) delete [] Values;
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+bool IUserParameterValue<T>::setUserParameterValue(CEffectUserParameter* userParam, IDriver * driver)
+{
+	CEffectParameter::TTypeParameterMap & converter = CEffectUserParameter::getConverterTypeStrToEnum();
+	CEffectParameter::TTypeParameter type = converter[getTypeParameter()];
+	if(type==userParam->getType() && LineSize==userParam->getLineSize() && ColumnSize==userParam->getColumnSize())
+	{
+		setProgramConstant(driver, userParam);
+		return true;
+	}
+	
+	nlwarning("Don't find user parameter value '%s' with correct type and size %i, %i", 
+		userParam->getName().c_str(), userParam->getLineSize(), userParam->getColumnSize());
+	return false;
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+void IUserParameterValue<T>::setProgramConstant(IDriver * driver, CEffectUserParameter* userParam)
+{
+	if(userParam->getColumnSize()>1)
+	{
+		setProgramConstantMatrix(driver, userParam);
+	}
+	else
+	{
+		reduceValues(userParam);
+		addNulValues(userParam);
+
+		uint quadruplesNb = (int)(LineSize/4);
+		setDriverProgramConstant(driver, userParam->getProgramType(), userParam->getRegisterNb(),
+			quadruplesNb, Values);
+	}
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+void IUserParameterValue<T>::reduceValues(CEffectUserParameter* userParam)
+{
+	if(userParam->getRegisterCount()*4 < (sint)LineSize)
+	{
+		uint size = userParam->getRegisterCount()*4;
+		LineSize = size;
+		userParam->setLineSize(size);
+
+		T * values = new T[size];
+		memcpy(values, Values, size*sizeof(T));
+		delete [] Values;
+		Values = values;
+	}
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+void IUserParameterValue<T>::addNulValues(CEffectUserParameter* userParam)
+{
+	uint mod = (uint)fmod(LineSize, 4);
+	if(mod!=0)
+	{
+		uint size = LineSize + (4-mod);
+		T * values = new T[size];
+		memset(values, 0, size*sizeof(T));
+		memcpy(values, Values, LineSize*sizeof(T));
+		
+		LineSize = size;
+		userParam->setLineSize(size);
+		delete [] Values;
+		Values = values;
+	}
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+void IUserParameterValue<T>::setProgramConstantMatrix(IDriver * driver, CEffectUserParameter* userParam)
+{
+	uint index = userParam->getRegisterNb();
+	uint rowSize = userParam->getLineSize();
+	uint columnSize = userParam->getColumnSize();
+	
+	uint quadruplesNb = (int)(columnSize/4) + (fmod(columnSize, 4)!=0);
+	uint eltId, quadrupleIndex;
+	T values[4];
+
+	for(uint r=0; r<rowSize; r++)
+	{
+		eltId = r;
+		for(uint q=0; q<quadruplesNb; q++)
+		{
+			quadrupleIndex = index+quadruplesNb*r+q;
+			if(quadrupleIndex>=(uint)userParam->getRegisterCount()+index) return;
+
+			for(uint i=0; i<4; i++)
+			{
+				if(eltId < rowSize*columnSize)
+					values[i] = Values[eltId];
+				else
+					values[i] = 0.0f;
+
+				eltId += rowSize;
+			}
+
+			setDriverProgramConstant(driver, userParam->getProgramType(), quadrupleIndex, 1, values);
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------
+template<class T>
+const char * IUserParameterValue<T>::getTypeParameter() 
+{ 
+	const type_info &ti = typeid(T);
+	return ti.name();
+}
+
 
 } // NL3D
 

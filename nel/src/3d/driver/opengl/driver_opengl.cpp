@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.239.2.1 2007/03/16 11:09:25 legallo Exp $
+ * $Id: driver_opengl.cpp,v 1.239.2.2 2007/03/27 14:01:47 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -58,11 +58,6 @@
 #include "nel/misc/mouse_device.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "driver_opengl_vertex_buffer_hard.h"
-
-// Cg
-#include <cg/cg.h>
-#include <cg/cgGL.h>
-
 
 using namespace std;
 using namespace NLMISC;
@@ -4246,99 +4241,6 @@ void CDriverGL::beginDialogMode()
 // ***************************************************************************
 void CDriverGL::endDialogMode()
 {	
-}
-
-// ***************************************************************************
-IProgramDrvInfosGL::IProgramDrvInfosGL()
-{
-}
-
-// ***************************************************************************	
-IProgramDrvInfosGL::~IProgramDrvInfosGL()
-{
-}
-
-// ***************************************************************************
-bool IProgramDrvInfosGL::convertInASMGL(std::string & code, bool isVertexProgram, TEffectParametersMap & params)
-{
-	CGprogram prog;
-	CGcontext context = cgCreateContext();
-
-	CGprofile profile;
-	if(isVertexProgram)
-		profile = CG_PROFILE_ARBVP1;
-	else
-		profile = CG_PROFILE_ARBFP1;
-
-	prog = cgCreateProgram(context, CG_SOURCE, code.c_str(), profile, "main", NULL);
-
-	if(prog)
-	{
-		string oldCode = code;//TEMP
-		code = std::string(cgGetProgramString(prog, CG_COMPILED_PROGRAM));
-
-		printf("\nPROGRAM ARB : %s\n", code.c_str());//TEMP
-		
-		CGparameter param = cgGetFirstParameter(prog, CG_GLOBAL);
-		while(param!=0 && string(cgGetParameterName(param))!="main")
-		{
-			// add parameter
-			CEffectParameter effectParam(std::string(cgGetParameterName(param)));
-			effectParam.setRegisterNb(cgGetParameterResourceIndex(param));
-			effectParam.setLineSize(cgGetParameterColumns(param));
-			effectParam.setColumnSize(cgGetParameterRows(param));
-			switch(cgGetTypeBase(cgGetParameterType(param)))
-			{
-			case CG_FLOAT:
-				effectParam.setType(CTypeParameter::Float);
-				break;
-			case CG_INT:
-				effectParam.setType(CTypeParameter::Int);
-				break;
-			case CG_BOOL:
-				effectParam.setType(CTypeParameter::Bool);
-				break;
-			case CG_SAMPLER1D:
-				effectParam.setType(CTypeParameter::Sampler);
-				break;
-			case CG_SAMPLER2D:
-				effectParam.setType(CTypeParameter::Sampler);
-				break;
-			default:
-				continue;
-			}
-			effectParam.setTexture(effectParam.getType()==CTypeParameter::Sampler);
-			params[effectParam.getName()] = effectParam;
-
-			param = cgGetNextParameter(param);
-		}
-		cgDestroyProgram(prog);
-
-		if(profile == CG_PROFILE_ARBVP1)//TEMP
-		{
-			prog = cgCreateProgram(context, CG_SOURCE, oldCode.c_str(), CG_PROFILE_VS_1_1, "main", NULL);
-
-			string code2 = std::string(cgGetProgramString(prog, CG_COMPILED_PROGRAM));
-
-			printf("\nPROGRAM GG VS181 : %s\n", code2.c_str());//TEMP
-
-			cgDestroyProgram(prog);
-		}
-	}
-	else
-	{
-		CGerror error;
-		const char* errorString = cgGetLastErrorString(&error);
-
-		nlwarning("Unable to parse a program.");
-		#ifdef NL_DEBUG
-			nlerror(errorString);
-		#endif
-		return false;
-	}
-	cgDestroyContext(context);
-
-	return true;
 }
 
 } // NL3D

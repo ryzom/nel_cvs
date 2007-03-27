@@ -1,7 +1,7 @@
 /** \file vertex_program.h
  * Vertex program definition
  *
- * $Id: vertex_program.h,v 1.3.78.1 2007/03/16 11:09:25 legallo Exp $
+ * $Id: vertex_program.h,v 1.3.78.2 2007/03/27 14:01:47 legallo Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,8 +53,6 @@ public:
 	IVertexProgramDrvInfos (IDriver *drv, ItVtxPrgDrvInfoPtrList it);
 	// The virtual dtor is important.
 	virtual ~IVertexProgramDrvInfos(void);
-
-	virtual bool convertInASM(CVertexProgram * program, TEffectParametersMap & params) = 0;
 };
 
 /**
@@ -96,15 +94,15 @@ class CVertexProgram : public IProgram
 public:
 
 	/// Constructor
-	CVertexProgram (const char* program/*, bool isEffectPrg=false*/);
+	CVertexProgram (const char* program, bool isEffectPrg = false);
 
 	/// Destructor
 	virtual ~CVertexProgram ();
 
-	virtual bool convertInASM(TEffectParametersMap & params);
-
 	/// The driver informations. For the driver implementation only.
 	NLMISC::CRefPtr<IVertexProgramDrvInfos>		_DrvInfo;
+
+	const char * getASMProfile() { return "vs_1_1"; } ;
 };
 
 

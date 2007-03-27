@@ -1,7 +1,7 @@
 /** \file effect.cpp
  * TODO: File description
  *
- * $Id: effect.cpp,v 1.1.2.1 2007/03/16 11:11:10 legallo Exp $
+ * $Id: effect.cpp,v 1.1.2.2 2007/03/27 14:01:46 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,11 +94,9 @@ void CEffect::addUserParameterValue(const std::string & name, IUserParameter * v
 	switch(value->getProgramType())
 	{
 	case IUserParameter::VertexProgram:
-		printf("VertexProgram\n");
 		valuesMap = &_VertexUserValuesMap;
 		break;
 	case IUserParameter::PixelProgram:
-		printf("PixelProgram\n");
 		valuesMap = &_PixelUserValuesMap;
 		break;
 	}
@@ -107,8 +105,6 @@ void CEffect::addUserParameterValue(const std::string & name, IUserParameter * v
 		nlwarning("The user parameter '%s' already exists in map", name.c_str());
 
 	(*valuesMap)[name] = value;
-
-	printf("addUserParameterValue : %s\n", name.c_str());
 }
 
 //-------------------------------------------------------------------------------
@@ -174,10 +170,6 @@ CEffectDrvInfos::CEffectDrvInfos(IDriver *drv, ItEffectDrvInfoPtrMap it)
 	_VertexProgram = NULL;
 	_PixelProgram = NULL;
 
-	_InitPrograms = false;
-	_ParsedVertexProgram = false;
-	_ParsedPixelProgram = false;
-
 	string errorOutput;
 	if(!initPrograms(errorOutput))
 	{
@@ -201,8 +193,6 @@ CEffectDrvInfos::~CEffectDrvInfos()
 //-------------------------------------------------------------------------------
 bool CEffectDrvInfos::initPrograms(string & errorOutput)
 {
-	if(_InitPrograms) return true;
-
 	const string & filename = _DriverIterator->first;
 	const string & pathFile = CPath::lookup(CFile::getFilenameWithoutExtension(filename)+".fx", false, false);
 
@@ -231,8 +221,7 @@ bool CEffectDrvInfos::initPrograms(string & errorOutput)
 		errorOutput = parser.getErrorStr();
 		return false;
 	}
-	_VertexProgram = new CVertexProgram(vertexProgramStr.c_str());
-	_VertexProgram->setEffect(this);
+	_VertexProgram = new CVertexProgram(vertexProgramStr.c_str(), true);
 
 	// search for pixel program string with "PixelProgramCode" tag
 	CSString pixelProgramStr;
@@ -241,57 +230,38 @@ bool CEffectDrvInfos::initPrograms(string & errorOutput)
 		errorOutput = parser.getErrorStr();
 		return false;
 	}
-	_PixelProgram = new CPixelProgram(pixelProgramStr.c_str());
-	_PixelProgram->setEffect(this);
+	_PixelProgram = new CPixelProgram(pixelProgramStr.c_str(), true);
 	
-	_InitPrograms = true;
+	// search for program parameters
+	if(!parseProgramParameters(s, CProgramTypeParameter::VertexProgram, errorOutput)) return false;
+	if(!parseProgramParameters(s, CProgramTypeParameter::PixelProgram, errorOutput)) return false;
 	
 	return true;
 }
 
 //-------------------------------------------------------------------------------
-bool CEffectDrvInfos::parseProgramParameters(CProgramTypeParameter::TProgramType progType, std::string & errorOutput)
+bool CEffectDrvInfos::parseProgramParameters(CSString & s, CProgramTypeParameter::TProgramType progType, std::string & errorOutput)
 {
-	if(!_InitPrograms) return false;
-
-	bool * parsedProgram;
 	IProgram * program;
+	TEffectUserParametersList * userParams;
+	TEffectContextParametersList * contextParams;
 	switch(progType)
 	{
 	case CProgramTypeParameter::VertexProgram:
 	{
-		parsedProgram = &_ParsedVertexProgram;
 		program = _VertexProgram;
+		userParams = &_VertexUserParams;
+		contextParams = &_VertexContextParams;
 		break;
 	}
 	case CProgramTypeParameter::PixelProgram:
 	{
-		parsedProgram = &_ParsedPixelProgram;
 		program = _PixelProgram;
+		userParams = &_PixelUserParams;
+		contextParams = &_PixelContextParams;
 		break;
 	}
 	}
-
-	if(*parsedProgram) return true;
-
-	const string & filename = _DriverIterator->first;
-	const string & pathFile = CPath::lookup(CFile::getFilenameWithoutExtension(filename)+".fx", false, false);
-
-	// open our input file
-	CIFile inf;
-	if(!inf.open(pathFile))
-	{
-		errorOutput = "Unable to open file of name '" + filename + "'";
-		return false;
-	}
-
-	// read the file contents into a string 's'
-	CSString s;
-	s.resize(inf.getFileSize());
-	inf.serialBuffer((uint8*)&s[0],s.size());
-
-	// close the file
-	inf.close();
 
 	CEffectParser parser;
 	TEffectParametersMap constantsTable;
@@ -302,20 +272,18 @@ bool CEffectDrvInfos::parseProgramParameters(CProgramTypeParameter::TProgramType
 	}
 
 	// search for program user parameters 
-	if(!parser.getUserParametersList(s, progType, _VertexUserParams, constantsTable))
+	if(!parser.getUserParametersList(s, progType, *userParams, constantsTable))
 	{
 		errorOutput = parser.getErrorStr();
 		return false;
 	}
 	
 	// search for program context parameters 
-	if(!parser.getContextParametersList(s, progType, _VertexContextParams, constantsTable))
+	if(!parser.getContextParametersList(s, progType, *contextParams, constantsTable))
 	{
 		errorOutput = parser.getErrorStr();
 		return false;
 	}
-
-	*parsedProgram = true;
 
 	return true;
 }
@@ -618,8 +586,8 @@ bool CEffectParser::getContextParametersList(CSString & str, CProgramTypeParamet
 }
 
 //-------------------------------------------------------------------------------
-inline void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
-									 uint index, uint num, const float *src)
+void CUserParameterDouble::setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+													 uint index, uint num, const double *src)
 {
 	switch(progType)
 	{
@@ -633,8 +601,8 @@ inline void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TPr
 }
 
 //-------------------------------------------------------------------------------
-inline void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
-									 uint index, uint num, const double *src)
+void CUserParameterFloat::setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+												    uint index, uint num, const float *src)
 {
 	switch(progType)
 	{
@@ -648,132 +616,33 @@ inline void setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TPr
 }
 
 //-------------------------------------------------------------------------------
-inline void setDriverProgramConstantMatrix(IDriver * driver, CEffectUserParameter* userParam, const double *src)
+void CUserParameterInt::setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+											      uint index, uint num, const float *src)
 {
-	uint index = userParam->getRegisterNb();
-	uint rowSize = userParam->getLineSize();
-	uint colSize = userParam->getColumnSize();
-	switch(userParam->getProgramType())
+	switch(progType)
 	{
 	case CEffectUserParameter::VertexProgram:
-		driver->setConstantMatrix(index, src, rowSize, colSize);
+		driver->setConstant(index, num, src);
 		break;
 	case CEffectUserParameter::PixelProgram:
-		driver->setPixelProgramConstantMatrix(index, src, rowSize, colSize);
+		driver->setPixelProgramConstant(index, num, src);
 		break;
 	}
 }
 
 //-------------------------------------------------------------------------------
-inline void setDriverProgramConstantMatrix(IDriver * driver, CEffectUserParameter* userParam, const float *src)
+void CUserParameterBool::setDriverProgramConstant(IDriver * driver, CEffectUserParameter::TProgramType progType, 
+											      uint index, uint num, const float *src)
 {
-	uint index = userParam->getRegisterNb();
-	uint rowSize = userParam->getLineSize();
-	uint colSize = userParam->getColumnSize();
-	switch(userParam->getProgramType())
+	switch(progType)
 	{
 	case CEffectUserParameter::VertexProgram:
-		driver->setConstantMatrix(index, src, rowSize, colSize);
+		driver->setConstant(index, num, src);
 		break;
 	case CEffectUserParameter::PixelProgram:
-		driver->setPixelProgramConstantMatrix(index, src, rowSize, colSize);
+		driver->setPixelProgramConstant(index, num, src);
 		break;
 	}
-}
-
-//-------------------------------------------------------------------------------
-void CUserParameterDouble::setProgramConstant(IDriver * driver, CEffectUserParameter* userParam)
-{
-	if(userParam->getColumnSize()>1)
-	{
-		setDriverProgramConstantMatrix(driver, userParam, Values);
-	}
-	else
-	{
-		if(userParam->getRegisterCount()*4 < LineSize)
-		{
-			uint size = userParam->getRegisterCount()*4;
-			LineSize = size;
-			userParam->setLineSize(size);
-
-			double * values = new double[size];
-			memcpy(values, Values, size*sizeof(double));
-			Values = values;
-		}
-		else
-		{
-			uint mod = (uint)fmod(LineSize, 4);
-			if(mod!=0)
-			{
-				uint size = LineSize + (4-mod);
-				double * values = new double[size];
-				memset(values, 0, size*sizeof(double));
-				memcpy(values, Values, LineSize*sizeof(double));
-				
-				LineSize = size;
-				userParam->setLineSize(size);
-				Values = values;
-			}
-		}
-
-		uint quadruplesNb = (int)(LineSize/4);
-		setDriverProgramConstant(driver, userParam->getProgramType(), userParam->getRegisterNb(),
-			quadruplesNb, Values);
-	}
-}
-
-//-------------------------------------------------------------------------------
-void CUserParameterFloat::setProgramConstant(IDriver * driver, CEffectUserParameter* userParam)
-{
-	if(userParam->getColumnSize()>1)
-	{
-		setDriverProgramConstantMatrix(driver, userParam, Values);
-	}
-	else
-	{
-		if(userParam->getRegisterCount()*4 < LineSize)
-		{
-			uint size = userParam->getRegisterCount()*4;
-			LineSize = size;
-			userParam->setLineSize(size);
-
-			float * values = new float[size];
-			memcpy(values, Values, size*sizeof(float));
-			Values = values;
-		}
-		else
-		{
-			uint mod = (uint)fmod(LineSize, 4);
-			if(mod!=0)
-			{
-				uint size = LineSize + (4-mod);
-				float * values = new float[size];
-				memset(values, 0, size*sizeof(float));
-				memcpy(values, Values, LineSize*sizeof(float));
-				
-				LineSize = size;
-				userParam->setLineSize(size);
-				Values = values;
-			}
-		}
-
-		uint quadruplesNb = (int)(LineSize/4);
-		setDriverProgramConstant(driver, userParam->getProgramType(), userParam->getRegisterNb(),
-			quadruplesNb, Values);
-	}
-}
-
-//-------------------------------------------------------------------------------
-void CUserParameterInt::setProgramConstant(IDriver * driver, CEffectUserParameter* userParam)
-{
-	
-}
-
-//-------------------------------------------------------------------------------
-
-void CUserParameterBool::setProgramConstant(IDriver * driver, CEffectUserParameter* userParam)
-{
-	
 }
 
 } // NL3D

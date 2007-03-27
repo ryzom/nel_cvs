@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.190.2.1 2007/03/16 11:09:26 legallo Exp $
+ * $Id: driver_opengl.h,v 1.190.2.2 2007/03/27 14:01:47 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1138,8 +1138,6 @@ private:
 	void			setConstant (uint index, uint num, const float *src);	
 	void			setConstant (uint index, uint num, const double *src);
 	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);	
-	void			setConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize);
-	void			setConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize);
 	void			setConstantFog (uint index);
 	void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	bool		    supportVertexProgramDoubleSidedColor() const;
@@ -1152,9 +1150,6 @@ private:
 	virtual void			setPixelProgramConstant (uint index, uint num, const float *src);
 	virtual void			setPixelProgramConstant (uint index, uint num, const double *src);
 	virtual void			setPixelProgramConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);
-	virtual void			setPixelProgramConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize);
-	virtual void			setPixelProgramConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize);
-
 
 	virtual	bool			supportMADOperator() const ;
 	
@@ -1173,7 +1168,7 @@ private:
 	/// \name Pixel program implementation
 	// @{
 		bool activeARBPixelProgram (CPixelProgram *program);
-		bool setupARBPixelProgram (const std::string & code, GLuint id);
+		bool setupARBPixelProgram (const CPixelProgramParser::CPProgram &parsedProgram, GLuint id/*, bool &specularWritten*/);
 	//@}
 
 
@@ -1260,9 +1255,8 @@ private:
 			// number of constant
 			static const uint _EVSNumConstant;
 			// 
-			bool   setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters);
-			bool   setupARBVertexProgram (const CVPParser::TProgram &parsedProgram, GLuint id, bool &specularWritten);
-			bool   setupARBVertexProgram (const std::string & code, GLuint id);
+			bool   setupEXTVertexShader(const CVPParser::TVProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters);
+			bool   setupARBVertexProgram (const CVPParser::CVProgram &parsedProgram, GLuint id, bool &specularWritten);
 			//			
 	// @}
 
@@ -1353,19 +1347,7 @@ private:
 };
 
 // ***************************************************************************
-class IProgramDrvInfosGL
-{
-
-public:
-	IProgramDrvInfosGL();
-	// The virtual dtor is important.
-	virtual ~IProgramDrvInfosGL(void);
-
-	bool convertInASMGL(std::string & code, bool isVertexProgram, TEffectParametersMap & params);
-};
-
-// ***************************************************************************
-class CVertexProgamDrvInfosGL : public IVertexProgramDrvInfos, public IProgramDrvInfosGL
+class CVertexProgamDrvInfosGL : public IVertexProgramDrvInfos
 {
 public:
 	// The GL Id.
@@ -1387,12 +1369,10 @@ public:
 
 	// The gl id is auto created here.
 	CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInfoPtrList it);
-
-	bool convertInASM(CVertexProgram * program, TEffectParametersMap & params);
 };
 
 // ***************************************************************************
-class CPixelProgamDrvInfosGL : public IPixelProgramDrvInfos, public IProgramDrvInfosGL
+class CPixelProgamDrvInfosGL : public IPixelProgramDrvInfos
 {
 public:
 	// The GL Id.
@@ -1400,8 +1380,59 @@ public:
 
 	// The gl id is auto created here.
 	CPixelProgamDrvInfosGL (CDriverGL *drv, ItPixelPrgDrvInfoPtrList it);
+};
 
-	bool convertInASM(CPixelProgram * program, TEffectParametersMap & params);
+// ***************************************************************************
+class CProgramConversionARB
+{
+public:
+
+	bool constantRegisters(const CProgramParser::TConstantsVector &constantsProgram, std::string & code);
+
+protected:
+
+	void ARBProgramDumpWriteMask(uint mask, std::string &out);
+	void ARBProgramDumpSwizzle(const CProgramSwizzle &swz, std::string &out);
+
+	void ARBProgramTemporaryRegisters(std::string & code, const uint numTemporaries);
+	void ARBProgramSuffix(const CProgramOperand & op, bool destOperand, std::string & out);
+};
+
+// ***************************************************************************
+class CVertexProgramConversionARB : public CProgramConversionARB
+{
+public:
+
+	bool convert(const CVPParser::CVProgram &inParsedProgram, bool &specularWritten, std::string & code);
+
+	GLenum getARBProgramEnum() { return GL_VERTEX_PROGRAM_ARB; }
+
+private:
+
+	void ARBVertexProgramDumpInstr(const CVPInstruction &instr, std::string &out);
+	void ARBVertexProgramDumpOperand(const CVPOperand &op, bool destOperand, std::string &out);
+	
+	static const char *ARBVertexProgramInstrToName[CVPInstruction::OpcodeCount];
+	static const char *ARBVertexProgramOutputRegisterToName[CVPOperand::OutputRegisterCount];
+};
+
+// ***************************************************************************
+class CPixelProgramConversionARB : public CProgramConversionARB
+{
+public:
+
+	bool convert(const CPixelProgramParser::CPProgram &inParsedProgram, std::string & code);
+
+	GLenum getARBProgramEnum() { return GL_FRAGMENT_PROGRAM_ARB; }
+
+private:
+
+	void ARBPixelProgramDumpInstr(const CPPInstruction &instr, std::string &out);
+	void ARBPixelProgramDumpOperand(const CPPOperand &op, bool destOperand, std::string &out);
+	
+	static const char *ARBPixelProgramInstrToName[CPPInstruction::OpcodeCount];
+	static const char *ARBPixelProgramOutputRegisterToName[CPPOperand::OutputRegisterCount];
+	static const char *ARBPixelProgramInputRegisterToName[CPPOperand::InputRegisterCount];
 };
 
 } // NL3D

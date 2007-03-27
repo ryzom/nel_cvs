@@ -1,7 +1,7 @@
 /** \file effect_context.cpp
  * Allow the binding of effect' context parameters
  *
- * $Id: effect_context.cpp,v 1.1.2.1 2007/03/16 11:11:11 legallo Exp $
+ * $Id: effect_context.cpp,v 1.1.2.2 2007/03/27 14:01:46 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,26 +112,26 @@ bool CEffectContext::setContextParameterValue(IDriver * driver, CEffectContextPa
 	case ModelViewMatrix:
 	{
 		setDriverProgramConstantMatrix(driver, contextParam->getProgramType(), contextParam->getRegisterNb(), 
-									   IDriver::ModelView, IDriver::Identity);
+									   IDriver::ModelView, IDriver::Transpose);
 		
 		break;
 	}
 	case InverseModelView:
 	{
 		setDriverProgramConstantMatrix(driver, contextParam->getProgramType(), contextParam->getRegisterNb(), 
-									   IDriver::ModelView, IDriver::Inverse);
+									   IDriver::ModelView, IDriver::InverseTranspose);
 		break;
 	}
 	case ProjMatrix:
 	{
 		setDriverProgramConstantMatrix(driver, contextParam->getProgramType(), contextParam->getRegisterNb(), 
-									   IDriver::Projection, IDriver::Identity);
+									   IDriver::Projection, IDriver::Transpose);
 		break;
 	}
 	case ModelViewProjection:
 	{
 		setDriverProgramConstantMatrix(driver, contextParam->getProgramType(), contextParam->getRegisterNb(), 
-									   IDriver::ModelViewProjection, IDriver::Identity);
+									   IDriver::ModelViewProjection, IDriver::Transpose);
 		break;
 	}
 	case ViewPosition:

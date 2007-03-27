@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.45.2.1 2007/03/16 11:09:25 legallo Exp $
+ * $Id: driver_direct3d.h,v 1.45.2.2 2007/03/27 14:01:47 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,19 +238,7 @@ public:
 };
 
 // ***************************************************************************
-class IProgramDrvInfosD3D
-{
-
-public:
-	IProgramDrvInfosD3D();
-	// The virtual dtor is important.
-	virtual ~IProgramDrvInfosD3D(void);
-
-	bool convertInASMD3D(std::string & code, const std::string & asmProfile, TEffectParametersMap & params);
-};
-
-// ***************************************************************************
-class CVertexProgramDrvInfosD3D : public IVertexProgramDrvInfos, public IProgramDrvInfosD3D
+class CVertexProgramDrvInfosD3D : public IVertexProgramDrvInfos
 {
 public:
 
@@ -259,12 +247,10 @@ public:
 
 	CVertexProgramDrvInfosD3D(IDriver *drv, ItVtxPrgDrvInfoPtrList it);
 	~CVertexProgramDrvInfosD3D();
-
-	bool convertInASM(CVertexProgram * program, TEffectParametersMap & params);
 };
 
 // ***************************************************************************
-class CPixelProgramDrvInfosD3D : public IPixelProgramDrvInfos, public IProgramDrvInfosD3D
+class CPixelProgramDrvInfosD3D : public IPixelProgramDrvInfos
 {
 public:
 
@@ -273,8 +259,6 @@ public:
 
 	CPixelProgramDrvInfosD3D(IDriver *drv, ItPixelPrgDrvInfoPtrList it);
 	~CPixelProgramDrvInfosD3D();
-
-	bool convertInASM(CPixelProgram * program, TEffectParametersMap & params);
 };
 
 
@@ -1014,8 +998,6 @@ public:
 	virtual void			setConstant (uint index, uint num, const float *src);
 	virtual void			setConstant (uint index, uint num, const double *src);
 	virtual void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);
-	virtual void			setConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize);
-	virtual void			setConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize);
 	virtual void			setConstantFog (uint index);
 	virtual void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	virtual bool		    supportVertexProgramDoubleSidedColor() const;
@@ -1028,9 +1010,7 @@ public:
 	virtual void			setPixelProgramConstant (uint index, uint num, const float *src);
 	virtual void			setPixelProgramConstant (uint index, uint num, const double *src);
 	virtual void			setPixelProgramConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);
-	virtual void			setPixelProgramConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize);
-	virtual void			setPixelProgramConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize);
-
+	
 	// Occlusion query
 	virtual bool			supportOcclusionQuery() const;
 	virtual IOcclusionQuery *createOcclusionQuery();

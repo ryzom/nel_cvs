@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.38.2.1 2007/03/16 11:09:25 legallo Exp $
+ * $Id: driver_direct3d.cpp,v 1.38.2.2 2007/03/27 14:01:47 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -38,9 +38,6 @@
 #include "nel/3d/u_driver.h"
 
 #include "driver_direct3d.h"
-
-// for conversion HLSL/ASM
-#include <d3dx9shader.h>
 
 using namespace std;
 using namespace NLMISC;
@@ -3523,108 +3520,5 @@ void CDriverD3D::endDialogMode()
 	if (_FullScreen && _HWnd)
 		ShowWindow(_HWnd, SW_MAXIMIZE);
 }
-
-// ***************************************************************************
-IProgramDrvInfosD3D::IProgramDrvInfosD3D()
-{
-}
-
-// ***************************************************************************	
-IProgramDrvInfosD3D::~IProgramDrvInfosD3D()
-{
-}
-
-// ***************************************************************************
-bool IProgramDrvInfosD3D::convertInASMD3D(std::string & code, const std::string & asmProfile, TEffectParametersMap & params)
-{
-	HRESULT hr;
-	LPD3DXCONSTANTTABLE pConstantTable;
-	LPD3DXBUFFER pErrorMsgs;
-	LPD3DXBUFFER pShader;
-	hr = D3DXCompileShader(code.c_str(), code.length(),
-			NULL, 0, "main", asmProfile.c_str(), 0, &pShader, &pErrorMsgs, &pConstantTable);
-	if(hr==D3D_OK)
-	{
-		LPD3DXBUFFER pDisassembly;
-		hr = D3DXDisassembleShader((DWORD*)pShader->GetBufferPointer(), FALSE, NULL, &pDisassembly);
-		if(hr==D3D_OK)
-		{
-			code = (char*)pDisassembly->GetBufferPointer();
-			
-			printf("\nPROGRAM DIRECT3D : %s\n", code.c_str());//TEMP
-		}
-		else
-		{
-			nlwarning("Disassemble Shader return the error : %s", (char*)pErrorMsgs->GetBufferPointer());
-			return false;
-		}
-
-		// constants table
-		D3DXCONSTANTTABLE_DESC desc;
-		pConstantTable->GetDesc(&desc);
-		if(desc.Constants)
-		{
-			// Get the constants, one by one
-			D3DXHANDLE hConstant = NULL;
-			UINT uConstDescCount = 0;
-			for(uint i=0; i<desc.Constants; i++)
-			{
-				hConstant = pConstantTable->GetConstant(NULL, i);
-				if(!hConstant)
-					continue;
-				pConstantTable->GetConstantDesc(hConstant, NULL, &uConstDescCount);
-				if(!uConstDescCount)
-					continue;
-				// aDescs is an array of enough size to accommodate 'uConstDescCount'
-				D3DXCONSTANT_DESC * aDescs = new D3DXCONSTANT_DESC[uConstDescCount];
-				pConstantTable->GetConstantDesc(hConstant, aDescs, &uConstDescCount);
-
-				D3DXCONSTANT_DESC& descConst = aDescs[0];
-				
-				// recover parameters
-				CEffectParameter param(std::string((char*)descConst.Name));
-				param.setRegisterNb(descConst.RegisterIndex);
-				param.setRegisterCount(descConst.RegisterCount);
-				param.setLineSize(descConst.Columns);
-				param.setColumnSize(descConst.Rows);
-				switch(descConst.Type)
-				{
-				case D3DXPT_FLOAT:
-					param.setType(CTypeParameter::Float);
-					break;
-				case D3DXPT_INT:
-					param.setType(CTypeParameter::Int);
-					break;
-				case D3DXPT_BOOL:
-					param.setType(CTypeParameter::Bool);
-					break;
-				case D3DXPT_SAMPLER:
-					param.setType(CTypeParameter::Sampler);
-					break;
-				case D3DXPT_SAMPLER2D:
-					param.setType(CTypeParameter::Sampler);
-					break;
-				default:
-					continue;
-				}
-				param.setTexture(param.getType()==CTypeParameter::Sampler);
-				params[param.getName()] = param;
-
-				delete aDescs;
-			}
-		}
-		
-		
-	}
-	else
-	{
-		nlwarning("Compile Shader return the error: %s", (char*)pErrorMsgs->GetBufferPointer());
-		return false;
-	}
-
-	return true;
-}
-
-
 
 } // NL3D

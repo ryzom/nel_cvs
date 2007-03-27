@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.84.2.1 2007/03/16 11:09:25 legallo Exp $
+ * $Id: driver.h,v 1.84.2.2 2007/03/27 14:01:46 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1038,9 +1038,7 @@ public:
 	  *
 	  */
 	virtual void			setConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
-	virtual void			setConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize) =0;
-	virtual void			setConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize) =0;
-
+	
 	/**
 	  * Setup pixel program constant values.
 	  */
@@ -1065,9 +1063,7 @@ public:
 	  *
 	  */
 	virtual void			setPixelProgramConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
-	virtual void			setPixelProgramConstantMatrix (uint index, const float *src, uint rowSize, uint columnSize) =0;
-	virtual void			setPixelProgramConstantMatrix (uint index, const double *src, uint rowSize, uint columnSize) =0;
-
+	
 	/**
 	  * Setup the constant with the fog vector. This vector must be used to get the final fog value in a vertex shader.
 	  * You must use it like this:

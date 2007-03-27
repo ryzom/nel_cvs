@@ -705,6 +705,22 @@ SOURCE=.\3d\program.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\program_parse.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\program_parse.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\program_parse_D3D.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\program_parse_D3D.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\shader.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.cpp
  * TODO: File description
  *
- * $Id: meshvp_per_pixel_light.cpp,v 1.10 2005/02/22 10:19:10 besson Exp $
+ * $Id: meshvp_per_pixel_light.cpp,v 1.10.44.1 2007/03/27 14:01:46 legallo Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -415,7 +415,7 @@ void	CMeshVPPerPixelLight::initInstance(CMeshBaseInstance *mbi)
 				  * register that hasn't been written before..)
 				  */
 				CVPParser			vpParser;
-				CVPParser::TProgram result;
+				CVPParser::CVProgram result;
 				std::string          parseOutput;
 				if (!vpParser.parse(vpCode.c_str(), result, parseOutput))
 				{					

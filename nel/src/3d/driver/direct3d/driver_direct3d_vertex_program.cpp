@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex_program.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex_program.cpp,v 1.6.60.1 2007/03/16 11:09:25 legallo Exp $
+ * $Id: driver_direct3d_vertex_program.cpp,v 1.6.60.2 2007/03/27 14:01:47 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -50,14 +50,6 @@ CVertexProgramDrvInfosD3D::~CVertexProgramDrvInfosD3D()
 	H_AUTO_D3D(CVertexProgramDrvInfosD3D_CVertexProgramDrvInfosD3DDtor)
 	if (Shader)
 		Shader->Release();
-}
-
-// ***************************************************************************
-bool CVertexProgramDrvInfosD3D::convertInASM(CVertexProgram * program, TEffectParametersMap & params)
-{
-	H_AUTO_D3D(CVertexProgramDrvInfosD3D_convertInASM)
-
-	return IProgramDrvInfosD3D::convertInASMD3D(program->getProgram(), "vs_1_1", params);
 }
 
 // ***************************************************************************
@@ -140,7 +132,7 @@ void dumpWriteMask(uint mask, std::string &out)
 
 // ***************************************************************************
 
-void dumpSwizzle(const CVPSwizzle &swz, std::string &out)
+void dumpSwizzle(const CProgramSwizzle &swz, std::string &out)
 {
 	H_AUTO_D3D(dumpSwizzle)
 	if (swz.isIdentity())
@@ -153,10 +145,10 @@ void dumpSwizzle(const CVPSwizzle &swz, std::string &out)
 	{
 		switch(swz.Comp[k])
 		{
-			case CVPSwizzle::X: out += "x"; break;
-			case CVPSwizzle::Y: out += "y"; break;
-			case CVPSwizzle::Z: out += "z"; break;
-			case CVPSwizzle::W: out += "w"; break;
+			case CProgramSwizzle::X: out += "x"; break;
+			case CProgramSwizzle::Y: out += "y"; break;
+			case CProgramSwizzle::Z: out += "z"; break;
+			case CProgramSwizzle::W: out += "w"; break;
 			default:
 				nlassert(0);
 			break;
@@ -214,8 +206,8 @@ void dumpOperand(const CVPOperand &op, bool destOperand, std::string &out, set<u
 void dumpInstr(const CVPInstruction &instr, std::string &out, set<uint> &inputs)
 {
 	H_AUTO_D3D(dumpInstr)
-	nlassert(instr.Opcode < CVPInstruction::OpcodeCount);
-	out = instrToName[instr.Opcode];
+	nlassert(instr.Opcode.VPOp < CVPInstruction::OpcodeCount);
+	out = instrToName[instr.Opcode.VPOp];
 	uint nbOp = instr.getNumUsedSrc();
 	std::string destOperand;
 	dumpOperand(instr.Dest, true, destOperand, inputs);
@@ -254,7 +246,7 @@ static const char *inputToDecl[CVPOperand::InputRegisterCount] =
 
 // ***************************************************************************
 
-void dump(const CVPParser::TProgram &prg, std::string &dest)
+void dump(const CVPParser::TVProgram &prg, std::string &dest)
 {	
 	H_AUTO_D3D(dump)
 	// Set of input registers used
@@ -307,7 +299,7 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 			if(!program->isEffectProgram())
 			{
 				CVPParser parser;
-				CVPParser::TProgram parsedProgram;
+				CVPParser::CVProgram parsedProgram;
 				std::string errorOutput;
 				bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
 				if (!result)
@@ -325,11 +317,11 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 				// so disable them in the vertex declaration
 				// We don't use these component in vertex programs currently..
 				#ifdef NL_DEBUG
-					for(uint k = 0; k < parsedProgram.size(); ++k)
+					for(uint k = 0; k < parsedProgram._Program.size(); ++k)
 					{
-						for(uint l = 0; l < parsedProgram[k].getNumUsedSrc(); ++l)
+						for(uint l = 0; l < parsedProgram._Program[k].getNumUsedSrc(); ++l)
 						{
-							const CVPOperand &op = parsedProgram[k].getSrc(l);
+							const CVPOperand &op = parsedProgram._Program[k].getSrc(l);
 							if (op.Type == CVPOperand::InputRegister)
 							{
 								nlassert(op.Value.InputRegisterValue != CVPOperand::IWeight);
@@ -340,7 +332,7 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 				#endif
 
 				// Dump the vertex program
-				dump(parsedProgram, dest);
+				dump(parsedProgram._Program, dest);
 #ifdef NL_DEBUG_D3D
 				nlinfo("Assemble Vertex Shader : ");
 				int lineBegin = 0;
@@ -355,15 +347,6 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 			}
 			else
 			{
-				string errorOutput;
-				if(!program->getEffect()->parseProgramParameters(CProgramTypeParameter::VertexProgram, errorOutput))
-				{
-					nlwarning("Unable to parse the effect file");
-					#ifdef NL_DEBUG
-						nlerror(errorOutput.c_str());
-					#endif
-					return false;
-				}
 				dest = 	program->getProgram();
 			}
 
@@ -539,8 +522,6 @@ void CDriverD3D::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver
 		break;
 	}
 
-	D3DXMatrixTranspose(matPtr, matPtr);//TEMP
-
 	if (transform != IDriver::Identity)
 	{
 		mat = *matPtr;
@@ -564,64 +545,6 @@ void CDriverD3D::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver
 	setConstant (index+1, matPtr->_12, matPtr->_22, matPtr->_32, matPtr->_42);
 	setConstant (index+2, matPtr->_13, matPtr->_23, matPtr->_33, matPtr->_43);
 	setConstant (index+3, matPtr->_14, matPtr->_24, matPtr->_34, matPtr->_44);
-}
-
-// ***************************************************************************
-void CDriverD3D::setConstantMatrix(uint index, const float *src, uint rowSize, uint columnSize)
-{
-	H_AUTO_D3D(CDriverD3D_setConstantMatrix)
-
-	uint quadruplesNb = (int)(columnSize/4) + (fmod(columnSize, 4)!=0);
-	uint eltId;
-	float values[4];
-
-	for(uint r=0; r<rowSize; r++)
-	{
-		eltId = r;
-		for(uint q=0; q<quadruplesNb; q++)
-		{
-			for(uint i=0; i<4; i++)
-			{
-				if(eltId < rowSize*columnSize)
-					values[i] = src[eltId];
-				else
-					values[i] = 0.0f;
-
-				eltId += rowSize;
-			}
-
-			setConstant(index+quadruplesNb*r+q, 1, values);
-		}
-	}
-}
-
-// ***************************************************************************
-void CDriverD3D::setConstantMatrix(uint index, const double *src, uint rowSize, uint columnSize)
-{
-	H_AUTO_D3D(CDriverD3D_setConstantMatrix)
-
-	uint quadruplesNb = (int)(columnSize/4) + (fmod(columnSize, 4)!=0);
-	uint eltId;
-	double values[4];
-
-	for(uint r=0; r<rowSize; r++)
-	{
-		eltId = r;
-		for(uint q=0; q<quadruplesNb; q++)
-		{
-			for(uint i=0; i<4; i++)
-			{
-				if(eltId < rowSize*columnSize)
-					values[i] = src[eltId];
-				else
-					values[i] = 0.0;
-
-				eltId += rowSize;
-			}
-
-			setConstant(index+quadruplesNb*r+q, 1, values);
-		}
-	}
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.24.44.1 2007/03/16 11:09:26 legallo Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.24.44.2 2007/03/27 14:01:47 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -30,7 +30,7 @@
 #include "driver_opengl.h"
 #include "../../index_buffer.h"
 #include "../../vertex_program.h"
-#include "../../vertex_program_parse.h"
+#include "../../program_parse_D3D.h"
 #include <algorithm>
 
 // tmp
@@ -72,15 +72,6 @@ CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInf
 }
 
 // ***************************************************************************
-bool CVertexProgamDrvInfosGL::convertInASM(CVertexProgram * program, TEffectParametersMap & params)
-{
-	H_AUTO_OGL(CVertexProgamDrvInfosGL_convertInASM)
-
-	return IProgramDrvInfosGL::convertInASMGL(program->getProgram(), true, params);
-}
-
-
-// ***************************************************************************
 bool CDriverGL::isVertexProgramSupported () const
 {	
 	H_AUTO_OGL(CVertexProgamDrvInfosGL_isVertexProgramSupported)
@@ -118,7 +109,7 @@ bool CDriverGL::activeNVVertexProgram (CVertexProgram *program)
 			  * There are some incompatibilities.
 			  */
 			CVPParser parser;
-			CVPParser::TProgram parsedProgram;
+			CVPParser::CVProgram parsedProgram;
 			std::string errorOutput;
 			bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
 			if (!result)
@@ -214,17 +205,17 @@ bool CDriverGL::activeNVVertexProgram (CVertexProgram *program)
 
 // ***************************************************************************
 static 
-inline GLenum convSwizzleToGLFormat(CVPSwizzle::EComp comp, bool negate)
+inline GLenum convSwizzleToGLFormat(CProgramSwizzle::EComp comp, bool negate)
 {
 	H_AUTO_OGL(convSwizzleToGLFormat)
 	if (!negate)
 	{
 		switch(comp)
 		{
-			case CVPSwizzle::X: return GL_X_EXT;
-			case CVPSwizzle::Y: return GL_Y_EXT;
-			case CVPSwizzle::Z: return GL_Z_EXT;
-			case CVPSwizzle::W: return GL_W_EXT;
+			case CProgramSwizzle::X: return GL_X_EXT;
+			case CProgramSwizzle::Y: return GL_Y_EXT;
+			case CProgramSwizzle::Z: return GL_Z_EXT;
+			case CProgramSwizzle::W: return GL_W_EXT;
 			default:
 				nlstop;
 				return 0;
@@ -235,10 +226,10 @@ inline GLenum convSwizzleToGLFormat(CVPSwizzle::EComp comp, bool negate)
 	{
 		switch(comp)
 		{
-			case CVPSwizzle::X: return GL_NEGATIVE_X_EXT;
-			case CVPSwizzle::Y: return GL_NEGATIVE_Y_EXT;
-			case CVPSwizzle::Z: return GL_NEGATIVE_Z_EXT;
-			case CVPSwizzle::W: return GL_NEGATIVE_W_EXT;
+			case CProgramSwizzle::X: return GL_NEGATIVE_X_EXT;
+			case CProgramSwizzle::Y: return GL_NEGATIVE_Y_EXT;
+			case CProgramSwizzle::Z: return GL_NEGATIVE_Z_EXT;
+			case CProgramSwizzle::W: return GL_NEGATIVE_W_EXT;
 			default:
 				nlstop;
 				return 0;
@@ -395,7 +386,7 @@ static void doWriteMask(GLuint res, GLuint in, GLenum outX, GLenum outY, GLenum 
 // ***************************************************************************
 /** Setup a vertex shader from its parsed program
   */ 
-bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters)
+bool CDriverGL::setupEXTVertexShader(const CVPParser::TVProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters)
 {
 	H_AUTO_OGL(CDriverGL_setupEXTVertexShader)
 	// counter to see what is generated
@@ -614,10 +605,10 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					// if the instruction reads a scalar, no need for swizzle (except if negate is used)
 					if (!						
 						(
-						 (program[k].Opcode == CVPInstruction::RSQ
-						  || program[k].Opcode == CVPInstruction::RCP
-						  || program[k].Opcode == CVPInstruction::LOG
-						  || program[k].Opcode == CVPInstruction::EXPP
+						 (program[k].Opcode.Op == CProgramInstruction::RSQ
+						  || program[k].Opcode.Op == CProgramInstruction::RCP
+						  || program[k].Opcode.Op == CProgramInstruction::LOG
+						  || program[k].Opcode.Op == CProgramInstruction::EXP
 					     ) 
 						 && 
 						 !operand.Negate
@@ -664,7 +655,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 			}
 
 			uint writeMask = program[k].Dest.WriteMask;
-			CVPInstruction::EOpcode opcode = program[k].Opcode;
+			CVPInstruction::EVPOpcode opcode = program[k].Opcode.VPOp;
 			uint outputRegisterIndex = 0;
 			if (destOperand.Type != CVPOperand::AddressRegister)
 			{			
@@ -685,11 +676,11 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 				if (!(destOperand.Type == CVPOperand::OutputRegister && destOperand.Value.OutputRegisterValue == CVPOperand::OFogCoord))
 				{
 					// For instructions that write their output components by components, we don't need an intermediary register
-					if (opcode == CVPInstruction::LOG
-						|| opcode == CVPInstruction::EXPP
+					if (opcode == CProgramInstruction::LOG
+						|| opcode == CProgramInstruction::EXP
 						|| opcode == CVPInstruction::LIT
-						|| opcode == CVPInstruction::RSQ
-						|| opcode == CVPInstruction::RCP
+						|| opcode == CProgramInstruction::RSQ
+						|| opcode == CProgramInstruction::RCP
 					   )
 					{
 						outputWritten = true;	
@@ -726,29 +717,29 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					++numEC;
 				}
 				break;
-				case  CVPInstruction::MOV:
+				case  CProgramInstruction::MOV:
 				{											
 					nglShaderOp1EXT(GL_OP_MOV_EXT, destValue, srcValue[0]);					
 					EVS_INFO("GL_OP_MOV_EXT");
 					++numOp;					
 				}
 				break;
-				case  CVPInstruction::MUL: 
+				case  CProgramInstruction::MUL: 
 					nglShaderOp2EXT(GL_OP_MUL_EXT, destValue, srcValue[0], srcValue[1]); 
 					EVS_INFO("GL_OP_MUL_EXT");
 					++numOp;
 				break;
-				case  CVPInstruction::ADD: 
+				case  CProgramInstruction::ADD: 
 					nglShaderOp2EXT(GL_OP_ADD_EXT, destValue, srcValue[0], srcValue[1]); 
 					EVS_INFO("GL_OP_ADD_EXT");
 					++numOp;
 				break;
-				case  CVPInstruction::MAD: 
+				case  CProgramInstruction::MAD: 
 					nglShaderOp3EXT(GL_OP_MADD_EXT, destValue, srcValue[0], srcValue[1], srcValue[2]); 
 					EVS_INFO("GL_OP_MADD_EXT");
 					++numOp;
 				break;
-				case  CVPInstruction::RSQ:
+				case  CProgramInstruction::RSQ:
 				{
 					nlassert(program[k].Src1.Swizzle.isScalar());
 					// extract the component we need
@@ -771,12 +762,12 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					}
 				}
 				break;
-				case  CVPInstruction::DP3: 
+				case  CProgramInstruction::DP3: 
 					nglShaderOp2EXT(GL_OP_DOT3_EXT, destValue, srcValue[0], srcValue[1]);
 					EVS_INFO("GL_OP_DOT3_EXT");
 					++numOp;
 				break;
-				case  CVPInstruction::DP4: 
+				case  CProgramInstruction::DP4: 
 					nglShaderOp2EXT(GL_OP_DOT4_EXT, destValue, srcValue[0], srcValue[1]); 
 					EVS_INFO("GL_OP_DOT4_EXT");
 					++numOp;
@@ -841,12 +832,12 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 						 
 				}
 				break;
-				case  CVPInstruction::MIN: 
+				case  CProgramInstruction::MIN: 
 					nglShaderOp2EXT(GL_OP_MIN_EXT, destValue, srcValue[0], srcValue[1]);
 					EVS_INFO("GL_OP_MIN_EXT");
 					++numOp;
 				break;
-				case  CVPInstruction::MAX: 
+				case  CProgramInstruction::MAX: 
 					nglShaderOp2EXT(GL_OP_MAX_EXT, destValue, srcValue[0], srcValue[1]);
 					EVS_INFO("GL_OP_MAX_EXT");
 					++numOp;
@@ -856,12 +847,12 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					EVS_INFO("GL_OP_SET_LT_EXT");
 					++numOp;
 				break;
-				case  CVPInstruction::SGE: 
+				case  CVPInstruction::SQE: 
 					nglShaderOp2EXT(GL_OP_SET_GE_EXT, destValue, srcValue[0], srcValue[1]);
 					EVS_INFO("GL_OP_SET_GE_EXT");
 					++numOp;
 				break;
-				case  CVPInstruction::EXPP:
+				case  CProgramInstruction::EXP:
 				{			
 					uint writeMask = program[k].Dest.WriteMask;
 					nlassert(program[k].Src1.Swizzle.isScalar());
@@ -893,7 +884,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					if (writeMask & 8) { doSwizzle(destValue, destValue, GL_X_EXT, GL_Y_EXT, GL_Z_EXT, GL_ONE_EXT); ++numSwizzle; }
 				}
 				break;
-				case  CVPInstruction::LOG:
+				case  CProgramInstruction::LOG:
 				{					
 					uint writeMask = program[k].Dest.WriteMask;
 					nlassert(program[k].Src1.Swizzle.isScalar());
@@ -923,7 +914,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					}					
 				}
 				break;
-				case  CVPInstruction::RCP:
+				case  CProgramInstruction::RCP:
 				{
 					uint writeMask = program[k].Dest.WriteMask;
 					nlassert(program[k].Src1.Swizzle.isScalar());
@@ -1173,252 +1164,17 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 			
 }
 
-//=================================================================================================
-static const char *ARBVertexProgramInstrToName[] =
-{
-	"MOV  ",
-	"ARL  ",
-	"MUL  ",
-	"ADD  ",
-	"MAD  ",
-	"RSQ  ",
-	"DP3  ",
-	"DP4  ",
-	"DST  ",
-	"LIT  ",
-	"MIN  ",
-	"MAX  ",
-	"SLT  ",
-	"SGE  ",
-	"EXP  ",
-	"LOG  ",
-	"RCP  "
-};
-
-//=================================================================================================
-static const char *ARBVertexProgramOutputRegisterToName[] =
-{
-	"position",
-	"color.primary",
-	"color.secondary",
-	"color.back.primary",
-	"color.back.secondary",
-	"fogcoord",
-	"pointsize",
-	"texcoord[0]",
-	"texcoord[1]",
-	"texcoord[2]",
-	"texcoord[3]",
-	"texcoord[4]",
-	"texcoord[5]",
-	"texcoord[6]",
-	"texcoord[7]"
-};
-
-
-//=================================================================================================
-static void ARBVertexProgramDumpWriteMask(uint mask, std::string &out)
-{
-	H_AUTO_OGL(ARBVertexProgramDumpWriteMask)
-	if (mask == 0xf)
-	{
-		out = "";
-		return;
-	}
-	out = ".";
-	if (mask & 1) out +="x";
-	if (mask & 2) out +="y";
-	if (mask & 4) out +="z";
-	if (mask & 8) out +="w";
-}
-
-//=================================================================================================
-static void ARBVertexProgramDumpSwizzle(const CVPSwizzle &swz, std::string &out)
-{
-	H_AUTO_OGL(ARBVertexProgramDumpSwizzle)
-	if (swz.isIdentity())
-	{
-		out = "";
-		return;
-	}
-	out = ".";
-	for(uint k = 0; k < 4; ++k)
-	{
-		switch(swz.Comp[k])
-		{
-			case CVPSwizzle::X: out += "x"; break;
-			case CVPSwizzle::Y: out += "y"; break;
-			case CVPSwizzle::Z: out += "z"; break;
-			case CVPSwizzle::W: out += "w"; break;
-			default:
-				nlassert(0);
-			break;
-		}
-		if (swz.isScalar() && k == 0) break;
-	}
-
-}
-
-//=================================================================================================
-static void ARBVertexProgramDumpOperand(const CVPOperand &op, bool destOperand, std::string &out)
-{
-	H_AUTO_OGL(ARBVertexProgramDumpOperand)
-	out = op.Negate ? " -" : " ";
-	switch(op.Type)
-	{
-		case CVPOperand::Variable: out += "R" + NLMISC::toString(op.Value.VariableValue); break;
-		case CVPOperand::Constant: 
-			out += "c[";
-			if (op.Indexed)
-			{
-				out += "A0.x + ";
-			}
-			out += NLMISC::toString(op.Value.ConstantValue) + "]"; 
-		break;
-		case CVPOperand::InputRegister: out += "vertex.attrib[" + NLMISC::toString((uint) op.Value.InputRegisterValue) + "]"; break;
-		case CVPOperand::OutputRegister:
-			nlassert(op.Value.OutputRegisterValue < CVPOperand::OutputRegisterCount);
-			out += "result." + std::string(ARBVertexProgramOutputRegisterToName[op.Value.OutputRegisterValue]);
-		break;
-		case CVPOperand::AddressRegister:
-			out += "A0.x";
-		break;
-        default:
-            break;
-	}
-	std::string suffix;
-	if (destOperand)
-	{
-		ARBVertexProgramDumpWriteMask(op.WriteMask, suffix);
-	}
-	else
-	{
-		ARBVertexProgramDumpSwizzle(op.Swizzle, suffix);
-	}
-	out += suffix;
-}
-
-//=================================================================================================
-/** Dump an instruction in a string
-  */
-static void ARBVertexProgramDumpInstr(const CVPInstruction &instr, std::string &out)
-{
-	H_AUTO_OGL(ARBVertexProgramDumpInstr)
-	nlassert(instr.Opcode < CVPInstruction::OpcodeCount);
-	// Special case for EXP with a scalar output argument (y component) -> translate to FRC		
-	out = ARBVertexProgramInstrToName[instr.Opcode];	
-	uint nbOp = instr.getNumUsedSrc();
-	std::string destOperand;
-	ARBVertexProgramDumpOperand(instr.Dest, true, destOperand);
-	out += destOperand;
-	for(uint k = 0; k < nbOp; ++k)
-	{
-		out += ", ";
-		std::string srcOperand;
-		ARBVertexProgramDumpOperand(instr.getSrc(k), false, srcOperand);
-		out += srcOperand;
-	}
-	out +="; \n";
-	
-}
-
-
-
 // ***************************************************************************
-bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgram, GLuint id, bool &specularWritten)
+bool CDriverGL::setupARBVertexProgram (const CVPParser::CVProgram &inParsedProgram, GLuint id, bool &specularWritten)
 {
 	H_AUTO_OGL(CDriverGL_setupARBVertexProgram)
-	// tmp
-	CVPParser::TProgram parsedProgram = inParsedProgram;
-	//
+
+	// convert from proprietary format to ARB_vertex_program code
+	CVertexProgramConversionARB vpConvertARB;
 	std::string code;
-	code = "!!ARBvp1.0\n";
-	// declare temporary registers
-	code += "TEMP ";	
-	const uint NUM_TEMPORARIES = 12;
-	for(uint k = 0; k < NUM_TEMPORARIES; ++k)
-	{
-		code += toString("R%d", (int) k);
-		if (k != (NUM_TEMPORARIES - 1))
-		{
-			code +=", ";
-		}
-	}
-	code += "; \n";
-	// declare address register
-	code += "ADDRESS A0;\n";
-	// declare constant register
-	code += "PARAM  c[96]  = {program.env[0..95]}; \n";
-	uint writtenSpecularComponents = 0;
-	for(uint k = 0; k < parsedProgram.size(); ++k)
-	{
-		if (parsedProgram[k].Dest.Type ==  CVPOperand::OutputRegister && parsedProgram[k].Dest.Value.OutputRegisterValue == CVPOperand::OSecondaryColor)
-		{
-			writtenSpecularComponents |= parsedProgram[k].Dest.WriteMask;
-		}
-	}
-	// tmp fix : write unwritten components of specular (seems that glDisable(GL_COLOR_SUM_ARB) does not work in a rare case for me ...)		
-	if (writtenSpecularComponents != 0xf)
-	{
-		// add a new instruction to write 0 in unwritten components
-		CVPSwizzle sw;
-		sw.Comp[0] = CVPSwizzle::X;
-		sw.Comp[1] = CVPSwizzle::Y;
-		sw.Comp[2] = CVPSwizzle::Z;
-		sw.Comp[3] = CVPSwizzle::W;
-		
-		CVPInstruction vpi;
-		vpi.Opcode = CVPInstruction::ADD;
-		vpi.Dest.WriteMask = 0xf ^ writtenSpecularComponents;
-		vpi.Dest.Type = CVPOperand::OutputRegister;
-		vpi.Dest.Value.OutputRegisterValue = CVPOperand::OSecondaryColor;
-		vpi.Dest.Indexed = false;
-		vpi.Dest.Negate = false;
-		vpi.Dest.Swizzle = sw;
-		vpi.Src1.Type = CVPOperand::InputRegister;
-		vpi.Src1.Value.InputRegisterValue = CVPOperand::IPosition; // tmp -> check that position is present
-		vpi.Src1.Indexed = false;
-		vpi.Src1.Negate = false;
-		vpi.Src1.Swizzle = sw;
-		vpi.Src2.Type = CVPOperand::InputRegister;
-		vpi.Src2.Value.InputRegisterValue = CVPOperand::IPosition; // tmp -> chec
-		vpi.Src2.Indexed = false;
-		vpi.Src2.Negate = true;
-		vpi.Src2.Swizzle = sw;		
-		//
-		parsedProgram.push_back(vpi);
-	}		
-	specularWritten = (writtenSpecularComponents != 0);
-		
-	for(uint k = 0; k < parsedProgram.size(); ++k)
-	{
-		std::string instr;
-		ARBVertexProgramDumpInstr(parsedProgram[k], instr);
-		code += instr + "\r\n";
-	}			
-	code += "END\n";
-	//
-	/*
-	static COFile output;
-	static bool opened = false;
-	if (!opened)
-	{
-		output.open("vp.txt", false, true);
-		opened = true;
-	}
-	std::string header = "=====================================================================================";
-	output.serial(header);
-	output.serial(code);
-	*/
-	//
-	return setupARBVertexProgram(code, id);
-}
+	if(!vpConvertARB.convert(inParsedProgram, specularWritten, code)) return false;
 
-// ***************************************************************************
-bool CDriverGL::setupARBVertexProgram (const std::string & code, GLuint id)
-{
-	H_AUTO_OGL(CDriverGL_setupARBVertexProgram)
-	
+	// bind vertex program
 	nglBindProgramARB( GL_VERTEX_PROGRAM_ARB, id);
 	glGetError();
 	nglProgramStringARB( GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, code.size(), code.c_str() );
@@ -1461,9 +1217,9 @@ bool CDriverGL::setupARBVertexProgram (const std::string & code, GLuint id)
 		nlassert(0);
 		return false;
 	}
+
 	return true;	
 }
-
 
 // ***************************************************************************
 bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
@@ -1488,12 +1244,10 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 			// Set the pointer
 			program->_DrvInfo=drvInfo;
 
-			bool result;
+			CVPParser::CVProgram parsedProgram;
 			if(!program->isEffectProgram())
 			{
 				CVPParser parser;
-				CVPParser::TProgram parsedProgram;
-
 				// try to parse the program
 				std::string errorOutput;
 				bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
@@ -1505,29 +1259,26 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 					#endif
 					return false;
 				}
-
-				result = setupARBVertexProgram(parsedProgram, drvInfo->ID, drvInfo->SpecularWritten);
 			}
 			else
 			{
-				std::string asmProgram;
+				std::string asmProgram = program->getProgram();
 
-				string errorOutput;
-				if(!program->getEffect()->parseProgramParameters(CProgramTypeParameter::VertexProgram, errorOutput))
+				CVPParserD3D parser;
+				// try to parse the program
+				std::string errorOutput;
+				bool result = parser.parse(asmProgram.c_str(), parsedProgram, errorOutput);
+				if (!result)
 				{
-					nlwarning("Unable to parse the effect file");
+					nlwarning("Unable to parse a vertex program.");
 					#ifdef NL_DEBUG
 						nlerror(errorOutput.c_str());
 					#endif
-
 					return false;
 				}
-				asmProgram = program->getProgram();
-
-				result = setupARBVertexProgram(asmProgram, drvInfo->ID);
 			}
 
-			if(!result)
+			if(!setupARBVertexProgram(parsedProgram, drvInfo->ID, drvInfo->SpecularWritten))
 			{
 				delete drvInfo;
 				program->_DrvInfo = NULL;
@@ -1578,7 +1329,7 @@ bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
 		{
 			// try to parse the program
 			CVPParser parser;
-			CVPParser::TProgram parsedProgram;
+			CVPParser::CVProgram parsedProgram;
 			std::string errorOutput;
 			bool result = parser.parse(program->getProgram().c_str(), parsedProgram, errorOutput);
 			if (!result)
@@ -1609,7 +1360,7 @@ bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
 			// Set the pointer
 			program->_DrvInfo=drvInfo;
 
-			if (!setupEXTVertexShader(parsedProgram, drvInfo->ID, drvInfo->Variants, drvInfo->UsedVertexComponents))
+			if (!setupEXTVertexShader(parsedProgram._Program, drvInfo->ID, drvInfo->Variants, drvInfo->UsedVertexComponents))
 			{
 				delete drvInfo;
 				program->_DrvInfo = NULL;
@@ -1683,28 +1434,20 @@ void CDriverGL::setConstant (uint index, float f0, float f1, float f2, float f3)
 
 	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
 
-	if(isProgEffect)
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
-		if (_Extensions.ARBVertexProgram)
-			nglProgramLocalParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, f0, f1, f2, f3);
+		// Setup constant
+		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, f0, f1, f2, f3);
 	}
-	else
+	else if (_Extensions.ARBVertexProgram)
 	{
-		// Vertex program exist ?
-		if (_Extensions.NVVertexProgram)
-		{
-			// Setup constant
-			nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, f0, f1, f2, f3);
-		}
-		else if (_Extensions.ARBVertexProgram)
-		{
-			nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, f0, f1, f2, f3);
-		}
-		else if (_Extensions.EXTVertexShader)
-		{
-			float datas[] = { f0, f1, f2, f3 };
-			nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
-		}
+		nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, f0, f1, f2, f3);
+	}
+	else if (_Extensions.EXTVertexShader && !isProgEffect)
+	{
+		float datas[] = { f0, f1, f2, f3 };
+		nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
 	}
 }
 
@@ -1717,28 +1460,20 @@ void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double
 
 	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
 
-	if(isProgEffect)
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
-		if (_Extensions.ARBVertexProgram)
-			nglProgramLocalParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, d0, d1, d2, d3);
+		// Setup constant
+		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, d0, d1, d2, d3);
 	}
-	else
+	else if (_Extensions.ARBVertexProgram)
 	{
-		// Vertex program exist ?
-		if (_Extensions.NVVertexProgram)
-		{
-			// Setup constant
-			nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, d0, d1, d2, d3);
-		}
-		else if (_Extensions.ARBVertexProgram)
-		{
-			nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, d0, d1, d2, d3);
-		}
-		else if (_Extensions.EXTVertexShader)
-		{
-			double datas[] = { d0, d1, d2, d3 };
-			nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
-		}
+		nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, d0, d1, d2, d3);
+	}
+	else if (_Extensions.EXTVertexShader && !isProgEffect)
+	{
+		double datas[] = { d0, d1, d2, d3 };
+		nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
 	}
 }
 
@@ -1751,28 +1486,21 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVector& value)
 
 	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
 
-	if(isProgEffect)
+	
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
-		if (_Extensions.ARBVertexProgram)
-			nglProgramLocalParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
+		// Setup constant
+		nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);	
 	}
-	else
+	else if (_Extensions.ARBVertexProgram)
 	{
-		// Vertex program exist ?
-		if (_Extensions.NVVertexProgram)
-		{
-			// Setup constant
-			nglProgramParameter4fNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);	
-		}
-		else if (_Extensions.ARBVertexProgram)
-		{
-			nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
-		}
-		else if (_Extensions.EXTVertexShader)
-		{
-			float datas[] = { value.x, value.y, value.z, 0 };
-			nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
-		}
+		nglProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
+	}
+	else if (_Extensions.EXTVertexShader && !isProgEffect)
+	{
+		float datas[] = { value.x, value.y, value.z, 0 };
+		nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, datas);
 	}
 }
 
@@ -1785,28 +1513,20 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVectorD& value)
 
 	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
 
-	if(isProgEffect)
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
-		if (_Extensions.ARBVertexProgram)
-			nglProgramLocalParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
+		// Setup constant
+		nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);
 	}
-	else
+	else if (_Extensions.ARBVertexProgram)
 	{
-		// Vertex program exist ?
-		if (_Extensions.NVVertexProgram)
-		{
-			// Setup constant
-			nglProgramParameter4dNV (GL_VERTEX_PROGRAM_NV, index, value.x, value.y, value.z, 0);
-		}
-		else if (_Extensions.ARBVertexProgram)
-		{
-			nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
-		}
-		else if (_Extensions.EXTVertexShader)
-		{
-			double datas[] = { value.x, value.y, value.z, 0 };
-			nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
-		}
+		nglProgramEnvParameter4dARB(GL_VERTEX_PROGRAM_ARB, index, value.x, value.y, value.z, 0);
+	}
+	else if (_Extensions.EXTVertexShader && !isProgEffect)
+	{
+		double datas[] = { value.x, value.y, value.z, 0 };
+		nglSetInvariantEXT(_EVSConstantHandle + index, GL_DOUBLE, datas);
 	}
 }
 
@@ -1818,36 +1538,23 @@ void	CDriverGL::setConstant (uint index, uint num, const float *src)
 
 	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
 
-	if(isProgEffect)
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
-		if (_Extensions.ARBVertexProgram)
-		{
-			for(uint k = 0; k < num; ++k)
-			{					
-				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
-			}
+		nglProgramParameters4fvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
+	}
+	else if (_Extensions.ARBVertexProgram)
+	{
+		for(uint k = 0; k < num; ++k)
+		{					
+			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
 		}
 	}
-	else
+	else if (_Extensions.EXTVertexShader && !isProgEffect)
 	{
-		// Vertex program exist ?
-		if (_Extensions.NVVertexProgram)
-		{
-			nglProgramParameters4fvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
-		}
-		else if (_Extensions.ARBVertexProgram)
-		{
-			for(uint k = 0; k < num; ++k)
-			{					
-				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
-			}
-		}
-		else if (_Extensions.EXTVertexShader)
-		{
-			for(uint k = 0; k < num; ++k)
-			{					
-				nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_FLOAT, (void *) (src + 4 * k));
-			}
+		for(uint k = 0; k < num; ++k)
+		{					
+			nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_FLOAT, (void *) (src + 4 * k));
 		}
 	}
 }
@@ -1859,36 +1566,23 @@ void	CDriverGL::setConstant (uint index, uint num, const double *src)
 
 	bool isProgEffect = (_LastSetuppedVP && _LastSetuppedVP->isEffectProgram());
 
-	if(isProgEffect)
+	// Vertex program exist ?
+	if (_Extensions.NVVertexProgram && !isProgEffect)
 	{
-		if (_Extensions.ARBVertexProgram)
-		{
-			for(uint k = 0; k < num; ++k)
-			{					
-				nglProgramLocalParameter4dvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
-			}
+		nglProgramParameters4dvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
+	}
+	else if (_Extensions.ARBVertexProgram)
+	{
+		for(uint k = 0; k < num; ++k)
+		{					
+			nglProgramEnvParameter4dvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
 		}
 	}
-	else
+	else if (_Extensions.EXTVertexShader && !isProgEffect)
 	{
-		// Vertex program exist ?
-		if (_Extensions.NVVertexProgram)
-		{
-			nglProgramParameters4dvNV(GL_VERTEX_PROGRAM_NV, index, num, src);
-		}
-		else if (_Extensions.ARBVertexProgram)
-		{
-			for(uint k = 0; k < num; ++k)
-			{					
-				nglProgramEnvParameter4dvARB(GL_VERTEX_PROGRAM_ARB, index + k, src + 4 * k);
-			}
-		}
-		else if (_Extensions.EXTVertexShader)
-		{
-			for(uint k = 0; k < num; ++k)
-			{					
-				nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_DOUBLE, (void *) (src + 4 * k));
-			}
+		for(uint k = 0; k < num; ++k)
+		{					
+			nglSetInvariantEXT(_EVSConstantHandle + index + k, GL_DOUBLE, (void *) (src + 4 * k));
 		}
 	}
 }
@@ -1977,92 +1671,21 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 		float matDatas[16];
 		mat.get(matDatas);
 
-		if(isProgEffect)
-		{
-			if (_Extensions.ARBVertexProgram)
-			{		
-				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index, matDatas);
-				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 1, matDatas + 4);
-				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 2, matDatas + 8);
-				nglProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 3, matDatas + 12);
-			}
+		if(_Extensions.ARBVertexProgram)
+		{		
+			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index, matDatas);
+			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 1, matDatas + 4);
+			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 2, matDatas + 8);
+			nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 3, matDatas + 12);
 		}
-		else
+		else if(!isProgEffect)
 		{
-			if (_Extensions.ARBVertexProgram)
-			{		
-				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index, matDatas);
-				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 1, matDatas + 4);
-				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 2, matDatas + 8);
-				nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, index + 3, matDatas + 12);
-			}
-			else
-			{
-				nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, matDatas);
-				nglSetInvariantEXT(_EVSConstantHandle + index + 1, GL_FLOAT, matDatas + 4);
-				nglSetInvariantEXT(_EVSConstantHandle + index + 2, GL_FLOAT, matDatas + 8);
-				nglSetInvariantEXT(_EVSConstantHandle + index + 3, GL_FLOAT, matDatas + 12);
-			}
+			nglSetInvariantEXT(_EVSConstantHandle + index, GL_FLOAT, matDatas);
+			nglSetInvariantEXT(_EVSConstantHandle + index + 1, GL_FLOAT, matDatas + 4);
+			nglSetInvariantEXT(_EVSConstantHandle + index + 2, GL_FLOAT, matDatas + 8);
+			nglSetInvariantEXT(_EVSConstantHandle + index + 3, GL_FLOAT, matDatas + 12);
 		}
 	}			 
-}
-
-// ***************************************************************************
-void CDriverGL::setConstantMatrix(uint index, const float *src, uint rowSize, uint columnSize)
-{
-	H_AUTO_OGL(CDriverGL_setConstantMatrix)
-
-	uint quadruplesNb = (int)(rowSize/4) + (fmod(rowSize, 4)!=0);
-	uint eltId;
-	float values[4];
-
-	for(uint c=0; c<columnSize; c++)
-	{
-		eltId = c*rowSize;
-		for(uint q=0; q<quadruplesNb; q++)
-		{
-			for(uint i=0; i<4; i++)
-			{
-				if(eltId < (c+1)*rowSize)
-					values[i] = src[eltId];
-				else
-					values[i] = 0.0f;
-
-				eltId++;
-			}
-
-			setConstant(index+quadruplesNb*c+q, 1, values);
-		}
-	}
-}
-
-// ***************************************************************************
-void CDriverGL::setConstantMatrix(uint index, const double *src, uint rowSize, uint columnSize)
-{
-	H_AUTO_OGL(CDriverGL_setConstantMatrix)
-
-	uint quadruplesNb = (int)(rowSize/4) + (fmod(rowSize, 4)!=0);
-	uint eltId;
-	double values[4];
-
-	for(uint c=0; c<columnSize; c++)
-	{
-		eltId = c*rowSize;
-		for(uint q=0; q<quadruplesNb; q++)
-		{
-			for(uint i=0; i<4; i++)
-			{
-				if(eltId < (c+1)*rowSize)
-					values[i] = src[eltId];
-				else
-					values[i] = 0.0f;
-
-				eltId++;
-			}
-
-			setConstant(index+quadruplesNb*c+q, 1, values);
-		}
-	}
 }
 
 // ***************************************************************************
@@ -2110,5 +1733,320 @@ bool CDriverGL::supportVertexProgramDoubleSidedColor() const
 	return _Extensions.NVVertexProgram || _Extensions.ARBVertexProgram;
 }
 
+
+// ***************************************************************************
+// ***************** CVertexProgramConversionARB *****************************
+// ***************************************************************************
+
+const char * CVertexProgramConversionARB::ARBVertexProgramInstrToName[CVPInstruction::OpcodeCount] =
+{
+	"ADD  ",
+	"DP3  ",
+	"DP4  ",
+	"EXP  ",
+	"FRC  ",
+	"LOG  ",
+	"MAD  ",
+	"MAX  ",
+	"MIN  ",
+	"MOV  ",
+	"MUL  ",
+	"RCP  ",
+	"RSQ  ",
+	"SUB  ",
+	"-  ",
+	"-  ",
+	"-  ",
+	"-  ",
+	"-  ",
+	"DST  ",
+	"LIT  ",
+	"SGE  ",
+	"SLT  ",
+	"-  ",
+};
+
+// ***************************************************************************
+const char * CVertexProgramConversionARB::ARBVertexProgramOutputRegisterToName[CVPOperand::OutputRegisterCount] =
+{
+	"position",
+	"color.primary",
+	"color.secondary",
+	"color.back.primary",
+	"color.back.secondary",
+	"fogcoord",
+	"pointsize",
+	"texcoord[0]",
+	"texcoord[1]",
+	"texcoord[2]",
+	"texcoord[3]",
+	"texcoord[4]",
+	"texcoord[5]",
+	"texcoord[6]",
+	"texcoord[7]"
+};
+
+// ***************************************************************************
+bool CVertexProgramConversionARB::convert(const CVertexProgramParser::CVProgram &inParsedProgram, bool &specularWritten, 
+										  std::string & code)
+{
+	CVertexProgramParser::TVProgram parsedProgram = inParsedProgram._Program;
+	//
+	code = "!!ARBvp1.0\n";
+	// declare temporary registers
+	const uint NUM_TEMPORARIES = 12;
+	ARBProgramTemporaryRegisters(code, NUM_TEMPORARIES);
+	// declare address register
+	code += "ADDRESS A0;\n";
+	// declare constant register
+	if(!CProgramConversionARB::constantRegisters(inParsedProgram._Constants, code)) return false;
+
+	uint writtenSpecularComponents = 0;
+	for(uint k = 0; k < parsedProgram.size(); ++k)
+	{
+		if (parsedProgram[k].Dest.Type ==  CVPOperand::OutputRegister && parsedProgram[k].Dest.Value.OutputRegisterValue == CVPOperand::OSecondaryColor)
+		{
+			writtenSpecularComponents |= parsedProgram[k].Dest.WriteMask;
+		}
+	}
+	// tmp fix : write unwritten components of specular (seems that glDisable(GL_COLOR_SUM_ARB) does not work in a rare case for me ...)		
+	if (writtenSpecularComponents != 0xf)
+	{
+		// add a new instruction to write 0 in unwritten components
+		CProgramSwizzle sw;
+		sw.Comp[0] = CProgramSwizzle::X;
+		sw.Comp[1] = CProgramSwizzle::Y;
+		sw.Comp[2] = CProgramSwizzle::Z;
+		sw.Comp[3] = CProgramSwizzle::W;
+		
+		CVPInstruction vpi;
+		vpi.Opcode.Op = CProgramInstruction::ADD;
+		vpi.Dest.WriteMask = 0xf ^ writtenSpecularComponents;
+		vpi.Dest.Type = CVPOperand::OutputRegister;
+		vpi.Dest.Value.OutputRegisterValue = CVPOperand::OSecondaryColor;
+		vpi.Dest.Indexed = false;
+		vpi.Dest.Negate = false;
+		vpi.Dest.Swizzle = sw;
+		vpi.Src1.Type = CVPOperand::InputRegister;
+		vpi.Src1.Value.InputRegisterValue = CVPOperand::IPosition; // tmp -> check that position is present
+		vpi.Src1.Indexed = false;
+		vpi.Src1.Negate = false;
+		vpi.Src1.Swizzle = sw;
+		vpi.Src2.Type = CVPOperand::InputRegister;
+		vpi.Src2.Value.InputRegisterValue = CVPOperand::IPosition; // tmp -> chec
+		vpi.Src2.Indexed = false;
+		vpi.Src2.Negate = true;
+		vpi.Src2.Swizzle = sw;		
+		//
+		parsedProgram.push_back(vpi);
+	}		
+	specularWritten = (writtenSpecularComponents != 0);
+		
+	for(uint k = 0; k < parsedProgram.size(); ++k)
+	{
+		std::string instr;
+		ARBVertexProgramDumpInstr(parsedProgram[k], instr);
+		code += instr + "\r\n";
+	}			
+	code += "END\n";
+
+	printf("\nPROGRAM ARB :\n%s\n", code.c_str());//TEMP
+
+	return true;
+}
+
+// ***************************************************************************
+// Dump an instruction in a string
+void CVertexProgramConversionARB::ARBVertexProgramDumpInstr(const CVPInstruction &instr, std::string &out)
+{
+	nlassert(instr.Opcode.VPOp < CVPInstruction::OpcodeCount);
+	// Special case for EXP with a scalar output argument (y component) -> translate to FRC		
+	out = ARBVertexProgramInstrToName[instr.Opcode.VPOp];	
+	uint nbOp = instr.getNumUsedSrc();
+	std::string destOperand;
+	ARBVertexProgramDumpOperand(instr.Dest, true, destOperand);
+	out += destOperand;
+	for(uint k = 0; k < nbOp; ++k)
+	{
+		out += ", ";
+		std::string srcOperand;
+		ARBVertexProgramDumpOperand(instr.getSrc(k), false, srcOperand);
+		out += srcOperand;
+	}
+	out +="; \n";
+}
+
+// ***************************************************************************
+void CVertexProgramConversionARB::ARBVertexProgramDumpOperand(const CVPOperand &op, bool destOperand, std::string &out)
+{
+	out = op.Negate ? " -" : " ";
+	switch(op.Type)
+	{
+		case CVPOperand::Variable: out += "R" + NLMISC::toString(op.Value.VariableValue); break;
+		case CVPOperand::Constant: 
+			out += "c[";
+			if (op.Indexed)
+			{
+				out += "A0.x + ";
+			}
+			out += NLMISC::toString(op.Value.ConstantValue) + "]"; 
+		break;
+		case CVPOperand::InputRegister: out += "vertex.attrib[" + NLMISC::toString((uint) op.Value.InputRegisterValue) + "]"; break;
+		case CVPOperand::OutputRegister:
+			nlassert(op.Value.OutputRegisterValue < CVPOperand::OutputRegisterCount);
+			out += "result." + std::string(ARBVertexProgramOutputRegisterToName[op.Value.OutputRegisterValue]);
+		break;
+		case CVPOperand::AddressRegister:
+			out += "A0.x";
+		break;
+        default:
+            break;
+	}
+	ARBProgramSuffix(op, destOperand, out);
+}
+
+// ***************************************************************************
+void CProgramConversionARB::ARBProgramDumpWriteMask(uint mask, std::string &out)
+{
+	if (mask == 0xf)
+	{
+		out = "";
+		return;
+	}
+	out = ".";
+	if (mask & 1) out +="x";
+	if (mask & 2) out +="y";
+	if (mask & 4) out +="z";
+	if (mask & 8) out +="w";
+}
+
+// ***************************************************************************
+void CProgramConversionARB::ARBProgramDumpSwizzle(const CProgramSwizzle &swz, std::string &out)
+{
+	if (swz.isIdentity())
+	{
+		out = "";
+		return;
+	}
+	out = ".";
+	for(uint k = 0; k < 4; ++k)
+	{
+		switch(swz.Comp[k])
+		{
+			case CProgramSwizzle::X: out += "x"; break;
+			case CProgramSwizzle::Y: out += "y"; break;
+			case CProgramSwizzle::Z: out += "z"; break;
+			case CProgramSwizzle::W: out += "w"; break;
+			default:
+				nlassert(0);
+			break;
+		}
+		if (swz.isScalar() && k == 0) break;
+	}
+}
+
+// ***************************************************************************
+bool CProgramConversionARB::constantRegisters(const CProgramParser::TConstantsVector &constantsProgram, std::string & code)
+{
+	GLint glMaxEnvParam;
+	nglGetProgramivARB(GL_FRAGMENT_PROGRAM_ARB, GL_MAX_PROGRAM_ENV_PARAMETERS_ARB, &glMaxEnvParam);
+
+	if(constantsProgram.empty())
+	{
+		code += string("PARAM  c[") + glMaxEnvParam + "]  = {program.env[0.." + (glMaxEnvParam-1) +"]}; \n";
+	}
+	else
+	{	
+		uint maxIndex=0, minIndex=96;
+		for(uint k=0; k<constantsProgram.size(); k++)
+		{
+			uint index = constantsProgram[k].first;
+			if(index>maxIndex) maxIndex = index;
+			if(index<minIndex) minIndex = index;
+		}
+
+		if(maxIndex>glMaxEnvParam)
+		{
+			nlwarning(" Used constant registers number is superior to maximum ARB environment parameters.");
+			return false;
+		}
+
+		std::vector<std::string> initValues(4, string("0"));
+		CProgramParser::TConstantsVector constants(maxIndex-minIndex+1);
+		for(uint k=0; k<constants.size(); k++)
+		{
+			constants[k] = CProgramParser::TConstant(k, initValues);
+		}
+
+		for(uint k=0; k<constantsProgram.size(); k++)
+		{
+			uint index = constantsProgram[k].first;
+			const std::vector<std::string> & values = constantsProgram[k].second;
+			constants[index-minIndex] = CProgramParser::TConstant(index, values);
+		}
+
+		code += string("PARAM  c[") + (maxIndex+1) + "]  = {";
+		if(minIndex>0)
+		{
+			code += "program.env[0";
+			if(minIndex>1) 
+			{
+				code += std::string("..") + (minIndex-1);
+			}
+			code += "], ";
+		}
+		
+		for(uint k=0; k<constants.size(); k++)
+		{
+			code += "{";
+
+			const std::vector<std::string> & values = constants[k].second;
+			for(uint i=0; i<4; i++)
+			{
+				code += values[i];
+				if(i!=3) code += ", ";
+			}
+
+			code += "}";
+			if(k!=constants.size()-1) code += ", ";
+		}
+
+		code += "};\n";
+	}
+
+	return true;
+}
+
+// ***************************************************************************
+void CProgramConversionARB::ARBProgramTemporaryRegisters(std::string & code, const uint numTemporaries)
+{
+	if(numTemporaries<=0) return;
+
+	code += "TEMP ";	
+	for(uint k = 0; k < numTemporaries; ++k)
+	{
+		code += toString("R%d", (int) k);
+		if (k != (numTemporaries - 1))
+		{
+			code +=", ";
+		}
+	}
+	code += "; \n";
+}
+
+// ***************************************************************************
+void CProgramConversionARB::ARBProgramSuffix(const CProgramOperand & op, bool destOperand, std::string & out)
+{
+	std::string suffix;
+	if(destOperand)
+	{
+		ARBProgramDumpWriteMask(op.WriteMask, suffix);
+	}
+	else
+	{
+		ARBProgramDumpSwizzle(op.Swizzle, suffix);
+	}
+	out += suffix;
+}
 
 } // NL3D
